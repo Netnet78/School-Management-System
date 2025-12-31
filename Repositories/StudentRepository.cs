@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Student_Management.Data;
 using Student_Management.Models;
+using System.Windows;
 
 namespace Student_Management.Services
 {
@@ -23,7 +24,20 @@ namespace Student_Management.Services
             _context = context;
         }
 
-        public async Task<List<Student>> GetAllStudentsAsync() => await _context.Students.ToListAsync();
+        public async Task<List<Student>> GetAllStudentsAsync()
+        {
+            try
+            {
+                List<Student> students = await _context.Students.ToListAsync();
+                return students;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("There was an error when trying to fetch data!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+        }
         public async Task AddStudentAsync(Student student)
         {
             await _context.Students.AddAsync(student);
