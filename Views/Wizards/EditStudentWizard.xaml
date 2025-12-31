@@ -8,7 +8,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewmodels:EditStudentViewModel}"
-        Title="Edit Student" Height="450" Width="700" WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+        Title="Edit Student" Height="500" Width="700" WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
     <Window.Resources>
         <conv:IntEqualsToVisibilityConverter x:Key="IntEqualsToVisibilityConverter" />
         <conv:DateOnlyToDateTimeConverter x:Key="DateOnlyToDateTimeConverter" />
@@ -44,8 +44,12 @@
                     <StackPanel Width="320">
                         <TextBlock Text="គោត្តនាម" />
                         <TextBox Text="{Binding EditedStudent.LastName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Text="គោត្តនាមជាអក្សរឡាតាំង" />
+                        <TextBox Text="{Binding EditedStudent.LatinLastName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         <TextBlock Text="នាម" />
                         <TextBox Text="{Binding EditedStudent.FirstName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Text="នាមជាអក្សរឡាតាំង" />
+                        <TextBox Text="{Binding EditedStudent.LatinFirstName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
                         <TextBlock Text="ភេទ" />
                         <ComboBox SelectedValue="{Binding EditedStudent.Gender, Mode=TwoWay}" 
@@ -54,7 +58,7 @@
                                                SelectedValuePath="Value" 
                                                ItemsSource="{Binding GenderOptions}"/>
 
-                        <TextBlock Text="ថ្ងៃខែឆ្នាំកំណើត" Margin="0 5 0 0"/>
+                        <TextBlock Text="កាលបរិច្ឆេទ​កំណើត" Margin="0 5 0 0"/>
                         <DatePicker Name="DateOfBirthPicker"
                                                SelectedDate="{Binding EditedStudent.DateOfBirth, Mode=TwoWay, FallbackValue='12/12/2012', Converter={StaticResource DateOnlyToDateTimeConverter}}" />
                     </StackPanel>
@@ -72,6 +76,10 @@
 
                         <TextBlock Text="ចំនួនបងប្អូន" />
                         <TextBox Text="{Binding EditedStudent.SiblingsCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <TextBlock Text="លេខទូរស័ព្ទ" />
+                        <TextBox Text="{Binding EditedStudent.PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Height="25"/>
                     </StackPanel>
                 </WrapPanel>
             </StackPanel>
@@ -124,7 +132,8 @@
                         <TextBlock Text="មណ្ឌល" />
                         <TextBox Text="{Binding EditedStudent.ExamCenter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         <TextBlock Text="កាលបរិច្ឆេទ" />
-                        <TextBox Text="{Binding EditedStudent.ExamDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <DatePicker  SelectedDate="{Binding EditedStudent.ExamDate, Mode=TwoWay, Converter={StaticResource DateOnlyToDateTimeConverter}}"
+                                                Name="ExamDatePicker"/>
                         <TextBlock Text="លេខតុ" />
                         <TextBox Text="{Binding EditedStudent.ExamTable, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         <TextBlock Text="លេខបន្ទប់" />
