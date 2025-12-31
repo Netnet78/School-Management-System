@@ -32,34 +32,7 @@ namespace Student_Management.ViewModels
             CurrentPhotoPath = EditedStudent.PhotoPath;
         }
 
-        private static Student Clone(Student s) => new()
-        {
-            Id = s.Id,
-            FirstName = s.FirstName,
-            LastName = s.LastName,
-            DateOfBirth = s.DateOfBirth,
-            Gender = s.Gender,
-            Skill = s.Skill,
-            Religion = s.Religion,
-            BirthVillage = s.BirthVillage,
-            BirthCommune = s.BirthCommune,
-            BirthDistrict = s.BirthDistrict,
-            BirthProvince = s.BirthProvince,
-            FatherName = s.FatherName,
-            MotherName = s.MotherName,
-            FatherOccupation = s.FatherOccupation,
-            MotherOccupation = s.MotherOccupation,
-            SiblingsCount = s.SiblingsCount,
-            PhotoPath = s.PhotoPath,
-            ExamCenter = s.ExamCenter,
-            ExamDate = s.ExamDate,
-            ExamTable = s.ExamTable,
-            ExamRoom = s.ExamRoom,
-            FromSchool = s.FromSchool,
-            StayType = s.StayType,
-            OtherInfo = s.OtherInfo,
-            CreatedAt = s.CreatedAt
-        };
+        private static Student Clone(Student s) => s;
 
         [RelayCommand]
         private void Next()

@@ -37,7 +37,7 @@ namespace Student_Management.ViewModels
                 _userSession.PropertyChanged += OnUserSessionChanged;
 
             // Default page
-            SetView<StudentViewModel>();
+            _ = SetView<StudentViewModel>();
         }
 
         // MVVM Commands
@@ -50,21 +50,25 @@ namespace Student_Management.ViewModels
             ExitAction?.Invoke();
         }
         [RelayCommand]
-        private void ShowTableView()
+        private async Task ShowTableViewAsync()
         {
-            SetView<StudentViewModel>();
+            await SetView<StudentViewModel>();
         }
         [RelayCommand]
-        private void ShowInsertView()
-        { SetView<InsertStudentViewModel>(); }
+        private async Task ShowInsertViewAsync()
+        { await SetView<InsertStudentViewModel>(); }
+
         [RelayCommand]
-        private void ShowReportView()
-        { SetView<ReportViewModel>(); }
+        private async Task ShowReportViewAsync()
+        { await SetView<ReportViewModel>(); }
 
         // Utilities
-        private void SetView<TViewModel>() where TViewModel : ObservableObject
+        private async Task SetView<TViewModel>() where TViewModel : ObservableObject
         {
-            CurrentView = _serviceProvider.GetRequiredService<TViewModel>();
+            await Task.Run(() =>
+            {
+                CurrentView = _serviceProvider.GetRequiredService<TViewModel>();
+            });
         }
         // User session change handler
         private void OnUserSessionChanged(object? sender, PropertyChangedEventArgs e)

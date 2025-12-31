@@ -43,7 +43,9 @@ namespace Student_Management.ViewModels
             Data = new()
             {
                 FirstName = string.Empty,
+                LatinFirstName = string.Empty,
                 LastName = string.Empty,
+                LatinLastName = string.Empty,
                 DateOfBirth = DateOnly.FromDateTime(DateTime.Now),
                 Gender = StudentGender.Male,
                 Skill = StudentSkill.Computer,
@@ -57,13 +59,17 @@ namespace Student_Management.ViewModels
             try
             {
                 await _repo.AddStudentAsync(Data);
+                DateOnly previousExamDate = Data.ExamDate;
                 Data = new()
                 {
                     FirstName = string.Empty,
+                    LatinFirstName = string.Empty,
                     LastName = string.Empty,
+                    LatinLastName = string.Empty,
                     DateOfBirth = DateOnly.FromDateTime(DateTime.Now),
                     Gender = StudentGender.Male,
                     Skill = StudentSkill.Computer,
+                    ExamDate = previousExamDate,
                 };
             }
             catch (Exception ex)

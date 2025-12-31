@@ -1,11 +1,316 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using ClosedXML.Excel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Win32;
+using Student_Management.Helpers;
+using Student_Management.Models;
+using Student_Management.Services;
+using System.Diagnostics;
+using System.IO;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace Student_Management.ViewModels
 {
     public partial class ReportViewModel : ObservableObject
     {
+        private readonly IStudentRepository _studentRepository;
+
+        [ObservableProperty]
+        private int _currentTabIndex;
+        [ObservableProperty]
+        private string _currentTabHeader;
+        [ObservableProperty]
+        private string _currentTabStudentCount;
+        [ObservableProperty]
+        private string _currentTabFemaleStudentCount;
+        [ObservableProperty]
+        private List<Student> _allStudents;
+        [ObservableProperty]
+        private List<Student> _computerStudents;
+        [ObservableProperty]
+        private List<Student> _electricalStudents;
+        [ObservableProperty]
+        private List<Student> _cNCStudents;
+        [ObservableProperty]
+        private Student? _selectedStudent;
+        [ObservableProperty]
+        private DateTime _reportDate = DateTime.Now;
+        [ObservableProperty]
+        private string _studyYear = "2025-2026";
+        public ReportViewModel(IStudentRepository studentRepository)
+        {
+            _studentRepository = studentRepository;
+
+            // Initialize Students List
+            AllStudents = [];
+            ComputerStudents = [];
+            ElectricalStudents = [];
+            CNCStudents = [];
+            _ = LoadStudentsAsync();
+
+            // Default Tab
+            CurrentTabStudentCount = "០";
+            CurrentTabFemaleStudentCount = "០";
+            CurrentTabHeader = "";
+            CurrentTabIndex = 0;
+        }
+
+        [RelayCommand]
+        private async Task GenerateReport()
+        {
+            List<Student> students = await _studentRepository.GetAllStudentsAsync();
+            CandidateReport candidateReport = new(students, ReportDate, int.Parse(StudyYear.Split('-')[0]), int.Parse(StudyYear.Split('-')[1]));
+
+            ReturnStatus status = await Task.Run(() => candidateReport.GenerateReport());
+
+            if (status == ReturnStatus.Success)
+            {
+                MessageBoxResult result = MessageBox.Show("Report generated successfully!\n Do you wish to see the files?", "Success", MessageBoxButton.YesNo, MessageBoxImage.Information);
+                if (result.Equals(MessageBoxResult.Yes))
+                {
+                    Process.Start("explorer.exe", candidateReport.OutputPath);
+                }
+            }
+        }
+
+        private async Task LoadStudentsAsync()
+        {
+            AllStudents = await _studentRepository.GetAllStudentsAsync();
+            OnCurrentTabIndexChanged(CurrentTabIndex);
+        }
+
+        partial void OnAllStudentsChanged(List<Student> value)
+        {
+            ComputerStudents = AllStudents.Where(s => s.Skill.Equals(StudentSkill.Computer)).ToList();
+            ElectricalStudents = AllStudents.Where(s => s.Skill.Equals(StudentSkill.Electrical)).ToList();
+            CNCStudents = AllStudents.Where(s => s.Skill.Equals(StudentSkill.CNC)).ToList();
+        }
+
+        partial void OnCurrentTabIndexChanged(int value)
+        {
+            CurrentTabHeader = value switch
+            {
+                0 => "គ្រប់ជំនាញ",
+                1 => "កុំព្យូទ័រ",
+                2 => "អគ្គិសនី",
+                3 => "មេកានិច",
+                _ => "",
+            };
+            CurrentTabStudentCount = value switch
+            {
+                0 => AllStudents.Count.UseKhmerNumbers(),
+                1 => ComputerStudents.Count.UseKhmerNumbers(),
+                2 => ElectricalStudents.Count.UseKhmerNumbers(),
+                3 => CNCStudents.Count.UseKhmerNumbers(),
+                _ => "",
+            };
+            CurrentTabFemaleStudentCount = value switch
+            {
+                0 => AllStudents.Where(s => s.Gender.Equals(StudentGender.Female)).ToList().Count.UseKhmerNumbers(),
+                1 => ComputerStudents.Where(s => s.Gender.Equals(StudentGender.Female)).ToList().Count.UseKhmerNumbers(),
+                2 => ElectricalStudents.Where(s => s.Gender.Equals(StudentGender.Female)).ToList().Count.UseKhmerNumbers(),
+                3 => CNCStudents.Where(s => s.Gender.Equals(StudentGender.Female)).ToList().Count.UseKhmerNumbers(),
+                _ => "",
+            };
+        }
+    }
+    internal class CandidateReport
+    {
+        private readonly List<Student> _students;
+        private readonly DateTime _reportDate;
+        private readonly int _studyYearStart;
+        private readonly int _studyYearEnd;
+        public string TemplatePath { get; set; } = @".\Sources\Spreadsheets\candidate_list.xlsx";
+        public string OutputPath { get; private set; } = @"";
+        public CandidateReport(List<Student> students, DateTime? date, int? startYear, int? endYear)
+        {
+            _students = students;
+            _reportDate = date ?? DateTime.Now;
+            _studyYearStart = startYear ?? (DateTime.Now.Month >= 9 ? DateTime.Now.Year : DateTime.Now.Year - 1);
+            _studyYearEnd = endYear ?? (DateTime.Now.Month >= 9 ? DateTime.Now.Year + 1 : DateTime.Now.Year);
+        }
+
+        public ReturnStatus GenerateReport()
+        {
+            XLWorkbook workbook = new(TemplatePath);
+
+            Dictionary<StudentSkill, List<Student>> studentsBySkill = _students
+            .GroupBy(s => s.Skill)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+            foreach(KeyValuePair<StudentSkill, List<Student>> skillGroup in studentsBySkill)
+            {
+                string sheetName = skillGroup.Key.ToString();
+                List<Student> studentsInSkill = skillGroup.Value;
+
+                if (studentsInSkill.Count <= 0) continue;
+
+                for (int i = 0; i < studentsInSkill.Count; i++)
+                {
+                    int id = i + 1;
+                    InsertStudent(workbook, studentsInSkill[i], sheetName, i + 1);
+                }
+            }
+
+            SaveFileDialog saveFileDialog = new()
+            {
+                Title = "Save Generated Report",
+                Filter = "Excel Workbook (*.xlsx)|*.xlsx",
+                FileName = $"StudentReport_{DateTime.Now:yyyyMMdd_HHmm}.xlsx",
+            };
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                OutputPath = Path.GetDirectoryName(saveFileDialog.FileName)!;
+                try
+                {
+                    workbook.SaveAs(saveFileDialog.FileName);
+                    return ReturnStatus.Success;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Report failed to generate\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return ReturnStatus.Failed;
+                }
+            }
+            else
+            {
+                return ReturnStatus.Rejected;
+            }
+        }
+        private void InsertStudent(XLWorkbook workbook, Student student, string sheetName, int index)
+        {
+            if (!workbook.TryGetWorksheet(sheetName, out var ws))
+            {
+                MessageBox.Show("Worksheet not found!", "Worksheet Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            int summaryRow = FindSummaryRow(ws);
+            if (summaryRow == -1)
+                throw new InvalidOperationException("Summary row not found.");
+
+            int newRow = summaryRow; // Insert before summary
+            ws.Row(summaryRow).InsertRowsAbove(1);
+
+            // Format cells
+            ws.Row(newRow).Height = 18;
+            ws.Row(newRow).Unhide();
+            ws.Cell(newRow, 5).Style.DateFormat.Format = "[$-km-KH,1200]dd mmmm yyyy;@";
+            ws.Cell(newRow, 8).Style.DateFormat.Format = "[$-km-KH,1200]dd mmmm yyyy;@";
+
+            // Fill cells
+            ws.Cell(newRow, 1).Value = index; // Serial number
+            ws.Cell(newRow, 2).Value = student.LastName;
+            ws.Cell(newRow, 3).Value = student.FirstName;
+            ws.Cell(newRow, 4).Value = (student.Gender).GetDescription(); // "ប្រុស"/"ស្រី"
+            ws.Cell(newRow, 5).Value = student.DateOfBirth.ToDateTime(TimeOnly.MinValue);
+            ws.Cell(newRow, 6).Value = student.Age;
+            ws.Cell(newRow, 7).Value = (student.ExamCenter);
+            ws.Cell(newRow, 8).Value = student.ExamDate.ToDateTime(TimeOnly.MinValue);
+            ws.Cell(newRow, 9).Value = student.ExamTable;
+            ws.Cell(newRow, 10).Value = student.ExamRoom;
+            ws.Cell(newRow, 11).Value = student.FromSchool;
+            ws.Cell(newRow, 12).Value = student.OtherInfo;
+
+            // Update study year
+            UpdateStudyYear(ws, _studyYearStart, _studyYearEnd);
+            // Update summary row totals
+            UpdateSummary(ws, summaryRow + 1, student);
+            // Update report date
+            UpdateReportDate(ws, _reportDate);
+        }
+        private static int FindSummaryRow(IXLWorksheet ws)
+        {
+            var namedRange = ws.DefinedName("SummaryCell");
+            if (namedRange == null) return -1;
+            return namedRange.Ranges.First().FirstCell().Address.RowNumber;
+        }
+        private static void UpdateSummary(IXLWorksheet ws, int summaryRow, Student student)
+        {
+            var summaryCell = ws.Row(summaryRow).CellsUsed().FirstOrDefault() ?? ws.Cell(summaryRow, 1);
+
+            // Extract totals
+            var totalCell = ws.DefinedName("TotalStudents").Ranges.First().FirstCell();
+            var femaleCell = ws.DefinedName("TotalFemaleStudents").Ranges.First().FirstCell();
+
+            int total = 0;
+            int female = 0;
+
+            try
+            {
+                total = int.Parse(totalCell.Value.ToString());
+                female = int.Parse(femaleCell.Value.ToString());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"There was an error when trying to convert the values into integers\nTotal value = {total}\nFemale total value = {female}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message);
+            }
+
+            total++;
+            if (student.Gender == StudentGender.Female) female++;
+
+            totalCell.Value = total;
+            femaleCell.Value = female;
+
+            string newSummary = $"បញ្ឈប់បញ្ជីត្រឹមឈ្មោះ {student.FullName}   ចំនួនសិស្សសរុប {total}នាក់ នៅក្នុងនោះមានស្រី {female}នាក់។".UseKhmerNumbers();
+            summaryCell.Value = newSummary;
+        }
+        private static void UpdateReportDate(IXLWorksheet ws, DateTime date)
+        {
+            string lunarReportDate = ToReportLunarDate(date);
+            string gregorianReportDate = ToReportGregorianDate(date);
+            XLWorkbook workbook = ws.Workbook;
+            IXLDefinedName lunarDateRange = workbook.DefinedName("LunarReportDate")!;
+            if (lunarDateRange != null)
+            {
+                foreach (IXLRange cell in lunarDateRange.Ranges)
+                {
+                    cell.Value = lunarReportDate;
+                }
+            }
+            IXLDefinedName gregorianDateRange = workbook.DefinedName("GregorianReportDate")!;
+            if (gregorianDateRange != null)
+            {
+                foreach (IXLRange cell in gregorianDateRange.Ranges)
+                {
+                    cell.Value = gregorianReportDate;
+                }
+            }
+        }
+        private static void UpdateStudyYear(IXLWorksheet ws, int startYear, int endYear)
+        {
+            XLWorkbook workbook = ws.Workbook;
+            IXLDefinedName studyYearRange = workbook.DefinedName("StudyYear")!;
+            if (studyYearRange != null)
+            {
+                foreach (IXLRange cell in studyYearRange.Ranges)
+                {
+                    cell.Value = $"ឆ្នាំសិក្សា {startYear}-{endYear}".UseKhmerNumbers();
+                }
+            }
+        }
+
+        private static string ToReportLunarDate(DateTime date)
+        {
+            string weekDay = ((int)date.DayOfWeek).UseKhmerDays();
+            IKhmerLunarDate khmerLunar = date.ToKhmerLunarDate();
+            string day = khmerLunar.LunarDay;
+            string month = khmerLunar.LunarMonth;
+            string year = khmerLunar.LunarYear.UseKhmerNumbers();
+            string zodiac = khmerLunar.ZodiacYear;
+            string stem = khmerLunar.Stem;
+            return $"ថ្ងៃ{weekDay}  {day}   ខែ{month}    ឆ្នាំ{zodiac}  {stem}  ព.ស.{year}";
+        }
+        private static string ToReportGregorianDate(DateTime date)
+        {
+            //   ដុនបូស្កូប៉ោយប៉ែត ថ្ងៃទី១៣   ខែកញ្ញា    ឆ្នាំ២០២៤
+            string day = date.Day.UseKhmerNumbers();
+            string month = date.Month.UseKhmerMonths();
+            string year = date.Year.UseKhmerNumbers();
+            return $"   ដុនបូស្កូប៉ោយប៉ែត ថ្ងៃទី{day}   ខែ{month}    ឆ្នាំ{year}";
+        }
+
     }
 }
