@@ -58,6 +58,9 @@ namespace Student_Management.ViewModels
             if (Data == null) return;
             try
             {
+                Data.LatinFirstName = Data.LatinFirstName.ToUpper();
+                Data.LatinLastName = Data.LatinLastName.ToUpper();
+
                 await _repo.AddStudentAsync(Data);
                 DateOnly previousExamDate = Data.ExamDate;
                 Data = new()
@@ -70,7 +73,9 @@ namespace Student_Management.ViewModels
                     Gender = StudentGender.Male,
                     Skill = StudentSkill.Computer,
                     ExamDate = previousExamDate,
+                    PhotoPath = string.Empty,
                 };
+                CurrentPhotoPath = Data.PhotoPath;
             }
             catch (Exception ex)
             {
@@ -98,7 +103,7 @@ namespace Student_Management.ViewModels
         [RelayCommand]
         private void Next()
         {
-            if (CurrentStep < 4) CurrentStep++;
+            if (CurrentStep < 3) CurrentStep++;
         }
 
         [RelayCommand]
