@@ -32,7 +32,8 @@ namespace Student_Management.Converters
             // any other required string fields empty? (skip index 0)
             foreach (var v in values.Skip(1))
             {
-                if (v is string s && string.IsNullOrWhiteSpace(s))
+                string s = v.ToString() ?? "";
+                if (string.IsNullOrWhiteSpace(s))
                     return WarningBrush;
             }
 
