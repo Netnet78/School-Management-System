@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Student_Management.Data;
@@ -11,9 +12,11 @@ using Student_Management.Data;
 namespace Student_Management.Migrations
 {
     [DbContext(typeof(StudentDbContext))]
-    partial class StudentDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251227103510_Changed_ExamDate_to_use_DateOnly")]
+    partial class Changed_ExamDate_to_use_DateOnly
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -59,11 +62,13 @@ namespace Student_Management.Migrations
                     b.Property<DateOnly>("ExamDate")
                         .HasColumnType("date");
 
-                    b.Property<int?>("ExamRoom")
-                        .HasColumnType("integer");
+                    b.Property<string>("ExamRoom")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<int?>("ExamTable")
-                        .HasColumnType("integer");
+                    b.Property<string>("ExamTable")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("FatherName")
                         .IsRequired()
@@ -88,14 +93,6 @@ namespace Student_Management.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("LatinFirstName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("LatinLastName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("MotherName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -105,10 +102,6 @@ namespace Student_Management.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("OtherInfo")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("text");
 
