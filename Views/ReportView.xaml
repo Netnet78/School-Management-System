@@ -4,9 +4,621 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Student_Management.Views"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:conv="clr-namespace:Student_Management.Converters"
+             xmlns:viewmodels="clr-namespace:Student_Management.ViewModels" 
+             d:DataContext="{d:DesignInstance Type=viewmodels:ReportViewModel}"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="800"
+             Background="{DynamicResource MaterialDesign.Brush.Background}">
+
+    <UserControl.Resources>
+        <conv:StudentRowBrushConverter x:Key="StudentRowBrushConverter" />
+        <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" CollapseWhenNull="True"/>
+        <conv:NullToBooleanConverter x:Key="NullToBooleanConverter" FalseOnNull="True"/>
+        <conv:PhotoPathToImageSourceConverter x:Key="PhotoPathToImageSourceConverter" />
+        <conv:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter" />
+    </UserControl.Resources>
+    
     <Grid>
-        <TextBlock>Hello World! Welcome to the Report page!</TextBlock>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!--Header / Title-->
+        <Grid TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Primary.Foreground}" Background="{DynamicResource MaterialDesign.Brush.Primary}" Grid.Row="0"  Height="60">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Horizontal">
+                <materialDesign:PackIcon Kind="ReportArc" VerticalAlignment="Center" Height="32" Width="32"/>
+                <TextBlock  Padding="10" Text="របាយការណ៍ទិន្នន័យ" FontSize="24" FontWeight="Bold" />
+            </StackPanel>
+        </Grid>
+        
+        <!--Content-->
+        <Grid Grid.Row="1" Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!--Data Grid Columns-->
+            <Border Grid.Row="0" Grid.Column="0"
+                            BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" 
+                            BorderThickness="2" Margin="10">
+                <TabControl Margin="0 0 0 0" 
+                                       SelectedIndex="{Binding CurrentTabIndex, FallbackValue=0, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                    <TabItem Header="គ្រប់ជំនាញ">
+                        <Border BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}"
+                                        BorderThickness="0 0 0 0">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0 0 0 0">
+                                <DataGrid    AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              IsReadOnly="True"
+                              ItemsSource="{Binding AllStudents}"
+                              SelectionMode="Single"
+                              SelectedItem="{Binding SelectedStudent, Mode=TwoWay}">
+                                    <!-- Move all DataGrid-specific styles into DataGrid.Resources to avoid designer FindAncestor issues -->
+                                    <DataGrid.Resources>
+                                        <!-- Row style that uses the converter -->
+                                        <Style TargetType="DataGridRow" x:Key="StudentRowStyle">
+                                            <Setter Property="Height" Value="40" />
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="Background">
+                                                <Setter.Value>
+                                                    <MultiBinding Converter="{StaticResource StudentRowBrushConverter}">
+                                                        <Binding Path="PhotoPath" />
+                                                        <Binding Path="FirstName" />
+                                                        <Binding Path="LastName" />
+                                                        <Binding Path="Gender" />
+                                                        <Binding Path="Skill" />
+                                                        <Binding Path="PhoneNumber" />
+                                                        <Binding Path="BirthVillage" />
+                                                        <Binding Path="BirthCommune" />
+                                                        <Binding Path="BirthDistrict" />
+                                                        <Binding Path="BirthProvince" />
+                                                        <Binding Path="FatherName" />
+                                                        <Binding Path="MotherName" />
+                                                        <Binding Path="FatherOccupation" />
+                                                        <Binding Path="MotherOccupation" />
+                                                        <Binding Path="Religion" />
+                                                        <Binding Path="ExamCenter" />
+                                                        <Binding Path="ExamDate" />
+                                                        <Binding Path="ExamTable" />
+                                                        <Binding Path="ExamRoom" />
+                                                        <Binding Path="FromSchool" />
+                                                        <Binding Path="StayType" />
+                                                        <Binding Path="SiblingsCount" />
+                                                    </MultiBinding>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Setter Property="ToolTip" Value="{Binding PhotoPath, StringFormat=Photo: {0}}" />
+                                        </Style>
+
+                                        <!-- Cell style placed here so RelativeSource/Ancestor (if later used) resolves correctly in designer -->
+                                        <Style TargetType="DataGridCell" x:Key="StudentGridCellStyle">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0,0,1,1" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" />
+                                        </Style>
+
+                                        <!--Data inside the grid styles-->
+                                        <Style TargetType="TextBlock" x:Key="StudentTextBlock">
+                                            <Setter Property="Padding" Value="10,6"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                            <Setter Property="FontSize" Value="14" />
+                                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}" Value="True">
+                                                    <Setter Property="FontWeight" Value="Bold"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </DataGrid.Resources>
+
+                                    <!-- Apply the row style (explicit key ensures designer/runtime picks it up from DataGrid.Resources) -->
+                                    <DataGrid.RowStyle>
+                                        <StaticResource ResourceKey="StudentRowStyle" />
+                                    </DataGrid.RowStyle>
+
+                                    <DataGrid.CellStyle>
+                                        <StaticResource ResourceKey="StudentGridCellStyle" />
+                                    </DataGrid.CellStyle>
+
+                                    <DataGrid.ColumnHeaderStyle>
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="FontFamily" Value="{StaticResource NotoSansKhmer}" />
+                                            <Setter Property="FontSize" Value="14" />
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                            <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Secondary}" />
+                                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" />
+                                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" />
+                                            <Setter Property="BorderThickness" Value="0,0,1,1" />
+                                            <Setter Property="Padding" Value="5" />
+                                        </Style>
+                                    </DataGrid.ColumnHeaderStyle>
+
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខសម្គាល់" Binding="{Binding Id, StringFormat=DBS{0:000}}" Width="120" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="គោត្តនាម និងនាម" Binding="{Binding FullName}" Width="200" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ភេទ" Binding="{Binding Gender, Converter={StaticResource EnumToDescriptionConverter}}" Width="80" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="កាលបរិច្ឆេទ​កំណើត" Binding="{Binding DateOfBirth}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="អាយុ" Binding="{Binding Age, StringFormat=' {0} ឆ្នាំ'}" Width="80" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ជំនាញ" Binding="{Binding Skill, Converter={StaticResource EnumToDescriptionConverter}}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="សាសនា" Binding="{Binding Religion}" Width="120" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="មណ្ឌលប្រឡង" Binding="{Binding ExamCenter}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="កាលបរិច្ឆេទប្រឡង" Binding="{Binding ExamDate}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខតុ" Binding="{Binding ExamTable}" Width="100" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខបន្ទប់" Binding="{Binding ExamRoom}" Width="100" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ឈ្មោះសាលារៀន" Binding="{Binding FromSchool}" Width="220" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ភូមិកំណើត" Binding="{Binding BirthVillage}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ឃុំកំណើត" Binding="{Binding BirthCommune}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ស្រុកកំណើត" Binding="{Binding BirthDistrict}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ខេត្តកំណើត" Binding="{Binding BirthProvince}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ឈ្មោះឪពុក" Binding="{Binding FatherName}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="មុខរបរឪពុក" Binding="{Binding FatherOccupation}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ឈ្មោះម្ដាយ" Binding="{Binding MotherName}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="មុខរបរម្ដាយ" Binding="{Binding MotherOccupation}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="បងប្អូន" Binding="{Binding SiblingsCount, StringFormat=' {0} នាក់'}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ការស្នាក់នៅ" Binding="{Binding StayType, Converter={StaticResource EnumToDescriptionConverter}}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខទូរស័ព្ទ" Binding="{Binding PhoneNumber}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ផ្សេងៗ" Binding="{Binding OtherInfo}" Width="150" />
+                                        <!-- Hidden helpers for converter / selection -->
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="PhotoPath" Binding="{Binding PhotoPath}" Width="0" Visibility="Hidden"/>
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="FirstName" Binding="{Binding FirstName}" Width="0" Visibility="Hidden"/>
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="LastName" Binding="{Binding LastName}" Width="0" Visibility="Hidden"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </ScrollViewer>
+                        </Border>
+                    </TabItem>
+                    <TabItem Header="កុំព្យូទ័រ">
+                        <Border BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}"
+                                        BorderThickness="0 0 0 0">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0 0 0 0">
+                                <DataGrid    AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              IsReadOnly="True"
+                              ItemsSource="{Binding ComputerStudents}"
+                              SelectionMode="Single"
+                              SelectedItem="{Binding SelectedStudent, Mode=TwoWay}">
+                                    <!-- Move all DataGrid-specific styles into DataGrid.Resources to avoid designer FindAncestor issues -->
+                                    <DataGrid.Resources>
+                                        <!-- Row style that uses the converter -->
+                                        <Style TargetType="DataGridRow" x:Key="StudentRowStyle">
+                                            <Setter Property="Height" Value="40" />
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="Background">
+                                                <Setter.Value>
+                                                    <MultiBinding Converter="{StaticResource StudentRowBrushConverter}">
+                                                        <Binding Path="PhotoPath" />
+                                                        <Binding Path="FirstName" />
+                                                        <Binding Path="LastName" />
+                                                        <Binding Path="Gender" />
+                                                        <Binding Path="Skill" />
+                                                        <Binding Path="PhoneNumber" />
+                                                        <Binding Path="BirthVillage" />
+                                                        <Binding Path="BirthCommune" />
+                                                        <Binding Path="BirthDistrict" />
+                                                        <Binding Path="BirthProvince" />
+                                                        <Binding Path="FatherName" />
+                                                        <Binding Path="MotherName" />
+                                                        <Binding Path="FatherOccupation" />
+                                                        <Binding Path="MotherOccupation" />
+                                                        <Binding Path="Religion" />
+                                                        <Binding Path="ExamCenter" />
+                                                        <Binding Path="ExamDate" />
+                                                        <Binding Path="ExamTable" />
+                                                        <Binding Path="ExamRoom" />
+                                                        <Binding Path="FromSchool" />
+                                                        <Binding Path="StayType" />
+                                                        <Binding Path="SiblingsCount" />
+                                                    </MultiBinding>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Setter Property="ToolTip" Value="{Binding PhotoPath, StringFormat=Photo: {0}}" />
+                                        </Style>
+
+                                        <!-- Cell style placed here so RelativeSource/Ancestor (if later used) resolves correctly in designer -->
+                                        <Style TargetType="DataGridCell" x:Key="StudentGridCellStyle">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0,0,1,1" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" />
+                                        </Style>
+
+                                        <!--Data inside the grid styles-->
+                                        <Style TargetType="TextBlock" x:Key="StudentTextBlock">
+                                            <Setter Property="Padding" Value="10,6"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                            <Setter Property="FontSize" Value="14" />
+                                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}" Value="True">
+                                                    <Setter Property="FontWeight" Value="Bold"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </DataGrid.Resources>
+
+                                    <!-- Apply the row style (explicit key ensures designer/runtime picks it up from DataGrid.Resources) -->
+                                    <DataGrid.RowStyle>
+                                        <StaticResource ResourceKey="StudentRowStyle" />
+                                    </DataGrid.RowStyle>
+
+                                    <DataGrid.CellStyle>
+                                        <StaticResource ResourceKey="StudentGridCellStyle" />
+                                    </DataGrid.CellStyle>
+
+                                    <DataGrid.ColumnHeaderStyle>
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="FontFamily" Value="{StaticResource NotoSansKhmer}" />
+                                            <Setter Property="FontSize" Value="14" />
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                            <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Secondary}" />
+                                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" />
+                                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" />
+                                            <Setter Property="BorderThickness" Value="0,0,1,1" />
+                                            <Setter Property="Padding" Value="5" />
+                                        </Style>
+                                    </DataGrid.ColumnHeaderStyle>
+
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខសម្គាល់" Binding="{Binding Id, StringFormat=DBS{0:000}}" Width="120" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="គោត្តនាម និងនាម" Binding="{Binding FullName}" Width="200" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ភេទ" Binding="{Binding Gender, Converter={StaticResource EnumToDescriptionConverter}}" Width="80" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="កាលបរិច្ឆេទ​កំណើត" Binding="{Binding DateOfBirth}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="អាយុ" Binding="{Binding Age, StringFormat=' {0} ឆ្នាំ'}" Width="80" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ជំនាញ" Binding="{Binding Skill, Converter={StaticResource EnumToDescriptionConverter}}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="សាសនា" Binding="{Binding Religion}" Width="120" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="មណ្ឌលប្រឡង" Binding="{Binding ExamCenter}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="កាលបរិច្ឆេទប្រឡង" Binding="{Binding ExamDate}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខតុ" Binding="{Binding ExamTable}" Width="100" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខបន្ទប់" Binding="{Binding ExamRoom}" Width="100" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ឈ្មោះសាលារៀន" Binding="{Binding FromSchool}" Width="220" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ភូមិកំណើត" Binding="{Binding BirthVillage}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ឃុំកំណើត" Binding="{Binding BirthCommune}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ស្រុកកំណើត" Binding="{Binding BirthDistrict}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ខេត្តកំណើត" Binding="{Binding BirthProvince}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ឈ្មោះឪពុក" Binding="{Binding FatherName}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="មុខរបរឪពុក" Binding="{Binding FatherOccupation}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ឈ្មោះម្ដាយ" Binding="{Binding MotherName}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="មុខរបរម្ដាយ" Binding="{Binding MotherOccupation}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="បងប្អូន" Binding="{Binding SiblingsCount, StringFormat=' {0} នាក់'}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ការស្នាក់នៅ" Binding="{Binding StayType, Converter={StaticResource EnumToDescriptionConverter}}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខទូរស័ព្ទ" Binding="{Binding PhoneNumber}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ផ្សេងៗ" Binding="{Binding OtherInfo}" Width="150" />
+                                        <!-- Hidden helpers for converter / selection -->
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="PhotoPath" Binding="{Binding PhotoPath}" Width="0" Visibility="Hidden"/>
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="FirstName" Binding="{Binding FirstName}" Width="0" Visibility="Hidden"/>
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="LastName" Binding="{Binding LastName}" Width="0" Visibility="Hidden"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </ScrollViewer>
+                        </Border>
+
+                    </TabItem>
+                    <TabItem Header="អគ្គិសនី">
+                        <Border BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}"
+                                        BorderThickness="0 0 0 0">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0 0 0 0">
+                                <DataGrid    AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              IsReadOnly="True"
+                              ItemsSource="{Binding ElectricalStudents}"
+                              SelectionMode="Single"
+                              SelectedItem="{Binding SelectedStudent, Mode=TwoWay}">
+                                    <!-- Move all DataGrid-specific styles into DataGrid.Resources to avoid designer FindAncestor issues -->
+                                    <DataGrid.Resources>
+                                        <!-- Row style that uses the converter -->
+                                        <Style TargetType="DataGridRow" x:Key="StudentRowStyle">
+                                            <Setter Property="Height" Value="40" />
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="Background">
+                                                <Setter.Value>
+                                                    <MultiBinding Converter="{StaticResource StudentRowBrushConverter}">
+                                                        <Binding Path="PhotoPath" />
+                                                        <Binding Path="FirstName" />
+                                                        <Binding Path="LastName" />
+                                                        <Binding Path="Gender" />
+                                                        <Binding Path="Skill" />
+                                                        <Binding Path="PhoneNumber" />
+                                                        <Binding Path="BirthVillage" />
+                                                        <Binding Path="BirthCommune" />
+                                                        <Binding Path="BirthDistrict" />
+                                                        <Binding Path="BirthProvince" />
+                                                        <Binding Path="FatherName" />
+                                                        <Binding Path="MotherName" />
+                                                        <Binding Path="FatherOccupation" />
+                                                        <Binding Path="MotherOccupation" />
+                                                        <Binding Path="Religion" />
+                                                        <Binding Path="ExamCenter" />
+                                                        <Binding Path="ExamDate" />
+                                                        <Binding Path="ExamTable" />
+                                                        <Binding Path="ExamRoom" />
+                                                        <Binding Path="FromSchool" />
+                                                        <Binding Path="StayType" />
+                                                        <Binding Path="SiblingsCount" />
+                                                    </MultiBinding>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Setter Property="ToolTip" Value="{Binding PhotoPath, StringFormat=Photo: {0}}" />
+                                        </Style>
+
+                                        <!-- Cell style placed here so RelativeSource/Ancestor (if later used) resolves correctly in designer -->
+                                        <Style TargetType="DataGridCell" x:Key="StudentGridCellStyle">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0,0,1,1" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" />
+                                        </Style>
+
+                                        <!--Data inside the grid styles-->
+                                        <Style TargetType="TextBlock" x:Key="StudentTextBlock">
+                                            <Setter Property="Padding" Value="10,6"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                            <Setter Property="FontSize" Value="14" />
+                                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}" Value="True">
+                                                    <Setter Property="FontWeight" Value="Bold"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </DataGrid.Resources>
+
+                                    <!-- Apply the row style (explicit key ensures designer/runtime picks it up from DataGrid.Resources) -->
+                                    <DataGrid.RowStyle>
+                                        <StaticResource ResourceKey="StudentRowStyle" />
+                                    </DataGrid.RowStyle>
+
+                                    <DataGrid.CellStyle>
+                                        <StaticResource ResourceKey="StudentGridCellStyle" />
+                                    </DataGrid.CellStyle>
+
+                                    <DataGrid.ColumnHeaderStyle>
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="FontFamily" Value="{StaticResource NotoSansKhmer}" />
+                                            <Setter Property="FontSize" Value="14" />
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                            <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Secondary}" />
+                                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" />
+                                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" />
+                                            <Setter Property="BorderThickness" Value="0,0,1,1" />
+                                            <Setter Property="Padding" Value="5" />
+                                        </Style>
+                                    </DataGrid.ColumnHeaderStyle>
+
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខសម្គាល់" Binding="{Binding Id, StringFormat=DBS{0:000}}" Width="120" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="គោត្តនាម និងនាម" Binding="{Binding FullName}" Width="200" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ភេទ" Binding="{Binding Gender, Converter={StaticResource EnumToDescriptionConverter}}" Width="80" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="កាលបរិច្ឆេទ​កំណើត" Binding="{Binding DateOfBirth}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="អាយុ" Binding="{Binding Age, StringFormat=' {0} ឆ្នាំ'}" Width="80" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ជំនាញ" Binding="{Binding Skill, Converter={StaticResource EnumToDescriptionConverter}}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="សាសនា" Binding="{Binding Religion}" Width="120" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="មណ្ឌលប្រឡង" Binding="{Binding ExamCenter}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="កាលបរិច្ឆេទប្រឡង" Binding="{Binding ExamDate}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខតុ" Binding="{Binding ExamTable}" Width="100" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខបន្ទប់" Binding="{Binding ExamRoom}" Width="100" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ឈ្មោះសាលារៀន" Binding="{Binding FromSchool}" Width="220" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ភូមិកំណើត" Binding="{Binding BirthVillage}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ឃុំកំណើត" Binding="{Binding BirthCommune}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ស្រុកកំណើត" Binding="{Binding BirthDistrict}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ខេត្តកំណើត" Binding="{Binding BirthProvince}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ឈ្មោះឪពុក" Binding="{Binding FatherName}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="មុខរបរឪពុក" Binding="{Binding FatherOccupation}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ឈ្មោះម្ដាយ" Binding="{Binding MotherName}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="មុខរបរម្ដាយ" Binding="{Binding MotherOccupation}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="បងប្អូន" Binding="{Binding SiblingsCount, StringFormat=' {0} នាក់'}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ការស្នាក់នៅ" Binding="{Binding StayType, Converter={StaticResource EnumToDescriptionConverter}}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខទូរស័ព្ទ" Binding="{Binding PhoneNumber}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ផ្សេងៗ" Binding="{Binding OtherInfo}" Width="150" />
+                                        <!-- Hidden helpers for converter / selection -->
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="PhotoPath" Binding="{Binding PhotoPath}" Width="0" Visibility="Hidden"/>
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="FirstName" Binding="{Binding FirstName}" Width="0" Visibility="Hidden"/>
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="LastName" Binding="{Binding LastName}" Width="0" Visibility="Hidden"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </ScrollViewer>
+                        </Border>
+                    </TabItem>
+                    <TabItem Header="មេកានិច">
+                        <Border BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}"
+                                        BorderThickness="0 0 0 0">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0 0 0 0">
+                                <DataGrid    AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              IsReadOnly="True"
+                              ItemsSource="{Binding CNCStudents}"
+                              SelectionMode="Single"
+                              SelectedItem="{Binding SelectedStudent, Mode=TwoWay}">
+                                    <!-- Move all DataGrid-specific styles into DataGrid.Resources to avoid designer FindAncestor issues -->
+                                    <DataGrid.Resources>
+                                        <!-- Row style that uses the converter -->
+                                        <Style TargetType="DataGridRow" x:Key="StudentRowStyle">
+                                            <Setter Property="Height" Value="40" />
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="Background">
+                                                <Setter.Value>
+                                                    <MultiBinding Converter="{StaticResource StudentRowBrushConverter}">
+                                                        <Binding Path="PhotoPath" />
+                                                        <Binding Path="FirstName" />
+                                                        <Binding Path="LastName" />
+                                                        <Binding Path="Gender" />
+                                                        <Binding Path="Skill" />
+                                                        <Binding Path="PhoneNumber" />
+                                                        <Binding Path="BirthVillage" />
+                                                        <Binding Path="BirthCommune" />
+                                                        <Binding Path="BirthDistrict" />
+                                                        <Binding Path="BirthProvince" />
+                                                        <Binding Path="FatherName" />
+                                                        <Binding Path="MotherName" />
+                                                        <Binding Path="FatherOccupation" />
+                                                        <Binding Path="MotherOccupation" />
+                                                        <Binding Path="Religion" />
+                                                        <Binding Path="ExamCenter" />
+                                                        <Binding Path="ExamDate" />
+                                                        <Binding Path="ExamTable" />
+                                                        <Binding Path="ExamRoom" />
+                                                        <Binding Path="FromSchool" />
+                                                        <Binding Path="StayType" />
+                                                        <Binding Path="SiblingsCount" />
+                                                    </MultiBinding>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Setter Property="ToolTip" Value="{Binding PhotoPath, StringFormat=Photo: {0}}" />
+                                        </Style>
+
+                                        <!-- Cell style placed here so RelativeSource/Ancestor (if later used) resolves correctly in designer -->
+                                        <Style TargetType="DataGridCell" x:Key="StudentGridCellStyle">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0,0,1,1" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" />
+                                        </Style>
+
+                                        <!--Data inside the grid styles-->
+                                        <Style TargetType="TextBlock" x:Key="StudentTextBlock">
+                                            <Setter Property="Padding" Value="10,6"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                            <Setter Property="FontSize" Value="14" />
+                                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}" Value="True">
+                                                    <Setter Property="FontWeight" Value="Bold"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </DataGrid.Resources>
+
+                                    <!-- Apply the row style (explicit key ensures designer/runtime picks it up from DataGrid.Resources) -->
+                                    <DataGrid.RowStyle>
+                                        <StaticResource ResourceKey="StudentRowStyle" />
+                                    </DataGrid.RowStyle>
+
+                                    <DataGrid.CellStyle>
+                                        <StaticResource ResourceKey="StudentGridCellStyle" />
+                                    </DataGrid.CellStyle>
+
+                                    <DataGrid.ColumnHeaderStyle>
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="FontFamily" Value="{StaticResource NotoSansKhmer}" />
+                                            <Setter Property="FontSize" Value="14" />
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                            <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Secondary}" />
+                                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" />
+                                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" />
+                                            <Setter Property="BorderThickness" Value="0,0,1,1" />
+                                            <Setter Property="Padding" Value="5" />
+                                        </Style>
+                                    </DataGrid.ColumnHeaderStyle>
+
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខសម្គាល់" Binding="{Binding Id, StringFormat=DBS{0:000}}" Width="120" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="គោត្តនាម និងនាម" Binding="{Binding FullName}" Width="200" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ភេទ" Binding="{Binding Gender, Converter={StaticResource EnumToDescriptionConverter}}" Width="80" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="កាលបរិច្ឆេទ​កំណើត" Binding="{Binding DateOfBirth}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="អាយុ" Binding="{Binding Age, StringFormat=' {0} ឆ្នាំ'}" Width="80" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ជំនាញ" Binding="{Binding Skill, Converter={StaticResource EnumToDescriptionConverter}}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="សាសនា" Binding="{Binding Religion}" Width="120" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="មណ្ឌលប្រឡង" Binding="{Binding ExamCenter}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="កាលបរិច្ឆេទប្រឡង" Binding="{Binding ExamDate}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខតុ" Binding="{Binding ExamTable}" Width="100" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខបន្ទប់" Binding="{Binding ExamRoom}" Width="100" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ឈ្មោះសាលារៀន" Binding="{Binding FromSchool}" Width="220" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ភូមិកំណើត" Binding="{Binding BirthVillage}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ឃុំកំណើត" Binding="{Binding BirthCommune}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ស្រុកកំណើត" Binding="{Binding BirthDistrict}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ខេត្តកំណើត" Binding="{Binding BirthProvince}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ឈ្មោះឪពុក" Binding="{Binding FatherName}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="មុខរបរឪពុក" Binding="{Binding FatherOccupation}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ឈ្មោះម្ដាយ" Binding="{Binding MotherName}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="មុខរបរម្ដាយ" Binding="{Binding MotherOccupation}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="បងប្អូន" Binding="{Binding SiblingsCount, StringFormat=' {0} នាក់'}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ការស្នាក់នៅ" Binding="{Binding StayType, Converter={StaticResource EnumToDescriptionConverter}}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខទូរស័ព្ទ" Binding="{Binding PhoneNumber}" Width="150" />
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ផ្សេងៗ" Binding="{Binding OtherInfo}" Width="150" />
+                                        <!-- Hidden helpers for converter / selection -->
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="PhotoPath" Binding="{Binding PhotoPath}" Width="0" Visibility="Hidden"/>
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="FirstName" Binding="{Binding FirstName}" Width="0" Visibility="Hidden"/>
+                                        <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="LastName" Binding="{Binding LastName}" Width="0" Visibility="Hidden"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </ScrollViewer>
+                        </Border>
+                    </TabItem>
+                </TabControl>
+            </Border>
+            
+            <!--Summary Data Section-->
+            <Grid Grid.Row="1" Margin="10 0 0 10" HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal" TextElement.FontSize="16">
+                    <TextBlock Text="{Binding CurrentTabHeader, StringFormat=' ចំនួនសិស្ស {0} ', FallbackValue='ចំនួនសិស្ស គ្រប់ជំនាញ '}"/>
+                    <TextBlock Text="{Binding CurrentTabStudentCount, StringFormat=' សរុបមាន {0} នាក់ ', FallbackValue=សរុបមាន ២៨ នាក់}"/>
+                    <TextBlock Text="{Binding CurrentTabFemaleStudentCount, StringFormat=' នៅក្នុងនោះមានស្រី {0} នាក់', FallbackValue=នៅក្នុងនោះមានស្រី ១៧ នាក់}"/>
+                </StackPanel>
+            </Grid>
+
+            <!--Buttons Section-->
+            <Grid Grid.Row="2" Margin="10 0" HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <!--Generate Report Button-->
+                <Button Height="40" 
+                            VerticalAlignment="Top"
+                            Command="{Binding GenerateReportCommand}"
+                            HorizontalAlignment="Left"
+                            Grid.Column="0">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="FileExport"/>
+                        <TextBlock Text="Generate Report" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <StackPanel Grid.Column="1">
+                    <WrapPanel Height="40" HorizontalAlignment="Right" Margin="0 0 0 10">
+                        <TextBlock Text="កាលបរិច្ឆេទរបាយការណ៍: " 
+                                            FontSize="16"
+                                           VerticalAlignment="Center" 
+                                           Margin="0,0,15,0"
+                                           Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+                    
+                        <!--Report Date Picker-->
+                        <DatePicker Width="200"
+                                            Height="40" 
+                                            VerticalAlignment="Center"
+                                            SelectedDate="{Binding ReportDate}"
+                                            x:Name="ReportDate"
+                                            VerticalContentAlignment="Center"
+                                            FontSize="16"/>
+                    </WrapPanel>
+                    <WrapPanel Height="40" HorizontalAlignment="Right" Margin="0 0 0 10">
+                        <TextBlock Text="ឆ្នាំសិក្សា: " 
+                                            FontSize="16"
+                                           VerticalAlignment="Center" 
+                                           Margin="0,0,15,0"
+                                           Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+
+                        <!--Report Date Picker-->
+                        <TextBox Width="200"
+                                            Height="40" 
+                                            VerticalAlignment="Center"
+                                            Text="{Binding StudyYear, FallbackValue='2025-2026'}"
+                                            FontSize="16"
+                                            x:Name="StudyYearInput"
+                                            VerticalContentAlignment="Center"/>
+                    </WrapPanel>
+                </StackPanel>
+            </Grid>
+        </Grid>
     </Grid>
 </UserControl>
