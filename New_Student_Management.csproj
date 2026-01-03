@@ -38,6 +38,7 @@
     <None Remove="Sources\Images\Computer_Students.jpg" />
     <None Remove="Sources\Images\dbslogo_filled.png" />
     <None Remove="Sources\Spreadsheets\candidate_list.xlsx" />
+    <None Remove="Sources\Spreadsheets\department_data.xlsm" />
   </ItemGroup>
 
   <ItemGroup>
@@ -69,7 +70,7 @@
     <Content Include="Sources\Spreadsheets\candidate_list.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Sources\Spreadsheets\department_data.xlsx">
+    <Content Include="Sources\Spreadsheets\department_data.xlsm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
