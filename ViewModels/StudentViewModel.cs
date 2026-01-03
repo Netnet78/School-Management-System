@@ -1,13 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Student_Management.Helpers;
-using Student_Management.Models;
-using Student_Management.Services;
+using New_Student_Management.Helpers;
+using New_Student_Management.Models;
+using New_Student_Management.Services;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Data;
 
-namespace Student_Management.ViewModels
+namespace New_Student_Management.ViewModels
 {
     public enum DataStateFilterOptions
     {
@@ -23,14 +23,13 @@ namespace Student_Management.ViewModels
         MissingDataAndPicture,
     }
 
-    public partial class StudentViewModel : ObservableObject
+    public partial class StudentViewModel : ObservableObject, IAsyncLoadable
     {
         private readonly IStudentRepository _repository;
         public StudentViewModel(IStudentRepository repository)
         {
             _repository = repository;
             ToggleLatinNames = false;
-            _ = LoadStudentsAsync();
         }
 
         // Loading states
@@ -39,7 +38,7 @@ namespace Student_Management.ViewModels
 
         // MVVM Bindings
         [ObservableProperty]
-        private List<Student> _allStudents = new List<Student>();
+        private List<Student> _allStudents = [];
         private ICollectionView? _studentsView;
         public ICollectionView? Students
         {
@@ -73,7 +72,6 @@ namespace Student_Management.ViewModels
         // ទិន្នន័យសម្រាប់ Combo box ​ច្រោះទិន្នន័យតាម​ស្ថានភាពទិន្នន័យ
         public IEnumerable<object> DataStateFilterItems
         { get; } = Enum.GetValues<DataStateFilterOptions>()
-            .Cast<DataStateFilterOptions>()
             .Select(s => new { Value = s, Description = $"{EnumExtensions.GetDescription(s)}"});
         // ច្រោះទិន្នន័យតាម​ការស្វែងរក
         private string _studentSearch = string.Empty;
@@ -112,7 +110,6 @@ namespace Student_Management.ViewModels
         // ទិន្នន័យសម្រាប់ Combo box ​ច្រោះទិន្នន័យតាម​ការស្វែងរក
         public IEnumerable<object> StudentFieldItems { get; } =
             Enum.GetValues<StudentField>()
-                .Cast<StudentField>()
                 .Where(f =>
                 {
                     if (IgnoredFields.Contains(f))
@@ -202,6 +199,12 @@ namespace Student_Management.ViewModels
         private async Task SaveStudentAsync()
         {
             await _repository.SaveStudentAsync();
+        }
+
+        // Initial async load
+        public async Task LoadAsync()
+        {
+            await LoadStudentsAsync();
         }
 
         // Helper functions

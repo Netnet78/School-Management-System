@@ -1,12 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
-using Student_Management.Helpers;
-using Student_Management.Models;
-using Student_Management.Services;
+using New_Student_Management.Helpers;
+using New_Student_Management.Models;
+using New_Student_Management.Services;
 using System.Windows;
 
-namespace Student_Management.ViewModels
+namespace New_Student_Management.ViewModels
 {
     public partial class InsertStudentViewModel : ObservableObject
     {
@@ -24,17 +24,14 @@ namespace Student_Management.ViewModels
         // Expose enum options as value & description
         public IEnumerable<object> GenderOptions
         { get; } = Enum.GetValues<StudentGender>()
-            .Cast<StudentGender>()
             .Select(g => new { Value = g, Description = EnumExtensions.GetDescription(g) });
 
         public IEnumerable<object> StayTypeOptions
         { get; } = Enum.GetValues<StudentStayType>()
-            .Cast<StudentStayType>()
             .Select(s => new { Value = s, Description = EnumExtensions.GetDescription(s) });
 
         public IEnumerable<object> SkillOptions
         { get; } = Enum.GetValues<StudentSkill>()
-            .Cast<StudentSkill>()
             .Select(s => new { Value = s, Description = EnumExtensions.GetDescription(s) });
 
         public InsertStudentViewModel(IStudentRepository repo)
