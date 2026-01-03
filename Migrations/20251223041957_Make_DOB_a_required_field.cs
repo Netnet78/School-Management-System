@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Student_Management.Migrations
+namespace New_Student_Management.Migrations
 {
     /// <inheritdoc />
     public partial class Make_DOB_a_required_field : Migration

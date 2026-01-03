@@ -1,9 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Student_Management.Models;
-using Student_Management.Services;
+using New_Student_Management.Models;
+using New_Student_Management.Services;
 
-namespace Student_Management.ViewModels
+namespace New_Student_Management.ViewModels
 {
     public partial class LoginViewModel : ObservableObject
     {

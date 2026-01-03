@@ -5,7 +5,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace Student_Management.Converters
+namespace New_Student_Management.Converters
 {
     public class PhotoPathToImageSourceConverter : IValueConverter
     {

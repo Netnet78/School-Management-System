@@ -1,5 +1,5 @@
 ﻿
-namespace Student_Management.Helpers
+namespace New_Student_Management.Helpers
 {
     public interface IKhmerLunarDate
     {

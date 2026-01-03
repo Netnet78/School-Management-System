@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
 
-namespace Student_Management.Helpers
+namespace New_Student_Management.Helpers
 {
     public static class EnumExtensions
     {

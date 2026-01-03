@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Student_Management.Services
+namespace New_Student_Management.Services
 {
     public interface IUserSessionService : INotifyPropertyChanged
     {

@@ -5,7 +5,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Data;
 
-namespace Student_Management.Converters
+namespace New_Student_Management.Converters
 {
     /// <summary>
     /// 

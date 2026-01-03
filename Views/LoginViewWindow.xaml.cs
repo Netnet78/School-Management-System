@@ -1,4 +1,4 @@
-﻿using Student_Management.ViewModels;
+﻿using New_Student_Management.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,7 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace Student_Management.Views
+namespace New_Student_Management.Views
 {
     /// <summary>
     /// Interaction logic for LoginViewWindow.xaml

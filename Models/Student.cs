@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Student_Management.Models
+namespace New_Student_Management.Models
 {
     public enum StudentStayType
     {

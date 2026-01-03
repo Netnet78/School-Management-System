@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace Student_Management.Helpers
+namespace New_Student_Management.Helpers
 {
     public static class EnglishToKhmer
     {

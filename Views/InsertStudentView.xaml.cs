@@ -11,7 +11,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Student_Management.Views
+namespace New_Student_Management.Views
 {
     /// <summary>
     /// Interaction logic for InsertStudentView.xaml

@@ -1,7 +1,7 @@
-﻿using Student_Management.ViewModels;
+﻿using New_Student_Management.ViewModels;
 using System.Windows;
 
-namespace Student_Management.Views.Wizards
+namespace New_Student_Management.Views.Wizards
 {
     /// <summary>
     /// Interaction logic for EditStudentWizard.xaml

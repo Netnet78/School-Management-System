@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace Student_Management.Converters
+namespace New_Student_Management.Converters
 {
     /// <summary>
     /// Converts null values to Boolean values and vice versa for data binding scenarios.

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Student_Management.Migrations
+namespace New_Student_Management.Migrations
 {
     /// <inheritdoc />
     public partial class UpdatedDOB_CreatedAt : Migration

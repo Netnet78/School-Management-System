@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Student_Management.Migrations
+namespace New_Student_Management.Migrations
 {
     /// <inheritdoc />
     public partial class Updated_Exam_and_Room_type : Migration

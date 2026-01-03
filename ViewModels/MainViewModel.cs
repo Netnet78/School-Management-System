@@ -1,17 +1,21 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
-using Student_Management.Services;
+using New_Student_Management.Helpers;
+using New_Student_Management.Services;
 using System.ComponentModel;
 using System.Windows;
 
-namespace Student_Management.ViewModels
+namespace New_Student_Management.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IUserSessionService _userSession;
+        private readonly Dictionary<Type, ObservableObject> _viewCache = new();
 
+        [ObservableProperty]
+        private bool isLoading;
         [ObservableProperty]
         private object? currentView;
         [ObservableProperty]
@@ -37,7 +41,7 @@ namespace Student_Management.ViewModels
                 _userSession.PropertyChanged += OnUserSessionChanged;
 
             // Default page
-            _ = SetView<StudentViewModel>();
+            _ = SetViewAsync<StudentViewModel>();
         }
 
         // MVVM Commands
@@ -45,30 +49,58 @@ namespace Student_Management.ViewModels
         private void ExitApplication()
         {
             bool result = MessageBox.Show("Are you sure you want to exit the application?", "Confirm Exit", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
-            if (result == false) return;
+            if (!result) return;
 
             ExitAction?.Invoke();
         }
         [RelayCommand]
         private async Task ShowTableViewAsync()
         {
-            await SetView<StudentViewModel>();
+            await SetViewAsync<StudentViewModel>();
         }
         [RelayCommand]
         private async Task ShowInsertViewAsync()
-        { await SetView<InsertStudentViewModel>(); }
+        {
+            await SetViewAsync<InsertStudentViewModel>(); 
+        }
 
         [RelayCommand]
         private async Task ShowReportViewAsync()
-        { await SetView<ReportViewModel>(); }
+        {
+            await SetViewAsync<ReportViewModel>();
+        }
 
         // Utilities
-        private async Task SetView<TViewModel>() where TViewModel : ObservableObject
+        private async Task SetViewAsync<TViewModel>() where TViewModel : ObservableObject
         {
-            await Task.Run(() =>
+            IsLoading = true;
+
+            try
             {
-                CurrentView = _serviceProvider.GetRequiredService<TViewModel>();
-            });
+                if (!_viewCache.TryGetValue(typeof(TViewModel), out var vm))
+                {
+                    vm = _serviceProvider.GetRequiredService<TViewModel>();
+                    _viewCache[typeof(TViewModel)] = vm;
+
+                    // Load once only
+                    if (vm is IAsyncLoadable loadable)
+                    {
+                        await loadable.LoadAsync();
+                    }
+                }
+
+                // Switch view instantly
+                CurrentView = vm;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                IsLoading = false;
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
         // User session change handler
         private void OnUserSessionChanged(object? sender, PropertyChangedEventArgs e)
