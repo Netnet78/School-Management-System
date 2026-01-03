@@ -1,7 +1,7 @@
-﻿using Student_Management.ViewModels;
+﻿using New_Student_Management.ViewModels;
 using System.Windows;
 
-namespace Student_Management
+namespace New_Student_Management
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

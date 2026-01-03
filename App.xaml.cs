@@ -1,14 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Student_Management.Data;
-using Student_Management.Models;
-using Student_Management.Services;
-using Student_Management.ViewModels;
-using Student_Management.Views;
-using Student_Management.Views.Wizards;
+using New_Student_Management.Data;
+using New_Student_Management.Models;
+using New_Student_Management.Services;
+using New_Student_Management.ViewModels;
+using New_Student_Management.Views;
+using New_Student_Management.Views.Wizards;
 using System.Windows;
 
-namespace Student_Management
+namespace New_Student_Management
 {
     /// <summary>
     /// Interaction logic for App.xaml
@@ -85,18 +85,6 @@ namespace Student_Management
             //    return;
             //}
             mainWindow.Show();
-
-            //DateTime dateTime = new(2009, 2, 9);
-
-            //Student student = new()
-            //{
-            //    LastName = "ស៊ី",
-            //    FirstName = "សុផានិត",
-            //    DateOfBirth = DateOnly.FromDateTime(dateTime),
-            //    Gender = "ប្រុស",
-            //    Skill = "កុំព្យូទ័រ",
-            //    Religion = "ពុទ្ធសាសនា",
-            //};
 
             //IStudentRepository studentRepository = ServiceProvider.GetRequiredService<IStudentRepository>();
             //studentRepository.AddStudentAsync(student).ConfigureAwait(false);
