@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace Student_Management.Converters
+namespace New_Student_Management.Converters
 {
     /// <summary>
     /// Converts an integer value to a Visibility value based on whether it equals a specified parameter. Intended for

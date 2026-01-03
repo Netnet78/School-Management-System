@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Student_Management.Migrations
+namespace New_Student_Management.Migrations
 {
     /// <inheritdoc />
     public partial class Added_Enums_to_Gender_and_StayType_and_Added_SiblingsCount : Migration

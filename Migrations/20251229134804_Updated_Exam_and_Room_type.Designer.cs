@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Student_Management.Data;
+using New_Student_Management.Data;
 
 #nullable disable
 
-namespace Student_Management.Migrations
+namespace New_Student_Management.Migrations
 {
     [DbContext(typeof(StudentDbContext))]
     [Migration("20251229134804_Updated_Exam_and_Room_type")]

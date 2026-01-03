@@ -4,7 +4,7 @@ using System.Linq;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace Student_Management.Converters
+namespace New_Student_Management.Converters
 {
     // MultiValueConverter that inspects Student properties and returns a background Brush
     // Values expected (order): PhotoPath, FirstName, LastName, Gender, Skill,

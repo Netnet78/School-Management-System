@@ -1,13 +1,14 @@
 ﻿using New_Student_Management.Models;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Text;
 
 namespace New_Student_Management.Helpers
 {
-    public static class DataValidation
+    public class DataGridTabConstructor<T>
     {
 
+        public required string Header { get; set; }
+        public required IEnumerable<T> Data { get; init; }
     }
 }

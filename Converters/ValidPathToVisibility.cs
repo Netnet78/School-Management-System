@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Data;
 
-namespace Student_Management.Converters
+namespace New_Student_Management.Converters
 {
     /// <summary>
     /// Provides a value converter that returns a visibility value based on whether a specified file path exists.

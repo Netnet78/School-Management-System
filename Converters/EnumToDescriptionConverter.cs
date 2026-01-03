@@ -1,7 +1,7 @@
-﻿using Student_Management.Helpers;
+﻿using New_Student_Management.Helpers;
 using System.Windows.Data;
 
-namespace Student_Management.Converters
+namespace New_Student_Management.Converters
 {
     public class EnumToDescriptionConverter : IValueConverter
     {

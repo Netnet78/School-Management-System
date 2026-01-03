@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 
-namespace Student_Management.Helpers
+namespace New_Student_Management.Helpers
 {
     public static class PasswordHelper
     {

@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Student_Management.Data;
+using New_Student_Management.Data;
 
 #nullable disable
 
-namespace Student_Management.Migrations
+namespace New_Student_Management.Migrations
 {
     [DbContext(typeof(StudentDbContext))]
     partial class StudentDbContextModelSnapshot : ModelSnapshot

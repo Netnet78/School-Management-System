@@ -1,7 +1,7 @@
-﻿using Student_Management.Models;
+﻿using New_Student_Management.Models;
 using System.Reflection;
 
-namespace Student_Management.Services
+namespace New_Student_Management.Services
 {
     public static class StudentValidationService
     {

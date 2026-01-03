@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Student_Management.Data;
-using Student_Management.Models;
+using New_Student_Management.Data;
+using New_Student_Management.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Student_Management.Services
+namespace New_Student_Management.Services
 {
     public interface IUserRepository
     {
