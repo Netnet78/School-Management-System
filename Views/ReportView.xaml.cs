@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace Student_Management.Views
+namespace New_Student_Management.Views
 {
     /// <summary>
     /// Interaction logic for ReportView.xaml
