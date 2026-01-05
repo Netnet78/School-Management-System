@@ -3,9 +3,6 @@ using ClosedXML.Excel.Drawings;
 using Microsoft.Win32;
 using New_Student_Management.Helpers;
 using New_Student_Management.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Windows;
 
 namespace New_Student_Management.Reports
@@ -25,6 +22,7 @@ namespace New_Student_Management.Reports
         }
         public string TemplatePath { get; set; } = @".\Sources\Spreadsheets\department_data.xlsm";
         public string OutputPath { get; private set; } = @"";
+        public string FileName { get; private set; } = @"";
 
         public ReturnStatus GenerateReport()
         {
@@ -65,6 +63,7 @@ namespace New_Student_Management.Reports
             if (saveFileDialog.ShowDialog() == true)
             {
                 OutputPath = System.IO.Path.GetDirectoryName(saveFileDialog.FileName)!;
+                FileName = System.IO.Path.GetFileName(saveFileDialog.FileName);
                 try
                 {
                     workbook.SaveAs(saveFileDialog.FileName);
@@ -135,7 +134,14 @@ namespace New_Student_Management.Reports
             ws.Cell(newStartRow, 13).SetValue(student.MotherName);
             ws.Cell(newStartRow, 14).SetValue(student.MotherOccupation);
             // Siblings
-            ws.Cell(newStartRow, 15).SetValue(student.SiblingsCount);
+            if (student.SiblingsCount > 0)
+            {
+                ws.Cell(newStartRow, 15).SetValue(student.SiblingsCount);
+            }
+            else
+            {
+                ws.Cell(newStartRow, 15).SetValue("កូនទោល");
+            }
             // Religion
             ws.Cell(newStartRow, 16).SetValue(student.Religion);
             // Stay type
