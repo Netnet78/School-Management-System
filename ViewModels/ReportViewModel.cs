@@ -38,7 +38,6 @@ namespace New_Student_Management.ViewModels
         [ObservableProperty]
         private string _studyYear = "2025-2026";
 
-
         public ReportViewModel(IStudentRepository studentRepository)
         {
             _studentRepository = studentRepository;
@@ -92,7 +91,7 @@ namespace New_Student_Management.ViewModels
                 MessageBoxResult result = MessageBox.Show("Report generated successfully!\n Do you wish to see the files?", "Success", MessageBoxButton.YesNo, MessageBoxImage.Information);
                 if (result.Equals(MessageBoxResult.Yes))
                 {
-                    Process.Start("explorer.exe", departmentReport.OutputPath);
+                    Process.Start("explorer.exe", $"{departmentReport.OutputPath}\\{departmentReport.FileName}");
                 }
             }
         }
@@ -109,7 +108,7 @@ namespace New_Student_Management.ViewModels
                 MessageBoxResult result = MessageBox.Show("Report generated successfully!\n Do you wish to see the files?", "Success", MessageBoxButton.YesNo, MessageBoxImage.Information);
                 if (result.Equals(MessageBoxResult.Yes))
                 {
-                    Process.Start("explorer.exe", candidateReport.OutputPath);
+                    Process.Start("explorer.exe", $"{candidateReport.OutputPath}\\{candidateReport.FileName}");
                 }
             }
 

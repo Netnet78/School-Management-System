@@ -11,7 +11,6 @@ namespace New_Student_Management.ViewModels
     public partial class EditStudentViewModel : ObservableObject
     {
         private readonly IStudentRepository _repo;
-        private readonly Student _original;
         public Action<bool>? RequestClose { get; set; }
 
         [ObservableProperty]
@@ -26,7 +25,6 @@ namespace New_Student_Management.ViewModels
         public EditStudentViewModel(Student studentToEdit, IStudentRepository repository)
         {
             _repo = repository;
-            _original = studentToEdit ?? throw new ArgumentNullException(nameof(studentToEdit));
             // create an editable copy so we only persist on Save
             EditedStudent = Clone(studentToEdit);
             CurrentPhotoPath = EditedStudent.PhotoPath;
@@ -57,6 +55,8 @@ namespace New_Student_Management.ViewModels
                 }
                 else
                 {
+                    EditedStudent.LatinFirstName = EditedStudent.LatinFirstName.ToUpper();
+                    EditedStudent.LatinLastName = EditedStudent.LatinFirstName.ToUpper();
                     await _repo.UpdateStudentAsync(EditedStudent);
                 }
                 RequestClose?.Invoke(true);
@@ -94,17 +94,14 @@ namespace New_Student_Management.ViewModels
         // Expose enum options as value & description
         public IEnumerable<object> GenderOptions
         { get;  } = Enum.GetValues<StudentGender>()
-            .Cast<StudentGender>()
             .Select(g => new {Value = g, Description = EnumExtensions .GetDescription(g)});
 
         public IEnumerable<object> StayTypeOptions
         { get; } = Enum.GetValues<StudentStayType>()
-            .Cast<StudentStayType>()
             .Select(s => new { Value = s, Description = EnumExtensions.GetDescription(s)});
 
         public IEnumerable<object> SkillOptions
         { get; } = Enum.GetValues<StudentSkill>()
-            .Cast<StudentSkill>()
             .Select(s => new { Value = s, Description = EnumExtensions.GetDescription(s)});
     }
 }

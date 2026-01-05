@@ -14,6 +14,7 @@ namespace New_Student_Management.Reports
         private readonly int _studyYearEnd;
         public string TemplatePath { get; set; } = @".\Sources\Spreadsheets\candidate_list.xlsx";
         public string OutputPath { get; private set; } = @"";
+        public string FileName { get; private set; } = @"";
         public CandidateReport(List<Student> students, DateTime? date, int? startYear, int? endYear)
         {
             _students = students;
@@ -53,6 +54,8 @@ namespace New_Student_Management.Reports
             if (saveFileDialog.ShowDialog() == true)
             {
                 OutputPath = System.IO.Path.GetDirectoryName(saveFileDialog.FileName)!;
+                FileName = System.IO.Path.GetFileName(saveFileDialog.FileName);
+
                 try
                 {
                     workbook.SaveAs(saveFileDialog.FileName);

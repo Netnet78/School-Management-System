@@ -36,5 +36,10 @@ namespace New_Student_Management.Views
                 }
             };
         }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
     }
 }

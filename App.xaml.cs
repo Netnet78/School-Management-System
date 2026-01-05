@@ -72,23 +72,19 @@ namespace New_Student_Management
 
             // create a fresh login window
             var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-            //var loginWindow = ServiceProvider.GetRequiredService<LoginViewWindow>();
-            //bool? loginResult = loginWindow.ShowDialog();
+            var loginWindow = ServiceProvider.GetRequiredService<LoginViewWindow>();
+            bool? loginResult = loginWindow.ShowDialog();
 
-            //if (loginResult == true)
-            //{
-            //    mainWindow.Show();
-            //}
-            //else
-            //{
-            //    Shutdown();
-            //    return;
-            //}
+            if (loginResult == true)
+            {
+                mainWindow.Show();
+            }
+            else
+            {
+                Shutdown();
+                return;
+            }
             mainWindow.Show();
-
-            //IStudentRepository studentRepository = ServiceProvider.GetRequiredService<IStudentRepository>();
-            //studentRepository.AddStudentAsync(student).ConfigureAwait(false);
-
             base.OnStartup(e);
         }
 

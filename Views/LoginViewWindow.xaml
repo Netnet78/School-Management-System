@@ -13,57 +13,136 @@
         Title="Login" Height="600" Width="850"
         WindowStartupLocation="CenterScreen">
 
+    <Window.Resources>
+        <!-- Accessible, larger typography for the login form -->
+        <Style x:Key="LabelTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0 0 0 6"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="InputStyle" TargetType="Control">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Padding" Value="8,6"/>
+        </Style>
+
+        <Style x:Key="TitleTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="28"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0 0 0 20"/>
+        </Style>
+
+        <!-- Card-like container background -->
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFFFF"/>
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="12" ShadowDepth="2" Opacity="0.15"/>
+    </Window.Resources>
+
     <Grid Margin="40">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Image Grid.Column="0" Margin="0 0 30 0" Source="/Sources/Images/Computer_Students.jpg"/>
+        <!-- Left image scaled and constrained -->
+        <Border Grid.Column="0" Margin="0 0 30 0" CornerRadius="8" Background="#FFF0F0F0">
+            <Image Source="/Sources/Images/Computer_Students.jpg"
+                   Width="360"
+                   Height="480"
+                   Stretch="UniformToFill"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   SnapsToDevicePixels="True"/>
+        </Border>
 
-        <Grid Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+        <!-- Right: card containing form -->
+        <Grid Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Width="340">
+            <Border Background="{StaticResource CardBackgroundBrush}"
+                    CornerRadius="8"
+                    Padding="28"
+                    Effect="{StaticResource CardShadow}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-            <!-- Title -->
-            <TextBlock Text="Student Management - Login"
-                       FontSize="20"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center"
-                       Margin="0 0 0 20"
-                       Grid.Row="0"/>
+                    <!-- Title -->
+                    <TextBlock Grid.Row="0"
+                               Text="Student Management"
+                               Style="{StaticResource TitleTextStyle}"/>
 
-            <!-- Username -->
-            <StackPanel Grid.Row="1" Margin="0 10 0 0" Orientation="Horizontal" Height="25" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="Username:" TextAlignment="Left" VerticalAlignment="Center"/>
-                <TextBox Width="250"
-                         Margin="10 0 0 0"
-                         Text="{Binding Username, UpdateSourceTrigger=PropertyChanged, TargetNullValue='', FallbackValue='', Mode=TwoWay}"/>
-            </StackPanel>
+                    <TextBlock Grid.Row="1"
+                               Text="Please sign in to continue"
+                               FontSize="14"
+                               HorizontalAlignment="Center"
+                               Margin="0 0 0 14"/>
 
-            <!-- Password -->
-            <StackPanel Grid.Row="2" Margin="0 10 0 0" Orientation="Horizontal" Height="25" HorizontalAlignment="Center">
-                <TextBlock Text="Password:" VerticalAlignment="Center"/>
-                <PasswordBox Width="250"
-                             Margin="10 0 0 0"
-                             helpers:PasswordHelper.BindPassword="True"
-                             helpers:PasswordHelper.Password="{Binding Password, Mode=TwoWay}"/>
-            </StackPanel>
+                    <!-- Form -->
+                    <StackPanel Grid.Row="2" Orientation="Vertical" Margin="0 4 0 0" >
 
-            <!-- Login Button -->
-            <Button Grid.Row="3"
-                    Content="Login"
-                    Height="35"
-                    Width="100"
-                    HorizontalAlignment="Center"
-                    Margin="0 20 0 0"
-                    Name="LoginButton"
-                    Command="{Binding LoginCommand}"/>
+                        <!-- Username -->
+                        <StackPanel Orientation="Vertical" Margin="0 6 0 6">
+                            <TextBlock Text="Username" Style="{StaticResource LabelTextStyle}"/>
+                            <TextBox x:Name="UsernameTextBox"
+                                     Style="{StaticResource InputStyle}"
+                                     Width="280"
+                                     Text="{Binding Username, UpdateSourceTrigger=PropertyChanged, TargetNullValue='', FallbackValue='', Mode=TwoWay}"
+                                     HorizontalAlignment="Left"
+                                     VerticalContentAlignment="Center"
+                                     AutomationProperties.Name="Username"/>
+                        </StackPanel>
 
+                        <!-- Password -->
+                        <StackPanel Orientation="Vertical" Margin="0 6 0 6">
+                            <TextBlock Text="Password" Style="{StaticResource LabelTextStyle}"/>
+                            <PasswordBox Width="280"
+                                         Style="{StaticResource InputStyle}"
+                                         helpers:PasswordHelper.BindPassword="True"
+                                         helpers:PasswordHelper.Password="{Binding Password, Mode=TwoWay}"
+                                         HorizontalAlignment="Left"
+                                         VerticalContentAlignment="Center"
+                                         AutomationProperties.Name="Password"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Action buttons -->
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 18 0 0">
+                        <Button x:Name="LoginButton"
+                                Content="Login"
+                                Width="160"
+                                Height="42"
+                                FontSize="16"
+                                Command="{Binding LoginCommand}"
+                                IsDefault="True"
+                                Background="#FF1976D2"
+                                Foreground="White"
+                                BorderThickness="0"
+                                VerticalAlignment="Center"/>
+                        <Button Content="Cancel"
+                                x:Name="CancelButton"
+                                Width="120"
+                                Height="42"
+                                FontSize="16"
+                                IsCancel="True"
+                                Click="CancelButton_Click"
+                                Margin="20 0 0 0"/>
+                    </StackPanel>
+
+                    <!-- Small footnote / version -->
+                    <TextBlock Grid.Row="4"
+                               Text="Contact admin if you have trouble signing in."
+                               FontSize="12"
+                               Foreground="#FF666666"
+                               HorizontalAlignment="Center"
+                               Margin="0 12 0 0"/>
+                </Grid>
+            </Border>
         </Grid>
     </Grid>
 </Window>
