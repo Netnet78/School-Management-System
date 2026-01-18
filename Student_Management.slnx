@@ -1,3 +1,11 @@
 <Solution>
-  <Project Path="New_Student_Management.csproj" />
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+  </Folder>
+  <Project Path="Application/School_Management.Application/School_Management.Application.csproj" Id="188a4bfa-f8b6-4c48-a216-60242ce214c3" />
+  <Project Path="Core/School_Management.Core/School_Management.Core.csproj" Id="080fa0a4-ea1f-4f16-8f28-60cd22d7f8e5" />
+  <Project Path="Infrastructure/School_Management.Infrastructure/School_Management.Infrastructure.csproj" Id="7fbd1ee1-8d49-4734-91fb-824f1cb59d03" />
+  <Project Path="Presentation/New_Student_Management/New_Student_Management.csproj" />
+  <Project Path="Presentation/School_Management/School_Management.Presentation.Shared/School_Management.Presentation.Shared.csproj" Id="eaa22539-5ac0-43bb-a774-a2204a7e4a7a" />
+  <Project Path="Presentation/School_Management/School_Management.Presentation/School_Management.Presentation.csproj" Id="c5528bca-7709-4c47-9c86-7da1f7253996" />
 </Solution>
