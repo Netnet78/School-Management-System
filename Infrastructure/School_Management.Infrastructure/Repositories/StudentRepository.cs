@@ -16,9 +16,9 @@ namespace School_Management.Infrastructure.Repositories
 
     public class StudentRepository : IStudentRepository
     {
-        private readonly StudentDbContext _context;
+        private readonly SchoolDbContext _context;
 
-        public StudentRepository(StudentDbContext context)
+        public StudentRepository(SchoolDbContext context)
         {
             _context = context;
         }

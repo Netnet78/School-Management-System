@@ -68,40 +68,15 @@ namespace School_Management.Presentation.Shared.Helpers
                 "ចេត្រ", "ពិសាខ", "ជេស្ឋ", "អាសាឍ", "ស្រាពណ៍", "ភទ្របទ",
                 "អស្សុជ", "កត្តិក", "មិគសិរ", "បុស្ស", "មាឃ", "ផល្គុន"
             ];
-            Dictionary<int, string> khDayString = new()
-            {
-                { 1,  "១កើត" },
-                { 2,  "២កើត" },
-                { 3,  "៣កើត" },
-                { 4,  "៤កើត" },
-                { 5,  "៥កើត" },
-                { 6,  "៦កើត" },
-                { 7,  "៧កើត" },
-                { 8,  "៨កើត" },
-                { 9,  "៩កើត" },
-                { 10, "១០កើត" },
-                { 11, "១១កើត" },
-                { 12, "១២កើត" },
-                { 13, "១៣កើត" },
-                { 14, "១៤កើត" },
-                { 15, "១៥កើត" },
+            Dictionary<int, string> khDayString = new();
 
-                { 16, "១រោច" },
-                { 17, "២រោច" },
-                { 18, "៣រោច" },
-                { 19, "៤រោច" },
-                { 20, "៥រោច" },
-                { 21, "៦រោច" },
-                { 22, "៧រោច" },
-                { 23, "៨រោច" },
-                { 24, "៩រោច" },
-                { 25, "១០រោច" },
-                { 26, "១១រោច" },
-                { 27, "១២រោច" },
-                { 28, "១៣រោច" },
-                { 29, "១៤រោច" },
-                { 30, "១៥រោច" }
-            };
+            for (int i = 1; i <= 30; i++)
+            {
+                string type = i <= 15 ? "កើត" : "រោច";
+                int day = i % (15 + 1);
+                int index = i <= 15 ? day : day + 1;
+                khDayString.Add(i, $"{index}{type}");
+            }
 
             // Convert to Julian Day Number
             int julianDay = (int)Math.Floor(date.ToJulianDay());
@@ -159,14 +134,6 @@ namespace School_Management.Presentation.Shared.Helpers
             string zodiacYear = GetKhmerZodiac(date);
             string stem = GetKhmerStem(date);
 
-            //return new()
-            //{
-            //    { "lunarDay", khDayString[lunarDay]},
-            //    {"lunarMonth", monthName },
-            //    {"lunarYear", $"{lunarYear}" },
-            //    {"zodiacYear", zodiacYear },
-            //    {"stem", stem },
-            //};
             return new KhmerLunarDate
             {
                 LunarDay = khDayString[lunarDay],

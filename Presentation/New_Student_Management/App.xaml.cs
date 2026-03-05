@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using School_Management.Infrastructure.Data;
 using School_Management.Application.Services;
 using School_Management.Infrastructure.Repositories;
+using School_Management.Presentation.Shared.States;
 using New_Student_Management.ViewModels;
 using New_Student_Management.Views;
 using New_Student_Management.Views.Wizards;
@@ -23,14 +23,15 @@ namespace New_Student_Management
             ServiceCollection services = new();
 
             // Register DbContext as singleton for WPF
-            services.AddDbContext<StudentDbContext>();
+            services.AddDbContext<SchoolDbContext>();
 
             // Register Repositories
             services.AddScoped<IStudentRepository, StudentRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
 
             // Register Services
-            services.AddSingleton<IUserSessionService, UserSessionService>();
+            services.AddSingleton<IUserSessionState, UserSessionState>();
+            services.AddSingleton<IUserValidationService, UserValidationService>();
 
             // Register ViewModels
             services.AddScoped<MainViewModel>();
@@ -72,18 +73,18 @@ namespace New_Student_Management
 
             // create a fresh login window
             var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-            var loginWindow = ServiceProvider.GetRequiredService<LoginViewWindow>();
-            bool? loginResult = loginWindow.ShowDialog();
+            //var loginWindow = ServiceProvider.GetRequiredService<LoginViewWindow>();
+            //bool? loginResult = loginWindow.ShowDialog();
 
-            if (loginResult == true)
-            {
-                mainWindow.Show();
-            }
-            else
-            {
-                Shutdown();
-                return;
-            }
+            //if (loginResult == true)
+            //{
+            //    mainWindow.Show();
+            //}
+            //else
+            //{
+            //    Shutdown();
+            //    return;
+            //}
             mainWindow.Show();
             base.OnStartup(e);
         }

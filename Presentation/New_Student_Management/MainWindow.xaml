@@ -19,6 +19,17 @@
     <Window.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverterReversed" IsReversed="True"/>
+        <Style x:Key="MenuBar" TargetType="{x:Type Grid}">
+            <Style.Resources>
+                <Storyboard x:Key="MenuBarAnimation">
+                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)">
+                        <EasingDoubleKeyFrame KeyTime="00:00:00" Value="0"/>
+                        <EasingDoubleKeyFrame KeyTime="00:00:01" Value="1"/>
+                    </DoubleAnimationUsingKeyFrames>
+                </Storyboard>
+            </Style.Resources>
+            <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Secondary}"/>
+        </Style>
     </Window.Resources>
     
     <Grid>
@@ -28,7 +39,7 @@
         </Grid.ColumnDefinitions>
         
         <!--Tab Menu-->
-        <Grid Grid.Column="0" Background="{DynamicResource MaterialDesign.Brush.Secondary}">
+        <Grid Style="{DynamicResource MenuBar}" Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="auto"/>

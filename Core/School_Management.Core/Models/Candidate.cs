@@ -13,19 +13,19 @@ namespace School_Management.Core.Models
 
         [Required]
         [Description("គោត្តនាម")]
-        public required string FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
 
         [Required]
         [Description("គោត្តនាម (ឡាតាំង)")]
-        public required string LatinFirstName { get; set; }
+        public string LatinFirstName { get; set; } = string.Empty;
 
         [Required]
         [Description("នាម")]
-        public required string LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
 
         [Required]
         [Description("នាម (ឡាតាំង)")]
-        public required string LatinLastName { get; set; }
+        public string LatinLastName { get; set; } = string.Empty;
 
         [Description("ឈ្មោះពេញ")]
         public string FullName => $"{LastName} {FirstName}";
@@ -35,11 +35,11 @@ namespace School_Management.Core.Models
 
         [Required]
         [Description("ភេទ")]
-        public required StudentGender Gender { get; set; }
+        public Gender Gender { get; set; }
 
         [Required]
         [Description("កាលបរិច្ឆេទកំណើត")]
-        public required DateOnly DateOfBirth { get; set; }
+        public DateOnly DateOfBirth { get; set; }
 
         [Description("អាយុ")]
         public int Age
@@ -55,7 +55,7 @@ namespace School_Management.Core.Models
 
         [Required]
         [Description("ជំនាញ")]
-        public required StudentSkill Skill { get; set; }
+        public StudentSkill Skill { get; set; }
 
         [Description("កាលបរិច្ឆេទបង្កើត")]
         public DateTime CreatedAt { get; set; }
@@ -124,5 +124,8 @@ namespace School_Management.Core.Models
 
         [Description("ព័ត៌មានផ្សេងៗ")]
         public string OtherInfo { get; set; } = "";
+
+        // One candidate can be a student (one to unique)
+        public Student? Student { get; set; } = null;
     }
 }

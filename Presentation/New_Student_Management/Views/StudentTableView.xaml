@@ -208,7 +208,6 @@
                                         </MultiBinding>
                                     </Setter.Value>
                                 </Setter>
-                                <Setter Property="ToolTip" Value="{Binding PhotoPath, StringFormat=Photo: {0}}" />
                             </Style>
 
                             <Style TargetType="DataGridCell" x:Key="StudentGridCellStyle">
@@ -272,7 +271,7 @@
                             <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="អាយុ" Binding="{Binding Age, StringFormat=' {0} ឆ្នាំ'}" Width="80" />
                             <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ជំនាញ" Binding="{Binding Skill, Converter={StaticResource EnumToDescriptionConverter}}" Width="150" />
                             <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="សាសនា" Binding="{Binding Religion}" Width="120" />
-                            <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="មណ្ឌលប្រឡង" Binding="{Binding ExamCenter}" Width="150" />
+                            <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="មណ្ឌលរឡងប្ប្រឡង" Binding="{Binding ExamCenter}" Width="150" />
                             <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="កាលបរិច្ឆេទប្រឡង" Binding="{Binding ExamDate}" Width="150" />
                             <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខតុ" Binding="{Binding ExamTable}" Width="100" />
                             <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខបន្ទប់" Binding="{Binding ExamRoom}" Width="100" />
@@ -346,7 +345,6 @@
                                         </MultiBinding>
                                     </Setter.Value>
                                 </Setter>
-                                <Setter Property="ToolTip" Value="{Binding PhotoPath, StringFormat=Photo: {0}}" />
                             </Style>
 
                             <Style TargetType="DataGridCell" x:Key="StudentGridCellStyle">
@@ -410,7 +408,7 @@
                             <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="អាយុ" Binding="{Binding Age, StringFormat=' {0} ឆ្នាំ'}" Width="80" />
                             <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ជំនាញ" Binding="{Binding Skill, Converter={StaticResource EnumToDescriptionConverter}}" Width="150" />
                             <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="សាសនា" Binding="{Binding Religion}" Width="120" />
-                            <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="មណ្ឌលប្រឡង" Binding="{Binding ExamCenter}" Width="150" />
+                            <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="មណ្ឌលរឡងប្ប្រឡង" Binding="{Binding ExamCenter}" Width="150" />
                             <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="កាលបរិច្ឆេទប្រឡង" Binding="{Binding ExamDate}" Width="150" />
                             <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខតុ" Binding="{Binding ExamTable}" Width="100" />
                             <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="លេខបន្ទប់" Binding="{Binding ExamRoom}" Width="100" />
@@ -453,13 +451,28 @@
                     </Grid.RowDefinitions>
                     <!--Picture, Name and ID-->
                     <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Grid.Row="0" >
-                        <Image Stretch="Uniform"
-                               Width="128" Height="128"
+                        <Border Width="128" 
+                               Height="128"
                                Margin="0 10 0 0"
+                               BorderThickness="2"
+                               BorderBrush="{DynamicResource MaterialDesign.Brush.Secondary}"
+                               Visibility="{Binding SelectedStudent.PhotoPath, Converter={StaticResource NullToVisibilityConverter}, FallbackValue=Collapsed}">
+                            <Image Stretch="Uniform"                               
                                SnapsToDevicePixels="True"
                                UseLayoutRounding="True"
                                RenderOptions.BitmapScalingMode="HighQuality"
                                Source="{Binding SelectedStudent.PhotoPath, Converter={StaticResource PhotoPathToImageSourceConverter}}"/>
+                        </Border>
+
+                        <Border Width="128" 
+                               Height="128"
+                               Margin="0 10 0 0"
+                               BorderThickness="2"
+                               BorderBrush="{DynamicResource MaterialDesign.Brush.Secondary}"
+                               Visibility="{Binding SelectedStudent.PhotoPath, Converter={StaticResource NullToVisibilityConverter}, FallbackValue=Visible, ConverterParameter='IsReversed'}">
+                            <materialDesign:PackIcon Kind="UserQuestion" Width="64" Height="64" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+
                         <TextBlock HorizontalAlignment="Center"
                                             FontSize="18"
                                             FontWeight="Bold"
@@ -557,7 +570,7 @@
                                 <TextBlock Text="ព័ត៌មានប្រឡង" FontWeight="Bold" Margin="0,8,0,4"/>
                                 <Rectangle Fill="White" Height="2" Width="220" HorizontalAlignment="Left" Margin="0 0 0 3"/>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="មណ្ឌល:"/>
+                                    <TextBlock Text="មណ្ឌលប្រឡង:"/>
                                     <TextBlock Text="{Binding SelectedStudent.ExamCenter}" Margin="10 0 0 0"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">

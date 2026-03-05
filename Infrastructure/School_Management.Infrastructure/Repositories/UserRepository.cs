@@ -7,19 +7,26 @@ namespace School_Management.Infrastructure.Repositories
     public interface IUserRepository
     {
         public Task CreateUserAsync(string username, string plainPassword, string role="User");
-        public Task<User?> ValidateUserAsync(string username, string password);
+        public Task<IEnumerable<User>> GetAllUsersAsync();
+        public Task<User?> GetUserAsync(int id);
+        public Task<User?> GetUserAsync(string name);
     }
 
     public class UserRepository : IUserRepository
     {
-        private readonly StudentDbContext _context;
+        private readonly SchoolDbContext _context;
 
-        public UserRepository(StudentDbContext context)
+        public UserRepository(SchoolDbContext context)
         {
             _context = context;
         }
 
-        public async Task CreateUserAsync(string username, string plainPassword, string role = "User")
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        {
+            return await _context.Users.ToListAsync();
+        }
+
+        public async Task CreateUserAsync(string username, string plainPassword, string role = "user")
         {
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(plainPassword);
 
@@ -27,22 +34,23 @@ namespace School_Management.Infrastructure.Repositories
             {
                 Username = username,
                 PasswordHash = hashedPassword,
-                Role = role
+                Role = await _context.Roles.FirstAsync(r => r.Name == role)
             };
 
             await _context.AddAsync(user);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<User?> ValidateUserAsync(string username, string password)
+        public async Task<User?> GetUserAsync(int id)
         {
-            User? user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-            if (user != null && BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
-            {
-                return user;
-            }
-            return null;
+            User? user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            return user;
         }
 
+        public async Task<User?> GetUserAsync(string name)
+        {
+            User? user = await _context.Users.FirstOrDefaultAsync(u => u.Username == name);
+            return user;
+        }
     }
 }

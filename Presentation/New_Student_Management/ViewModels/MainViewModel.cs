@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
-using School_Management.Application.Services;
+using School_Management.Presentation.Shared.States;
 using School_Management.Presentation.Shared.Helpers;
 using System.ComponentModel;
 using System.Windows;
@@ -11,7 +11,7 @@ namespace New_Student_Management.ViewModels
     public partial class MainViewModel : ObservableObject
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly IUserSessionService _userSession;
+        private readonly IUserSessionState _userSession;
         private readonly Dictionary<Type, ObservableObject> _viewCache = new();
 
         [ObservableProperty]
@@ -23,7 +23,7 @@ namespace New_Student_Management.ViewModels
 
         public Action? ExitAction { get; set; }
 
-        public MainViewModel(IServiceProvider provider, IUserSessionService userSessionService)
+        public MainViewModel(IServiceProvider provider, IUserSessionState userSessionService)
         {
             // Default values
             _serviceProvider = provider;
@@ -105,7 +105,7 @@ namespace New_Student_Management.ViewModels
         // User session change handler
         private void OnUserSessionChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(IUserSessionService.Username))
+            if (e.PropertyName == nameof(IUserSessionState.Username))
             {
                 Username = _userSession.Username;
             }

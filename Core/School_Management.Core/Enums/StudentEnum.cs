@@ -13,14 +13,6 @@ namespace School_Management.Core.Enums
         Outside,
     }
 
-    public enum StudentGender
-    {
-        [Description("ប្រុស")]
-        Male,
-        [Description("ស្រី")]
-        Female,
-    }
-
     public enum StudentSkill
     {
         [Description("កុំព្យូទ័រ")]

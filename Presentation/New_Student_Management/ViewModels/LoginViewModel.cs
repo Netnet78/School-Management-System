@@ -1,20 +1,20 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using School_Management.Core.Models;
-using School_Management.Infrastructure.Repositories;
 using School_Management.Application.Services;
+using School_Management.Presentation.Shared.States;
 
 namespace New_Student_Management.ViewModels
 {
     public partial class LoginViewModel : ObservableObject
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IUserSessionService _userSession;
+        private readonly IUserSessionState _userSession;
+        private readonly IUserValidationService _userValidationService;
 
-        public LoginViewModel(IUserRepository userRepository, IUserSessionService userSessionService)
+        public LoginViewModel(IUserSessionState userSessionService, IUserValidationService userValidationService)
         {
             _userSession = userSessionService;
-            _userRepository = userRepository;
+            _userValidationService = userValidationService;
         }
 
         // MVVM Bindings
@@ -28,17 +28,18 @@ namespace New_Student_Management.ViewModels
         [RelayCommand]
         private async Task<bool> LoginAsync()
         {
-            User? user = await _userRepository.ValidateUserAsync(Username, Password);
-
-            if (user == null)
+            try
+            {
+                User? user = await _userValidationService.ValidateUserAsync(Username, Password);
+                _userSession.SetUserSession(user.Username, user.Role.Name);
+                LoginSucceeded?.Invoke(true);
+                return true;
+            }
+            catch
             {
                 LoginSucceeded?.Invoke(false);
                 return false;
             }
-
-            _userSession.SetUserSession(user.Username, user.Role);
-            LoginSucceeded?.Invoke(true);
-            return true;
         }
 
     }

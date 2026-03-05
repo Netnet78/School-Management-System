@@ -10,7 +10,7 @@
              xmlns:components="clr-namespace:School_Management.Presentation.Shared.Components;assembly=School_Management.Presentation.Shared"
              d:DataContext="{d:DesignInstance Type=viewmodels:ReportViewModel}"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="800"
+             d:DesignHeight="600" d:DesignWidth="1200"
              Background="{DynamicResource MaterialDesign.Brush.Background}">
 
     <UserControl.Resources>
@@ -50,12 +50,48 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <StackPanel Margin="0 5" Orientation="Horizontal">
-                    <materialDesign:PackIcon Kind="TableAccount" Width="24" Height="24" Margin="0 0 5 0"/>
-                    <TextBlock FontSize="18" FontWeight="Bold" VerticalAlignment="Center">
-                    តារាងទិន្នន័យ​សិស្សានុសិស្សដែលបានចុះឈ្មោះ
-                    </TextBlock>
-                </StackPanel>
+                <Grid Margin="0 0 0 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <WrapPanel Margin="0 5" Orientation="Horizontal">
+                        <StackPanel Orientation="Horizontal" Margin="0 0 10 0">
+                            <materialDesign:PackIcon Kind="TableAccount" Width="24" Height="24" Margin="0 0 5 0" VerticalAlignment="Center"/>
+                            <TextBlock FontSize="18" FontWeight="Bold" VerticalAlignment="Center">
+                                តារាងទិន្នន័យ​សិស្សានុសិស្សដែលបានចុះឈ្មោះ
+                            </TextBlock>
+                        </StackPanel>
+
+                        <Button ToolTip="Refresh (Ctrl + R)" Command="{Binding RefreshDataCommand}">
+                            <materialDesign:PackIcon Kind="Refresh" />
+                        </Button>
+                    </WrapPanel>
+                    <WrapPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" TextElement.FontSize="16">
+                        <StackPanel Orientation="Horizontal" Margin="0 0 20 0">
+                            <TextBlock Text="ច្រោះចាប់ពីថ្ងៃទី" VerticalAlignment="Center" />
+                            <DatePicker Width="150"
+                                        Height="30" 
+                                        VerticalAlignment="Center"
+                                        SelectedDate="{Binding CreatedAtStart}"
+                                        x:Name="FilterStartDate"
+                                        VerticalContentAlignment="Center"
+                                        FontSize="16"
+                                        Margin="10 0 0 0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" >
+                            <TextBlock Text="ដល់ថ្ងៃទី" VerticalAlignment="Center" />
+                            <DatePicker Width="150"
+                                        Height="30" 
+                                        VerticalAlignment="Center"
+                                        SelectedDate="{Binding CreatedAtEnd}"
+                                        x:Name="FilterEndDate"
+                                        VerticalContentAlignment="Center"
+                                        FontSize="16"
+                                        Margin="10 0 0 0"/>
+                        </StackPanel>
+                    </WrapPanel>
+                </Grid>
                 
                 <Border BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" 
                             BorderThickness="2"
@@ -73,10 +109,12 @@
                         <!--Content Template-->
                         <TabControl.ContentTemplate>
                             <DataTemplate>
-                                <components:StudentDataGrid
+                                <ScrollViewer >
+                                    <components:StudentDataGrid
                                        ItemsSource="{Binding Data}"
                                        SelectedItem="{Binding DataContext.SelectedStudent,
                                        RelativeSource={RelativeSource AncestorType=TabControl}}" />
+                                </ScrollViewer>
                             </DataTemplate>
                         </TabControl.ContentTemplate>
                     </TabControl>
@@ -90,11 +128,21 @@
                     <ColumnDefinition Width="auto" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Orientation="Horizontal" TextElement.FontSize="16">
-                    <TextBlock Text="{Binding CurrentTabHeader, StringFormat=' ចំនួនសិស្ស {0} ', FallbackValue='ចំនួនសិស្ស គ្រប់ជំនាញ '}"/>
-                    <TextBlock Text="{Binding CurrentTabStudentCount, StringFormat=' សរុបមាន {0} នាក់ ', FallbackValue=សរុបមាន ២៨ នាក់}"/>
-                    <TextBlock Text="{Binding CurrentTabFemaleStudentCount, StringFormat=' នៅក្នុងនោះមានស្រី {0} នាក់', FallbackValue=នៅក្នុងនោះមានស្រី ១៧ នាក់}"/>
-                </StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" TextElement.FontSize="16" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding CurrentTabHeader, StringFormat=' ចំនួនសិស្ស {0} ', FallbackValue='ចំនួនសិស្ស គ្រប់ជំនាញ '}"/>
+                        <TextBlock Text="{Binding CurrentTabStudentCount, StringFormat=' សរុបមាន {0} នាក់ ', FallbackValue=សរុបមាន ២៨ នាក់}"/>
+                        <TextBlock Text="{Binding CurrentTabFemaleStudentCount, StringFormat=' នៅក្នុងនោះមានស្រី {0} នាក់', FallbackValue=នៅក្នុងនោះមានស្រី ១៧ នាក់}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal" TextElement.FontSize="18">
+                        <ToggleButton IsChecked="{Binding HideStudents, FallbackValue=True}"/>
+                        <TextBlock Margin="15 0 0 0" Text="លាក់សិស្សដែលគ្មានទិន្នន័យគ្រប់គ្រាន់" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Grid>
             </Grid>
 
             <!--Buttons Section-->

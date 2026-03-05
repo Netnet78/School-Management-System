@@ -20,6 +20,8 @@ namespace New_Student_Management.ViewModels
         [ObservableProperty]
         private Candidate editedStudent;
 
+        private Candidate _defaultStudent;
+
         [ObservableProperty]
         private string? currentPhotoPath;
 
@@ -27,11 +29,48 @@ namespace New_Student_Management.ViewModels
         {
             _repo = repository;
             // create an editable copy so we only persist on Save
-            EditedStudent = Clone(studentToEdit);
+            _defaultStudent = Clone(studentToEdit);
+            EditedStudent = Clone(_defaultStudent);
             CurrentPhotoPath = EditedStudent.PhotoPath;
         }
 
-        private static Candidate Clone(Candidate s) => s;
+        private static Candidate Clone(Candidate s)
+        {
+            return new Candidate
+            {
+                Id = s.Id,
+                FirstName = s.FirstName,
+                LastName = s.LastName,
+                LatinFirstName = s.LatinFirstName,
+                LatinLastName = s.LatinLastName,
+                Gender = s.Gender,
+                DateOfBirth = s.DateOfBirth,
+                Skill = s.Skill,
+                Religion = s.Religion,
+                SiblingsCount = s.SiblingsCount,
+                PhoneNumber = s.PhoneNumber,
+
+                BirthVillage = s.BirthVillage,
+                BirthCommune = s.BirthCommune,
+                BirthDistrict = s.BirthDistrict,
+                BirthProvince = s.BirthProvince,
+
+                MotherName = s.MotherName,
+                MotherOccupation = s.MotherOccupation,
+                FatherName = s.FatherName,
+                FatherOccupation = s.FatherOccupation,
+
+                ExamCenter = s.ExamCenter,
+                ExamDate = s.ExamDate,
+                ExamTable = s.ExamTable,
+                ExamRoom = s.ExamRoom,
+
+                FromSchool = s.FromSchool,
+                StayType = s.StayType,
+                OtherInfo = s.OtherInfo,
+                PhotoPath = s.PhotoPath
+            };
+        }
 
         [RelayCommand]
         private void Next()
@@ -57,7 +96,7 @@ namespace New_Student_Management.ViewModels
                 else
                 {
                     EditedStudent.LatinFirstName = EditedStudent.LatinFirstName.ToUpper();
-                    EditedStudent.LatinLastName = EditedStudent.LatinFirstName.ToUpper();
+                    EditedStudent.LatinLastName = EditedStudent.LatinLastName.ToUpper();
                     await _repo.UpdateStudentAsync(EditedStudent);
                 }
                 RequestClose?.Invoke(true);
@@ -73,6 +112,9 @@ namespace New_Student_Management.ViewModels
         [RelayCommand]
         private void Cancel()
         {
+            EditedStudent = Clone(_defaultStudent);
+            CurrentPhotoPath = EditedStudent.PhotoPath;
+            CurrentStep = 0;
             RequestClose?.Invoke(false);
         }
 
@@ -94,7 +136,7 @@ namespace New_Student_Management.ViewModels
 
         // Expose enum options as value & description
         public IEnumerable<object> GenderOptions
-        { get;  } = Enum.GetValues<StudentGender>()
+        { get;  } = Enum.GetValues<Gender>()
             .Select(g => new {Value = g, Description = EnumExtensions .GetDescription(g)});
 
         public IEnumerable<object> StayTypeOptions

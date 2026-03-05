@@ -43,16 +43,16 @@
                 <WrapPanel>
                     <StackPanel Width="320">
                         <TextBlock Text="គោត្តនាម" />
-                        <TextBox Text="{Binding EditedStudent.LastName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding EditedStudent.LastName}"/>
                         <TextBlock Text="គោត្តនាមជាអក្សរឡាតាំង" />
-                        <TextBox Text="{Binding EditedStudent.LatinLastName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding EditedStudent.LatinLastName}"/>
                         <TextBlock Text="នាម" />
-                        <TextBox Text="{Binding EditedStudent.FirstName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding EditedStudent.FirstName}"/>
                         <TextBlock Text="នាមជាអក្សរឡាតាំង" />
-                        <TextBox Text="{Binding EditedStudent.LatinFirstName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding EditedStudent.LatinFirstName}"/>
 
                         <TextBlock Text="ភេទ" />
-                        <ComboBox SelectedValue="{Binding EditedStudent.Gender, Mode=TwoWay}" 
+                        <ComboBox SelectedValue="{Binding EditedStudent.Gender}" 
                                                IsEditable="False" 
                                                DisplayMemberPath="Description"
                                                SelectedValuePath="Value" 
@@ -60,25 +60,25 @@
 
                         <TextBlock Text="កាលបរិច្ឆេទ​កំណើត" Margin="0 5 0 0"/>
                         <DatePicker Name="DateOfBirthPicker"
-                                               SelectedDate="{Binding EditedStudent.DateOfBirth, Mode=TwoWay, FallbackValue='12/12/2012', Converter={StaticResource DateOnlyToDateTimeConverter}}" />
+                                               SelectedDate="{Binding EditedStudent.DateOfBirth, FallbackValue='12/12/2012', Converter={StaticResource DateOnlyToDateTimeConverter}}" />
                     </StackPanel>
 
                     <StackPanel Width="320" Margin="20,0,0,0">
                         <TextBlock Text="ជំនាញ" />
-                        <ComboBox  SelectedValue="{Binding EditedStudent.Skill, Mode=TwoWay}"
+                        <ComboBox  SelectedValue="{Binding EditedStudent.Skill}"
                                                 DisplayMemberPath="Description"
                                                 SelectedValuePath="Value"
                                                 IsEditable="False"
                                                 ItemsSource="{Binding SkillOptions}"/>
 
                         <TextBlock Text="សាសនា" />
-                        <TextBox Text="{Binding EditedStudent.Religion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding EditedStudent.Religion}"/>
 
                         <TextBlock Text="ចំនួនបងប្អូន" />
-                        <TextBox Text="{Binding EditedStudent.SiblingsCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding EditedStudent.SiblingsCount}"/>
 
                         <TextBlock Text="លេខទូរស័ព្ទ" />
-                        <TextBox Text="{Binding EditedStudent.PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox Text="{Binding EditedStudent.PhoneNumber}"
                                          Height="25"/>
                     </StackPanel>
                 </WrapPanel>
@@ -90,16 +90,16 @@
                 <WrapPanel>
                     <StackPanel Width="320">
                         <TextBlock Text="ភូមិ" />
-                        <TextBox Text="{Binding EditedStudent.BirthVillage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding EditedStudent.BirthVillage}"/>
                         <TextBlock Text="ឃុំ/សង្កាត់" />
-                        <TextBox Text="{Binding EditedStudent.BirthCommune, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding EditedStudent.BirthCommune}"/>
                         <TextBlock Text="ស្រុក/ក្រុង" />
-                        <TextBox Text="{Binding EditedStudent.BirthDistrict, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding EditedStudent.BirthDistrict}"/>
                     </StackPanel>
 
                     <StackPanel Width="320" Margin="20,0,0,0">
                         <TextBlock Text="ខេត្ត" />
-                        <TextBox Text="{Binding EditedStudent.BirthProvince, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding EditedStudent.BirthProvince}"/>
                     </StackPanel>
                 </WrapPanel>
             </StackPanel>
@@ -110,16 +110,16 @@
                 <WrapPanel>
                     <StackPanel Width="320">
                         <TextBlock Text="ឈ្មោះម្ដាយ" />
-                        <TextBox Text="{Binding EditedStudent.MotherName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding EditedStudent.MotherName}"/>
                         <TextBlock Text="មុខរបរ" />
-                        <TextBox Text="{Binding EditedStudent.MotherOccupation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding EditedStudent.MotherOccupation}"/>
                     </StackPanel>
 
                     <StackPanel Width="320" Margin="20,0,0,0">
                         <TextBlock Text="ឈ្មោះឪពុក" />
-                        <TextBox Text="{Binding EditedStudent.FatherName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding EditedStudent.FatherName}"/>
                         <TextBlock Text="មុខរបរ" />
-                        <TextBox Text="{Binding EditedStudent.FatherOccupation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding EditedStudent.FatherOccupation}"/>
                     </StackPanel>
                 </WrapPanel>
             </StackPanel>
@@ -129,28 +129,28 @@
                 <TextBlock Text="Section: ព័ត៌មានប្រឡង និង ផ្សេងៗ" FontWeight="Bold" Margin="0,0,0,8"/>
                 <WrapPanel>
                     <StackPanel Width="320">
-                        <TextBlock Text="មណ្ឌល" />
-                        <TextBox Text="{Binding EditedStudent.ExamCenter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Text="មណ្ឌលប្រឡង" />
+                        <TextBox Text="{Binding EditedStudent.ExamCenter}"/>
                         <TextBlock Text="កាលបរិច្ឆេទ" />
-                        <DatePicker  SelectedDate="{Binding EditedStudent.ExamDate, Mode=TwoWay, Converter={StaticResource DateOnlyToDateTimeConverter}}"
+                        <DatePicker  SelectedDate="{Binding EditedStudent.ExamDate, Converter={StaticResource DateOnlyToDateTimeConverter}}"
                                                 Name="ExamDatePicker"/>
                         <TextBlock Text="លេខតុ" />
-                        <TextBox Text="{Binding EditedStudent.ExamTable, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding EditedStudent.ExamTable}"/>
                         <TextBlock Text="លេខបន្ទប់" />
-                        <TextBox Text="{Binding EditedStudent.ExamRoom, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding EditedStudent.ExamRoom}"/>
                     </StackPanel>
 
                     <StackPanel Width="320" Margin="20,0,0,0">
                         <TextBlock Text="មកពីសាលារៀន" />
-                        <TextBox Text="{Binding EditedStudent.FromSchool, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding EditedStudent.FromSchool}"/>
                         <TextBlock Text="ការស្នាក់នៅ" />
                         <ComboBox  ItemsSource="{Binding StayTypeOptions}"
                                                 DisplayMemberPath="Description"
                                                 SelectedValuePath="Value"
-                                                SelectedValue="{Binding EditedStudent.StayType, Mode=TwoWay}" 
+                                                SelectedValue="{Binding EditedStudent.StayType}" 
                                                 IsEditable="False"/>
                         <TextBlock Text="ផ្សេងៗ" />
-                        <TextBox Text="{Binding EditedStudent.OtherInfo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="100"/>
+                        <TextBox Text="{Binding EditedStudent.OtherInfo}" AcceptsReturn="True" Height="100"/>
                     </StackPanel>
                 </WrapPanel>
             </StackPanel>

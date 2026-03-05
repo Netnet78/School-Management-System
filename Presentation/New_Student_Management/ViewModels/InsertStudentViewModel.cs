@@ -24,7 +24,7 @@ namespace New_Student_Management.ViewModels
 
         // Expose enum options as value & description
         public IEnumerable<object> GenderOptions
-        { get; } = Enum.GetValues<StudentGender>()
+        { get; } = Enum.GetValues<Gender>()
             .Select(g => new { Value = g, Description = g.GetDescription() });
 
         public IEnumerable<object> StayTypeOptions
@@ -45,7 +45,7 @@ namespace New_Student_Management.ViewModels
                 LastName = string.Empty,
                 LatinLastName = string.Empty,
                 DateOfBirth = DateOnly.FromDateTime(DateTime.Now),
-                Gender = StudentGender.Male,
+                Gender = Gender.Male,
                 Skill = StudentSkill.Computer,
             };
         }
@@ -59,7 +59,33 @@ namespace New_Student_Management.ViewModels
                 Data.LatinFirstName = Data.LatinFirstName.ToUpper();
                 Data.LatinLastName = Data.LatinLastName.ToUpper();
 
+                string[] requiredFields = [Data.FirstName, Data.LastName];
+
+                foreach (string value in requiredFields)
+                {
+                    if (value == null)
+                    {
+                        MessageBox.Show("Please enter the student's name!", "Name error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                        return;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        MessageBox.Show("Please enter the student's name!", "Name error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                        return;
+                    }
+                }
+
+                if (Data.Age < (DateTime.Now.Year - DateTime.Now.AddYears(-12).Year))
+                {
+                    MessageBox.Show("Please make sure that you enter a valid date of birth!", "Birthday error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    return;
+                }
+
                 await _repo.AddStudentAsync(Data);
+
+                MessageBox.Show("Successfully added the candidate!", "Insert Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+
                 DateOnly previousExamDate = Data.ExamDate;
                 Data = new()
                 {
@@ -68,12 +94,14 @@ namespace New_Student_Management.ViewModels
                     LastName = string.Empty,
                     LatinLastName = string.Empty,
                     DateOfBirth = DateOnly.FromDateTime(DateTime.Now),
-                    Gender = StudentGender.Male,
+                    Gender = Gender.Male,
                     Skill = StudentSkill.Computer,
                     ExamDate = previousExamDate,
                     PhotoPath = string.Empty,
                 };
                 CurrentPhotoPath = Data.PhotoPath;
+
+                CurrentStep = 0;
             }
             catch (Exception ex)
             {

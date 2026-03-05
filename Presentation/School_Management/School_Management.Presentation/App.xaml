@@ -4,6 +4,13 @@
              xmlns:local="clr-namespace:School_Management.Presentation"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+
+                <ResourceDictionary 
+                Source="/School_Management.Presentation.Shared;component/Themes.xaml" />
+
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

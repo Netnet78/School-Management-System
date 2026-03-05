@@ -11,7 +11,7 @@ using School_Management.Infrastructure.Data;
 
 namespace School_Management.Infrastructure.Migrations
 {
-    [DbContext(typeof(StudentDbContext))]
+    [DbContext(typeof(SchoolDbContext))]
     [Migration("20260118125406_Changed_Students_to_Candidates")]
     partial class Changed_Students_to_Candidates
     {

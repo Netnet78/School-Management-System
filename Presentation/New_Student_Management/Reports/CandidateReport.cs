@@ -144,7 +144,7 @@ namespace New_Student_Management.Reports
             }
 
             total++;
-            if (student.Gender == StudentGender.Female) female++;
+            if (student.Gender == Gender.Female) female++;
 
             totalCell.Value = total;
             femaleCell.Value = female;
@@ -200,7 +200,7 @@ namespace New_Student_Management.Reports
         }
         private static string ToReportGregorianDate(DateTime date)
         {
-            //   ដុនបូស្កូប៉ោយប៉ែត ថ្ងៃទី១៣   ខែកញ្ញា    ឆ្នាំ២០២៤
+
             string day = date.Day.UseKhmerNumbers();
             string month = date.Month.UseKhmerMonths();
             string year = date.Year.UseKhmerNumbers();

@@ -1,16 +1,16 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace School_Management.Application.Services
+namespace School_Management.Presentation.Shared.States
 {
-    public interface IUserSessionService : INotifyPropertyChanged
+    public interface IUserSessionState : INotifyPropertyChanged
     {
         string Username { get; }
         string Role { get; }
         DateTime LoginTime { get; }
         void SetUserSession(string userName, string role);
     }
-    public sealed class UserSessionService : IUserSessionService
+    public sealed class UserSessionState : IUserSessionState
     {
         private string _username = string.Empty;
         private string _role = string.Empty;

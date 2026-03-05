@@ -9,6 +9,12 @@ namespace School_Management.Core.Models
         public string Username { get; set; } = string.Empty;
         [Required]
         public string PasswordHash { get; set; } = string.Empty;
-        public string Role { get; set; } = "User";
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime LastLogin { get; set; }
+        public int RoleId { get; set; }
+        public Role Role { get; set; } = null!;
+        public ICollection<AuditLog> AuditLogs { get; set; } = [];
+        public ICollection<Employee> Employees { get; set; } = [];
     }
 }
