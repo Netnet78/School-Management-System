@@ -8,6 +8,7 @@ using School_Management.Infrastructure.Repositories;
 using School_Management.Presentation.Shared.Helpers;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Data;
 
@@ -15,7 +16,8 @@ namespace New_Student_Management.ViewModels
 {
     public partial class ReportViewModel : ObservableObject, IAsyncLoadable
     {
-        private readonly IStudentRepository _studentRepository;
+        private readonly ICandidateRepository _studentRepository;
+        private readonly ISkillRepository _skillRepository;
 
         [ObservableProperty]
         private List<DataGridTabConstructor> _studentTabs;
@@ -30,14 +32,6 @@ namespace New_Student_Management.ViewModels
         [ObservableProperty]
         private List<Candidate> _allStudents;
         [ObservableProperty]
-        private List<Candidate> _computerStudents;
-        [ObservableProperty]
-        private List<Candidate> _electricalStudents;
-        [ObservableProperty]
-        private List<Candidate> _cNCStudents;
-        [ObservableProperty]
-        private List<Candidate> _generalStudents;
-        [ObservableProperty]
         private Candidate? _selectedStudent;
         [ObservableProperty]
         private DateTime _reportDate = DateTime.Now;
@@ -51,62 +45,19 @@ namespace New_Student_Management.ViewModels
         private bool hideStudents = true; // Property for hiding students that don't have enough information
 
         public ICollectionView AllStudentsView { get; }
-        public ICollectionView ComputerStudentsView { get; }
-        public ICollectionView ElectricalStudentsView { get; }
-        public ICollectionView CNCStudentsView { get; }
-        public ICollectionView GeneralStudentsView { get; }
 
-        public ReportViewModel(IStudentRepository studentRepository)
+        public ReportViewModel(ICandidateRepository studentRepository, ISkillRepository skillRepository)
         {
             _studentRepository = studentRepository;
+            _skillRepository = skillRepository;
 
             // Initialize Students List
             AllStudents = [];
-            ComputerStudents = [];
-            ElectricalStudents = [];
-            CNCStudents = [];
-            GeneralStudents = [];
 
             AllStudentsView = CollectionViewSource.GetDefaultView(AllStudents);
-            ComputerStudentsView = CollectionViewSource.GetDefaultView(ComputerStudents);
-            ElectricalStudentsView = CollectionViewSource.GetDefaultView(ElectricalStudents);
-            CNCStudentsView = CollectionViewSource.GetDefaultView(CNCStudents);
-            GeneralStudentsView = CollectionViewSource.GetDefaultView(GeneralStudents);
-
-            AllStudentsView.Filter = StudentFilter;
-            ComputerStudentsView.Filter = StudentFilter;
-            ElectricalStudentsView.Filter = StudentFilter;
-            CNCStudentsView.Filter = StudentFilter;
-            GeneralStudentsView.Filter = StudentFilter;
 
             // Default Tab
-            StudentTabs =
-            [
-                new()
-                {
-                    Header = "គ្រប់ជំនាញ",
-                    Data = AllStudentsView,
-                },
-                new()
-                {
-                    Header = "កុំព្យូទ័រ",
-                    Data = ComputerStudentsView
-                },
-                new()
-                {
-                    Header = "អគ្គិសនី",
-                    Data = ElectricalStudentsView
-                },
-                new()
-                {
-                    Header = "មេកានិច",
-                    Data = CNCStudentsView
-                },
-                new() {
-                    Header = "ចំណេះទូទៅ",
-                    Data = GeneralStudentsView
-                }
-            ];
+            StudentTabs = [];
 
             CurrentTabStudentCount = "០";
             CurrentTabFemaleStudentCount = "០";
@@ -124,7 +75,9 @@ namespace New_Student_Management.ViewModels
                 students.Add(student);
             }
 
-            DepartmentReport departmentReport = new(students, int.Parse(StudyYear.Split('-')[0]), int.Parse(StudyYear.Split('-')[1]));
+            List<Skill> skills = await _skillRepository.GetAllAsync();
+
+            DepartmentReport departmentReport = new(int.Parse(StudyYear.Split('-')[0]), int.Parse(StudyYear.Split('-')[1]), skills);
 
             ReturnStatus status = await Task.Run(() => departmentReport.GenerateReport());
 
@@ -133,7 +86,7 @@ namespace New_Student_Management.ViewModels
                 MessageBoxResult result = MessageBox.Show("Report generated successfully!\n Do you wish to see the files?", "Success", MessageBoxButton.YesNo, MessageBoxImage.Information);
                 if (result.Equals(MessageBoxResult.Yes))
                 {
-                    Process.Start("explorer.exe", $"{departmentReport.OutputPath}\\{departmentReport.FileName}");
+                    Process.Start("explorer.exe", Path.Combine(departmentReport.OutputPath, departmentReport.FileName));
                 }
             }
         }
@@ -147,7 +100,9 @@ namespace New_Student_Management.ViewModels
                 students.Add(student);
             }
 
-            CandidateReport candidateReport = new(students, ReportDate, int.Parse(StudyYear.Split('-')[0]), int.Parse(StudyYear.Split('-')[1]));
+            List<Skill> skills = await _skillRepository.GetAllAsync();
+
+            CandidateReport candidateReport = new(students, ReportDate, int.Parse(StudyYear.Split('-')[0]), int.Parse(StudyYear.Split('-')[1]), skills);
 
             ReturnStatus status = await Task.Run(() => candidateReport.GenerateReport());
 
@@ -187,7 +142,7 @@ namespace New_Student_Management.ViewModels
                 return false;
             }
 
-            if (s.HasAllData() == false && HideStudents == true)
+            if (s.HasAllData("Age", "OtherInfo", "CreatedAt", "LatinFullName", "FullName") == false && HideStudents == true)
             {
                 return false;
             }
@@ -198,10 +153,6 @@ namespace New_Student_Management.ViewModels
         private void RefreshFilters()
         {
             AllStudentsView.Refresh();
-            ComputerStudentsView.Refresh();
-            ElectricalStudentsView.Refresh();
-            CNCStudentsView.Refresh();
-            GeneralStudentsView.Refresh();
         }
         private void UpdateCurrentTabStats(int value)
         {
@@ -212,7 +163,8 @@ namespace New_Student_Management.ViewModels
                     .UseKhmerNumbers();
 
             CurrentTabFemaleStudentCount =
-                view.Cast<Candidate>().Count()
+                view.Cast<Candidate>()
+                    .Count(c => c.Gender == Gender.Female)
                     .UseKhmerNumbers();
         }
 
@@ -225,6 +177,9 @@ namespace New_Student_Management.ViewModels
         }
         partial void OnCurrentTabIndexChanged(int value)
         {
+            if (value < 0)
+                return;
+
             if (StudentTabs == null || StudentTabs.Count <= value)
                 return;
 
@@ -236,41 +191,49 @@ namespace New_Student_Management.ViewModels
             UpdateCurrentTabStats(value);
         }
 
-        private async Task LoadStudentsAsync()
+        [RelayCommand]
+        public async Task LoadStudentsAsync()
         {
-            List<Candidate> students = await _studentRepository.GetAllStudentsAsync();
+            List<Candidate> students = await _studentRepository.GetCandidatesOnlyAsync();
             AllStudents.Clear();
-            ComputerStudents.Clear();
-            ElectricalStudents.Clear();
-            CNCStudents.Clear();
 
             foreach (var s in students)
             {
                 AllStudents.Add(s);
-
-                switch (s.Skill)
-                {
-                    case StudentSkill.Computer:
-                        ComputerStudents.Add(s);
-                        break;
-                    case StudentSkill.Electrical:
-                        ElectricalStudents.Add(s);
-                        break;
-                    case StudentSkill.CNC:
-                        CNCStudents.Add(s);
-                        break;
-                    case StudentSkill.General:
-                        GeneralStudents.Add(s);
-                        break;
-                }
-
-                AllStudentsView.Refresh();
-                ComputerStudentsView.Refresh();
-                ElectricalStudentsView.Refresh();
-                CNCStudentsView.Refresh();
-                GeneralStudentsView.Refresh();
             }
 
+            List<DataGridTabConstructor> tabs =
+            [
+                new DataGridTabConstructor
+                {
+                    Header = "គ្រប់ជំនាញ",
+                    Data = CollectionViewSource.GetDefaultView(AllStudents)
+                },
+            ];
+
+            var groupedStudents = students.GroupBy(s => s.Skill);
+
+            foreach (var group in groupedStudents)
+            {
+                if (group.Key.Students.Count <= 0)
+                {
+                    continue;
+                }
+
+                List<Candidate> list = group.ToList();
+                ICollectionView view = CollectionViewSource.GetDefaultView(list);
+                view.Filter = StudentFilter;
+
+                tabs.Add(new DataGridTabConstructor
+                {
+                    Header = group.Key.Name,
+                    Data = view,
+                });
+            }
+
+            StudentTabs = tabs;
+
+            AllStudentsView.Refresh();
             OnCurrentTabIndexChanged(CurrentTabIndex);
         }
         public async Task LoadAsync()

@@ -1,15 +1,7 @@
 ﻿using New_Student_Management.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using School_Management.Presentation.Shared.Components;
+using School_Management.Presentation.Shared.Enums;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace New_Student_Management.Views
 {
@@ -29,10 +21,6 @@ namespace New_Student_Management.Views
                 {
                     DialogResult = true;
                     Close();
-                }
-                else
-                {
-                    MessageBox.Show("Invalid username or password.", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             };
         }

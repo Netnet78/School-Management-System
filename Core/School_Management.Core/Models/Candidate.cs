@@ -53,9 +53,11 @@ namespace School_Management.Core.Models
             }
         }
 
-        [Required]
+        [Description("លេខសម្គាល់ជំនាញ")]
+        public int SkillId { get; set; }
+
         [Description("ជំនាញ")]
-        public StudentSkill Skill { get; set; }
+        public Skill Skill { get; set; } = null!;
 
         [Description("កាលបរិច្ឆេទបង្កើត")]
         public DateTime CreatedAt { get; set; }
@@ -94,7 +96,7 @@ namespace School_Management.Core.Models
         public string Religion { get; set; } = "";
 
         [Description("រូបភាព")]
-        public string PhotoPath { get; set; } = "";
+        public string PhotoKey { get; set; } = "";
 
         [Description("លេខទូរស័ព្ទ")]
         public string PhoneNumber { get; set; } = "";

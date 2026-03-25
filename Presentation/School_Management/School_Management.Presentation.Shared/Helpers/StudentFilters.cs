@@ -40,10 +40,6 @@ namespace School_Management.Presentation.Shared.Helpers
                     student.Age.ToString()
                         .Contains(keyword),
 
-                StudentField.Skill =>
-                    EnumExtensions.GetDescription(student.Skill)
-                        .Contains(keyword, StringComparison.OrdinalIgnoreCase),
-
                 // ===== PERSONAL INFORMATION =====
 
                 StudentField.BirthVillage =>

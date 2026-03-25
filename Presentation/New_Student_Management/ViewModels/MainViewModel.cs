@@ -1,114 +1,125 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.DependencyInjection;
-using School_Management.Presentation.Shared.States;
 using School_Management.Presentation.Shared.Helpers;
-using System.ComponentModel;
 using System.Windows;
+using School_Management.Core.Interfaces;
+using School_Management.Core.Models;
+using School_Management.Presentation.Shared.Components;
+using School_Management.Presentation.Shared.Enums;
 
 namespace New_Student_Management.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly IUserSessionState _userSession;
-        private readonly Dictionary<Type, ObservableObject> _viewCache = new();
+        private readonly IUserSessionService _userSessionService;
+        private readonly IMessageService _messageService;
+
+        // Cache ViewModels as fields
+        private readonly StudentViewModel _studentViewModel;
+        private readonly InsertStudentViewModel _insertStudentViewModel;
+        private readonly ReportViewModel _reportViewModel;
 
         [ObservableProperty]
         private bool isLoading;
+
         [ObservableProperty]
         private object? currentView;
+
         [ObservableProperty]
         private string username = "Guest";
 
         public Action? ExitAction { get; set; }
 
-        public MainViewModel(IServiceProvider provider, IUserSessionState userSessionService)
+        public MainViewModel(
+            IMessageService messageService,
+            IUserSessionService userSessionService,
+            StudentViewModel studentViewModel,
+            InsertStudentViewModel insertStudentViewModel,
+            ReportViewModel reportViewModel)
         {
-            // Default values
-            _serviceProvider = provider;
-            _userSession = userSessionService;
+            _userSessionService = userSessionService;
+            _messageService = messageService;
 
-            // Set username from UserSession
-            if (!String.IsNullOrEmpty(_userSession.Username))
-            {
-                Username = _userSession.Username;
-            } 
-            else
-            {
-                Username = "Guest";
-            }
-                _userSession.PropertyChanged += OnUserSessionChanged;
+            // Assign injected ViewModels
+            _studentViewModel = studentViewModel;
+            _insertStudentViewModel = insertStudentViewModel;
+            _reportViewModel = reportViewModel;
 
-            // Default page
-            _ = SetViewAsync<StudentViewModel>();
+            // Set username from session
+            User? user = _userSessionService.CurrentUser;
+            Username = user == null
+                ? "Guest"
+                : user.Username;
+
+            CurrentView = null;
+
+            InitializeViewModelsAsync();
         }
 
-        // MVVM Commands
-        [RelayCommand]
-        private void ExitApplication()
+        private async void InitializeViewModelsAsync()
         {
-            bool result = MessageBox.Show("Are you sure you want to exit the application?", "Confirm Exit", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
-            if (!result) return;
-
-            ExitAction?.Invoke();
-        }
-        [RelayCommand]
-        private async Task ShowTableViewAsync()
-        {
-            await SetViewAsync<StudentViewModel>();
-        }
-        [RelayCommand]
-        private async Task ShowInsertViewAsync()
-        {
-            await SetViewAsync<InsertStudentViewModel>(); 
-        }
-
-        [RelayCommand]
-        private async Task ShowReportViewAsync()
-        {
-            await SetViewAsync<ReportViewModel>();
-        }
-
-        // Utilities
-        private async Task SetViewAsync<TViewModel>() where TViewModel : ObservableObject
-        {
-            IsLoading = true;
-
             try
             {
-                if (!_viewCache.TryGetValue(typeof(TViewModel), out var vm))
-                {
-                    vm = _serviceProvider.GetRequiredService<TViewModel>();
-                    _viewCache[typeof(TViewModel)] = vm;
+                IsLoading = true;
 
-                    // Load once only
-                    if (vm is IAsyncLoadable loadable)
-                    {
-                        await loadable.LoadAsync();
-                    }
-                }
+                if (_studentViewModel is IAsyncLoadable studentLoadable)
+                    await studentLoadable.LoadAsync();
 
-                // Switch view instantly
-                CurrentView = vm;
+                if (_insertStudentViewModel is IAsyncLoadable insertLoadable)
+                    await insertLoadable.LoadAsync();
+
+                if (_reportViewModel is IAsyncLoadable reportLoadable)
+                    await reportLoadable.LoadAsync();
+
+                // Default page
+                CurrentView = _insertStudentViewModel;
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
-                IsLoading = false;
+                _messageService.Show($"Failed to initialize views: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxIcon.Error);
             }
             finally
             {
                 IsLoading = false;
             }
         }
-        // User session change handler
-        private void OnUserSessionChanged(object? sender, PropertyChangedEventArgs e)
+
+        [RelayCommand]
+        private void ExitApplication()
         {
-            if (e.PropertyName == nameof(IUserSessionState.Username))
-            {
-                Username = _userSession.Username;
-            }
+            bool result = _messageService.Show(
+                "Are you sure you want to exit the application?",
+                "Confirm Exit",
+                MessageBoxButton.YesNo,
+                MessageBoxIcon.Question) == MessageBoxResult.Yes;
+
+            if (!result) return;
+
+            ExitAction?.Invoke();
+        }
+
+        [RelayCommand]
+        private void ShowTableView()
+        {
+            CurrentView = _studentViewModel;
+        }
+
+        [RelayCommand]
+        private void ShowInsertView()
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            CurrentView = _insertStudentViewModel;
+
+            sw.Stop();
+            System.Diagnostics.Debug.WriteLine($"Switch time: {sw.ElapsedMilliseconds} ms");
+        }
+
+        [RelayCommand]
+        private void ShowReportView()
+        {
+            CurrentView = _reportViewModel;
         }
     }
 }

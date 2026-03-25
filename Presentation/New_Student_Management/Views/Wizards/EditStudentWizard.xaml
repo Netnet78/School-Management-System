@@ -165,12 +165,12 @@
                                SnapsToDevicePixels="True"
                                UseLayoutRounding="True"
                                RenderOptions.BitmapScalingMode="HighQuality"
-                               Visibility="{Binding CurrentPhotoPath, Converter={StaticResource ValidPathToVisibility}}"
-                               Source="{Binding CurrentPhotoPath, Converter={StaticResource PhotoPathToImageSourceConverter}}"/>
+                               Visibility="{Binding CurrentPhoto.FullFileName, Converter={StaticResource ValidPathToVisibility}}"
+                               Source="{Binding CurrentPhoto.FullFileName, Converter={StaticResource PhotoPathToImageSourceConverter}}"/>
                     <Border BorderBrush="{DynamicResource MaterialDesign.Brush.Secondary}"
                                     BorderThickness="2"
                                     Width="160" Height="200"
-                                    Visibility="{Binding CurrentPhotoPath, Converter={StaticResource ValidPathToVisibilityReversed}, FallbackValue='Collapsed'}">
+                                    Visibility="{Binding CurrentPhoto.FullFileName, Converter={StaticResource ValidPathToVisibilityReversed}, FallbackValue='Collapsed'}">
                         <TextBlock HorizontalAlignment="Center" 
                                             VerticalAlignment="Center" 
                                             FontSize="64" 

@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using New_Student_Management.ViewModels;
+using System.Windows.Controls;
 
 namespace New_Student_Management.Views
 {
@@ -10,6 +11,11 @@ namespace New_Student_Management.Views
         public ReportView()
         {
             InitializeComponent();
+
+            if (DataContext is ReportViewModel viewModel)
+            {
+                
+            }
         }
 
     }

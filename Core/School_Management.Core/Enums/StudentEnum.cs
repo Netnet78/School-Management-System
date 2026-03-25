@@ -13,18 +13,6 @@ namespace School_Management.Core.Enums
         Outside,
     }
 
-    public enum StudentSkill
-    {
-        [Description("កុំព្យូទ័រ")]
-        Computer,
-        [Description("អគ្គិសនី")]
-        Electrical,
-        [Description("មេកានិច")]
-        CNC,
-        [Description("ចំណេះទូទៅ")]
-        General,
-    }
-
     public enum StudentField
     {
         [Description("លេខសម្គាល់")]

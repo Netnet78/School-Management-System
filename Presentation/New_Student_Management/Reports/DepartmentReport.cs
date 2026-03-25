@@ -10,16 +10,16 @@ namespace New_Student_Management.Reports
 {
     public class DepartmentReport
     {
-        private readonly List<Candidate> _students;
         private readonly int _studyYearStart;
         private readonly int _studyYearEnd;
         private readonly int _startRow;
-        public DepartmentReport(List<Candidate> students, int? startYear, int? endYear)
+        private readonly List<Skill> _skills;
+        public DepartmentReport(int? startYear, int? endYear, List<Skill> skills)
         {
-            _students = students;
             _studyYearStart = startYear ?? (DateTime.Now.Month >= 9 ? DateTime.Now.Year : DateTime.Now.Year - 1);
             _studyYearEnd = endYear ?? (DateTime.Now.Month >= 9 ? DateTime.Now.Year + 1 : DateTime.Now.Year);
             _startRow = 4;
+            _skills = skills;
         }
         public string TemplatePath { get; set; } = @".\Sources\Spreadsheets\department_data.xlsm";
         public string OutputPath { get; private set; } = @"";
@@ -28,19 +28,13 @@ namespace New_Student_Management.Reports
         public ReturnStatus GenerateReport()
         {
             XLWorkbook workbook = new(TemplatePath);
-            Dictionary<StudentSkill, List<Candidate>> studentSkillPairs = new()
-            {
-                { StudentSkill.Computer, _students.Where(s => s.Skill == StudentSkill.Computer).ToList() },
-                { StudentSkill.Electrical, _students.Where(s => s.Skill == StudentSkill.Electrical).ToList() },
-                { StudentSkill.CNC, _students.Where(s => s.Skill == StudentSkill.CNC).ToList() },
-            };
 
-            foreach (KeyValuePair<StudentSkill, List<Candidate>> studentsInSkill in studentSkillPairs)
+            foreach (Skill studentsInSkill in _skills)
             {
-                if (studentsInSkill.Value.Count <= 0) continue;
+                if (studentsInSkill.Students.Count <= 0) continue;
 
-                string skillGroup = studentsInSkill.Key.ToString();
-                List<Candidate> students = studentsInSkill.Value;
+                string skillGroup = studentsInSkill.Name;
+                List<Candidate> students = studentsInSkill.Students.ToList();
 
                 for (int i = 0; i < students.Count; i++)
                 {
@@ -149,11 +143,11 @@ namespace New_Student_Management.Reports
             ws.Cell(newStartRow, 17).SetValue(student.StayType.GetDescription());
 
             // Picture (1.25" x 0.93")
-            if (!string.IsNullOrWhiteSpace(student.PhotoPath))
+            if (!string.IsNullOrWhiteSpace(student.PhotoKey))
             {
                 int imageHeight = (int)Math.Floor(1.25 * 95.74f);
                 int imageWidth = (int)Math.Round(0.94 * 95.74f);
-                ws.AddPicture(student.PhotoPath)
+                ws.AddPicture(student.PhotoKey)
                   .MoveTo(
                       ws.Cell(newStartRow, 2),
                       1, // X offset

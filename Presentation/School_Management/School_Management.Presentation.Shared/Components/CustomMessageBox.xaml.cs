@@ -1,28 +1,18 @@
-﻿using System.Windows;
+﻿using School_Management.Presentation.Shared.Enums;
+using System.Drawing;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace School_Management.Presentation.Shared.Components
 {
+
     /// <summary>
     /// Interaction logic for CustomMessageBox.xaml
     /// </summary>
     /// 
-    public enum MessageBoxIcon
-    {
-        None,
-        Exclamation,
-        Question,
-        Information,
-        Hand,
-        Success,
-        Error,
-    }
-
     public partial class CustomMessageBox : Window
     {
-        public CustomMessageBox()
-        {
-            InitializeComponent();
-        }
 
         public MessageBoxResult Result { get; private set; }
 
@@ -46,11 +36,14 @@ namespace School_Management.Presentation.Shared.Components
             MessageBoxButton.AbortRetryIgnore
         ];
 
-        public CustomMessageBox(string title, string message, MessageBoxButton messageBoxButton, MessageBoxIcon messageBoxImage)
+        public CustomMessageBox(string title, string message, MessageBoxButton messageBoxButton, MessageBoxIcon messageBoxImage, int? autoHideIn=null)
         {
             InitializeComponent();
 
             TitleText.Text = title;
+            message = message
+                .Replace("\\r\\n", "\r\n")
+                .Replace("\\n", "\n");
             MessageText.Text = message;
 
             // Button section
@@ -84,7 +77,9 @@ namespace School_Management.Presentation.Shared.Components
                     IconBorder.Visibility = Visibility.Collapsed;
                     break;
                 case MessageBoxIcon.Exclamation:
-                    Icon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Exclamation;
+                    Icon.Kind = MaterialDesignThemes.Wpf.PackIconKind.ExclamationBold;
+                    Icon.Foreground = new SolidColorBrush(Colors.Black);
+                    IconBorder.Background = new SolidColorBrush(Colors.Yellow);
                     break;
                 case MessageBoxIcon.Question:
                     Icon.Kind = MaterialDesignThemes.Wpf.PackIconKind.QuestionMark;
@@ -97,13 +92,33 @@ namespace School_Management.Presentation.Shared.Components
                     break;
                 case MessageBoxIcon.Success:
                     Icon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Success;
+                    IconBorder.Background = new SolidColorBrush(Colors.DarkGreen);
                     break;
                 case MessageBoxIcon.Error:
                     Icon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Error;
+                    IconBorder.Background = new SolidColorBrush(Colors.Red);
                     break;
                 default:
                     Icon.Visibility = Visibility.Collapsed;
                     break;
+            }
+
+            // Auto hide logic
+            if (autoHideIn != null)
+            {
+                DispatcherTimer timer = new()
+                {
+                    Interval = TimeSpan.FromSeconds(autoHideIn.Value)
+                };
+
+                timer.Tick += (s, e) =>
+                {
+                    timer.Stop();
+                    Result = MessageBoxResult.None;
+                    Close();
+                };
+
+                timer.Start();
             }
         }
 
@@ -148,24 +163,43 @@ namespace School_Management.Presentation.Shared.Components
             Close();
         }
 
-        public static MessageBoxResult Show(string message, string title, MessageBoxButton messageBoxButton, MessageBoxIcon messageBoxImage)
+        public static MessageBoxResult Show(string message, string title, MessageBoxButton button, MessageBoxIcon icon, int? autoHide = null)
         {
-            CustomMessageBox msg = new(title, message, messageBoxButton, messageBoxImage);
+            CustomMessageBox msg = new(title, message, button, icon, autoHide)
+            {
+                Owner = System.Windows.Application.Current.MainWindow
+            };
+
             msg.ShowDialog();
             return msg.Result;
         }
     }
 
-    public static class MessageService
+    public interface IMessageService
     {
-        public static MessageBoxResult Show(
-            string message, 
-            string title = "Message", 
-            MessageBoxButton button = MessageBoxButton.OK, 
-            MessageBoxIcon icon = MessageBoxIcon.None
+        public MessageBoxResult Show(string message, string title = "Message", MessageBoxButton button = MessageBoxButton.OK, MessageBoxIcon icon = MessageBoxIcon.None, int? autoHide = null);
+    }
+
+    public class MessageService : IMessageService
+    {
+        /// <summary>
+        /// Show a customized message box
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="title"></param>
+        /// <param name="button"></param>
+        /// <param name="icon"></param>
+        /// <param name="autoHide"></param>
+        /// <returns></returns>
+        public MessageBoxResult Show(
+            string message,
+            string title = "Message",
+            MessageBoxButton button = MessageBoxButton.OK,
+            MessageBoxIcon icon = MessageBoxIcon.None,
+            int? autoHide = null
         )
         {
-            return CustomMessageBox.Show(message, title, button, icon);
+            return CustomMessageBox.Show(message, title, button, icon, autoHide);
         }
     }
 }

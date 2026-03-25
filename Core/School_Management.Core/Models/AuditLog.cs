@@ -7,7 +7,7 @@ namespace School_Management.Core.Models
         public int Id { get; set; }
         public string Action { get; set; } = "";
         public DateTime Timestamp { get; set; } = DateTime.Now;
-        public int UserId { get; set; }
-        public User User { get; set; } = null!;
+        public int? UserId { get; set; }
+        public User? User { get; set; }
     }
 }

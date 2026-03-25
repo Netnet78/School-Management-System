@@ -190,7 +190,7 @@ namespace School_Management.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("PhotoPath")
+                    b.Property<string>("PhotoKey")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -201,15 +201,16 @@ namespace School_Management.Infrastructure.Migrations
                     b.Property<int>("SiblingsCount")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Skill")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("SkillId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("StayType")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SkillId");
 
                     b.ToTable("Candidates");
                 });
@@ -349,7 +350,7 @@ namespace School_Management.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("PhotoPath")
+                    b.Property<string>("PhotoKey")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -537,6 +538,27 @@ namespace School_Management.Infrastructure.Migrations
                     b.ToTable("Scores");
                 });
 
+            modelBuilder.Entity("School_Management.Core.Models.Skill", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("KhmerName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Skills");
+                });
+
             modelBuilder.Entity("School_Management.Core.Models.Student", b =>
                 {
                     b.Property<int>("Id")
@@ -548,10 +570,10 @@ namespace School_Management.Infrastructure.Migrations
                     b.Property<int>("CandidateId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateOnly>("EnrollDate")
+                    b.Property<DateOnly?>("EnrollDate")
                         .HasColumnType("date");
 
                     b.Property<string>("OtherInfo")
@@ -723,6 +745,17 @@ namespace School_Management.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("School_Management.Core.Models.Candidate", b =>
+                {
+                    b.HasOne("School_Management.Core.Models.Skill", "Skill")
+                        .WithMany()
+                        .HasForeignKey("SkillId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Skill");
+                });
+
             modelBuilder.Entity("School_Management.Core.Models.Class", b =>
                 {
                     b.HasOne("School_Management.Core.Models.Generation", "Generation")
@@ -859,7 +892,7 @@ namespace School_Management.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("School_Management.Core.Models.Student", "Student")
-                        .WithMany()
+                        .WithMany("Classes")
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -946,6 +979,8 @@ namespace School_Management.Infrastructure.Migrations
 
             modelBuilder.Entity("School_Management.Core.Models.Student", b =>
                 {
+                    b.Navigation("Classes");
+
                     b.Navigation("Notifications");
 
                     b.Navigation("StudentQRs");

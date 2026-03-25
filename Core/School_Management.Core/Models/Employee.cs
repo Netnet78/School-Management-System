@@ -17,7 +17,7 @@ namespace School_Management.Core.Models
         public string ContactNumber { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
         public MaritalStatus MaritalStatus { get; set; }
-        public string PhotoPath { get; set; } = string.Empty;
+        public string PhotoKey { get; set; } = string.Empty;
 
         public int? UserId { get; set; }
         public int? DepartmentId { get; set; }

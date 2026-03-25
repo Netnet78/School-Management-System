@@ -13,29 +13,29 @@ namespace New_Student_Management.Reports
         private readonly DateTime _reportDate;
         private readonly int _studyYearStart;
         private readonly int _studyYearEnd;
+        private readonly List<Skill> _skills;
         public string TemplatePath { get; set; } = @".\Sources\Spreadsheets\candidate_list.xlsx";
         public string OutputPath { get; private set; } = @"";
         public string FileName { get; private set; } = @"";
-        public CandidateReport(List<Candidate> students, DateTime? date, int? startYear, int? endYear)
+        public CandidateReport(List<Candidate> students, DateTime? date, int? startYear, int? endYear, List<Skill> skills)
         {
             _students = students;
             _reportDate = date ?? DateTime.Now;
             _studyYearStart = startYear ?? (DateTime.Now.Month >= 9 ? DateTime.Now.Year : DateTime.Now.Year - 1);
             _studyYearEnd = endYear ?? (DateTime.Now.Month >= 9 ? DateTime.Now.Year + 1 : DateTime.Now.Year);
+            _skills = skills;
         }
 
         public ReturnStatus GenerateReport()
         {
             XLWorkbook workbook = new(TemplatePath);
 
-            Dictionary<StudentSkill, List<Candidate>> studentsBySkill = _students
-            .GroupBy(s => s.Skill)
-            .ToDictionary(g => g.Key, g => g.ToList());
+            List<Skill> studentsBySkill = _skills;
 
-            foreach (KeyValuePair<StudentSkill, List<Candidate>> skillGroup in studentsBySkill)
+            foreach (Skill skillGroup in studentsBySkill)
             {
-                string sheetName = skillGroup.Key.ToString();
-                List<Candidate> studentsInSkill = skillGroup.Value;
+                string sheetName = skillGroup.Name;
+                List<Candidate> studentsInSkill = skillGroup.Students.ToList();
 
                 if (studentsInSkill.Count <= 0) continue;
 

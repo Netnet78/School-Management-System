@@ -9,15 +9,30 @@
         SizeToContent="WidthAndHeight"
         WindowStyle="None"
         AllowsTransparency="True"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="CenterOwner" 
         xmlns:materialDesigns="http://materialdesigninxaml.net/winfx/xaml/themes"
         Background="Transparent">
+
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="Window.Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation 
+                        Storyboard.TargetProperty="Opacity"
+                        From="0"
+                        To="1"
+                        Duration="0:0:0.1"/>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </Window.Triggers>
+
     <Border Padding="20" Background="White" 
             BorderBrush="{DynamicResource MaterialDesign.Brush.Primary}"
             BorderThickness="2"
             CornerRadius="10"
             MouseLeftButtonDown="Border_MouseLeftButtonDown">
-        <StackPanel Width="300" TextElement.FontFamily="{StaticResource NotoSansKhmer}">
+        <StackPanel MaxWidth="800" TextElement.FontFamily="{StaticResource NotoSansKhmer}">
 
             <StackPanel Margin="0 0 0 20" Orientation="Horizontal">
                 <Border Name="IconBorder" Margin="0 0 10 0" Padding="6px" CornerRadius="100" Background="{DynamicResource MaterialDesign.Brush.Primary}">

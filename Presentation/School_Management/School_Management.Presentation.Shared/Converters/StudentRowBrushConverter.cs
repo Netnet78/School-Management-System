@@ -32,7 +32,7 @@ namespace School_Management.Presentation.Shared.Converters
             // any other required string fields empty? (skip index 0)
             foreach (var v in values.Skip(1))
             {
-                string s = v.ToString() ?? "";
+                string? s = v == null ? "" : v.ToString();
                 if (string.IsNullOrWhiteSpace(s))
                     return WarningBrush;
             }

@@ -1,14 +1,10 @@
-﻿using School_Management.Core.Models;
+﻿using School_Management.Core.Interfaces;
+using School_Management.Core.Models;
 using School_Management.Infrastructure.Repositories;
 
 
 namespace School_Management.Application.Services
 {
-    public interface IUserValidationService
-    {
-        public Task<User> ValidateUserAsync(string username, string password);
-    }
-
     public class UserValidationService : IUserValidationService
     {
         private readonly IUserRepository _repo;

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using School_Management.Core.Models;
 
 namespace School_Management.Infrastructure.Data
@@ -15,6 +16,7 @@ namespace School_Management.Infrastructure.Data
         public DbSet<StudentClass> StudentClasses { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Score> Scores { get; set; }
+        public DbSet<Skill> Skills { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<Notification> Notifications { get; set; }
@@ -26,18 +28,11 @@ namespace School_Management.Infrastructure.Data
         public DbSet<ClassSubject> ClassSubjects { get; set; }
         public DbSet<Class> Classes { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public SchoolDbContext(DbContextOptions options) : base(options)
         {
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddUserSecrets<SchoolDbContext>()
-                .Build();
 
-            string connectionString = configuration.GetConnectionString("DefaultConnection") ?? "";
-
-            optionsBuilder.UseNpgsql(connectionString);
-            base.OnConfiguring(optionsBuilder);
         }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Student>()
@@ -54,9 +49,6 @@ namespace School_Management.Infrastructure.Data
 
             modelBuilder.Entity<Candidate>()
                 .Property(e => e.Gender)
-                .HasConversion<string>();
-            modelBuilder.Entity<Candidate>()
-                .Property(e => e.Skill)
                 .HasConversion<string>();
             modelBuilder.Entity<Candidate>()
                 .Property(e => e.StayType)

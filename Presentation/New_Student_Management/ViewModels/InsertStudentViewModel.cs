@@ -1,17 +1,24 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
-using School_Management.Core.Models;
 using School_Management.Core.Enums;
+using School_Management.Core.Interfaces;
+using School_Management.Core.Models;
 using School_Management.Infrastructure.Repositories;
-using System.Windows;
+using School_Management.Presentation.Shared.Components;
+using School_Management.Presentation.Shared.Enums;
 using School_Management.Presentation.Shared.Helpers;
+using System.Media;
+using System.Windows;
 
 namespace New_Student_Management.ViewModels
 {
     public partial class InsertStudentViewModel : ObservableObject
     {
-        private readonly IStudentRepository _repo;
+        private readonly ICandidateRepository _repo;
+        private readonly IPhotoUploadService _photoUploadService;
+        private readonly IMessageService _messageService;
+        private readonly SoundPlayer errorPlayer = new("Sources\\Audio\\sfx\\error-sound.wav");
 
         [ObservableProperty]
         private Candidate data;
@@ -20,7 +27,7 @@ namespace New_Student_Management.ViewModels
         private int currentStep = 0;
 
         [ObservableProperty]
-        private string? currentPhotoPath;
+        private FileObject? currentPhoto;
 
         // Expose enum options as value & description
         public IEnumerable<object> GenderOptions
@@ -31,13 +38,13 @@ namespace New_Student_Management.ViewModels
         { get; } = Enum.GetValues<StudentStayType>()
             .Select(s => new { Value = s, Description = s.GetDescription() });
 
-        public IEnumerable<object> SkillOptions
-        { get; } = Enum.GetValues<StudentSkill>()
-            .Select(s => new { Value = s, Description = EnumExtensions.GetDescription(s) });
 
-        public InsertStudentViewModel(IStudentRepository repo)
+        public InsertStudentViewModel(ICandidateRepository repo, IPhotoUploadService photoUploadService, IMessageService messageService)
         {
             _repo = repo;
+            _photoUploadService = photoUploadService;
+            _messageService = messageService;
+
             Data = new()
             {
                 FirstName = string.Empty,
@@ -46,7 +53,6 @@ namespace New_Student_Management.ViewModels
                 LatinLastName = string.Empty,
                 DateOfBirth = DateOnly.FromDateTime(DateTime.Now),
                 Gender = Gender.Male,
-                Skill = StudentSkill.Computer,
             };
         }
 
@@ -65,26 +71,35 @@ namespace New_Student_Management.ViewModels
                 {
                     if (value == null)
                     {
-                        MessageBox.Show("Please enter the student's name!", "Name error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                        errorPlayer.Play();
+                        _messageService.Show("Please enter the student's name!", "Name error", MessageBoxButton.OK, MessageBoxIcon.Error);
                         return;
                     }
 
                     if (string.IsNullOrWhiteSpace(value))
                     {
-                        MessageBox.Show("Please enter the student's name!", "Name error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                        errorPlayer.Play();
+                        _messageService.Show("Please enter the student's name!", "Name error", MessageBoxButton.OK, MessageBoxIcon.Error);
                         return;
                     }
                 }
 
                 if (Data.Age < (DateTime.Now.Year - DateTime.Now.AddYears(-12).Year))
                 {
-                    MessageBox.Show("Please make sure that you enter a valid date of birth!", "Birthday error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    errorPlayer.Play();
+                    _messageService.Show("Please make sure that you enter a valid date of birth!", "Birthday error", MessageBoxButton.OK, MessageBoxIcon.Error);
                     return;
                 }
 
-                await _repo.AddStudentAsync(Data);
+                await _repo.AddAsync(Data);
 
-                MessageBox.Show("Successfully added the candidate!", "Insert Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+                // Upload photo after add a new student
+                if (CurrentPhoto != null)
+                {
+                    await _photoUploadService.UploadStudentPhoto(CurrentPhoto.FullFileName);
+                }
+
+                _messageService.Show("Successfully added the candidate!", "Insert Success!", MessageBoxButton.OK, MessageBoxIcon.Information);
 
                 DateOnly previousExamDate = Data.ExamDate;
                 Data = new()
@@ -95,23 +110,22 @@ namespace New_Student_Management.ViewModels
                     LatinLastName = string.Empty,
                     DateOfBirth = DateOnly.FromDateTime(DateTime.Now),
                     Gender = Gender.Male,
-                    Skill = StudentSkill.Computer,
                     ExamDate = previousExamDate,
-                    PhotoPath = string.Empty,
+                    PhotoKey = string.Empty,
                 };
-                CurrentPhotoPath = Data.PhotoPath;
-
+                CurrentPhoto = null;
                 CurrentStep = 0;
             }
             catch (Exception ex)
             {
-                MessageBox.Show("There was an error when trying to add another student.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                MessageBox.Show(ex.Message);
+                errorPlayer.Play();
+                _messageService.Show("There was an error when trying to add another student.", "ERROR", MessageBoxButton.OK, MessageBoxIcon.Error);
+                _messageService.Show(ex.Message);
             }
         }
 
         [RelayCommand]
-        private void UploadPhoto()
+        private async Task UploadPhotoAsync()
         {
             OpenFileDialog openFileDialog = new()
             {
@@ -121,8 +135,10 @@ namespace New_Student_Management.ViewModels
             };
             if (openFileDialog.ShowDialog() == true)
             {
-                Data.PhotoPath = openFileDialog.FileName;
-                CurrentPhotoPath = openFileDialog.FileName;
+                string selectedPath = openFileDialog.FileName;
+                FileObject uploadedFile = new(selectedPath);
+                Data.PhotoKey = uploadedFile.FullFileName;
+                CurrentPhoto = uploadedFile;
             }
         }
 

@@ -1,11 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using School_Management.Infrastructure.Data;
-using School_Management.Application.Services;
-using School_Management.Infrastructure.Repositories;
-using School_Management.Presentation.Shared.States;
+using Microsoft.Extensions.Hosting;
 using New_Student_Management.ViewModels;
 using New_Student_Management.Views;
 using New_Student_Management.Views.Wizards;
+using School_Management.Application;
+using School_Management.Infrastructure;
+using School_Management.Presentation.Shared;
+using School_Management.Presentation.Shared.Components;
+using School_Management.Presentation.Shared.Enums;
 using System.Windows;
 
 namespace New_Student_Management
@@ -17,53 +19,46 @@ namespace New_Student_Management
     {
         public static new App Current => (App)Application.Current;
         public IServiceProvider? ServiceProvider { get; }
-
+        public IHost AppHost { get; }
         public App()
         {
-            ServiceCollection services = new();
+            AppHost = Host.CreateDefaultBuilder()
+                .ConfigureServices((context, services) =>
+                {
+                    services.AddPresentationShared();
+                    services.AddInfrastructure();
+                    services.AddApplication();
+                    
+                    // Register ViewModels
+                    services.AddScoped<MainViewModel>();
+                    services.AddScoped<StudentViewModel>();
+                    services.AddSingleton<EditStudentViewModel>();
+                    services.AddScoped<InsertStudentViewModel>();
+                    services.AddScoped<ReportViewModel>();
+                    services.AddScoped<LoginViewModel>();
 
-            // Register DbContext as singleton for WPF
-            services.AddDbContext<SchoolDbContext>();
-
-            // Register Repositories
-            services.AddScoped<IStudentRepository, StudentRepository>();
-            services.AddScoped<IUserRepository, UserRepository>();
-
-            // Register Services
-            services.AddSingleton<IUserSessionState, UserSessionState>();
-            services.AddSingleton<IUserValidationService, UserValidationService>();
-
-            // Register ViewModels
-            services.AddScoped<MainViewModel>();
-            services.AddScoped<StudentViewModel>();
-            services.AddTransient<EditStudentViewModel>();
-            services.AddScoped<InsertStudentViewModel>();
-            services.AddScoped<ReportViewModel>();
-            services.AddScoped<LoginViewModel>();
-
-            // Register Views
-            services.AddTransient<MainWindow>();
-            services.AddTransient<LoginViewWindow>();
-            services.AddTransient<StudentTableView>();
-            services.AddTransient<EditStudentWizard>();
-            services.AddTransient<InsertStudentView>();
-            services.AddTransient<ReportView>();
-
-            ServiceProvider = services.BuildServiceProvider();
+                    // Register Views
+                    services.AddTransient<MainWindow>();
+                    services.AddTransient<LoginViewWindow>();
+                    services.AddTransient<StudentTableView>();
+                    services.AddTransient<EditStudentWizard>();
+                    services.AddTransient<InsertStudentView>();
+                    services.AddTransient<ReportView>();
+                }).Build();
         }
 
-        protected override void OnExit(ExitEventArgs e)
+        protected override async void OnExit(ExitEventArgs e)
         {
-            if (ServiceProvider is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
+            await AppHost.StopAsync();
+            AppHost.Dispose();
 
             base.OnExit(e);
         }
 
-        protected override void OnStartup(StartupEventArgs e)
+        protected override async void OnStartup(StartupEventArgs e)
         {
+            await AppHost.StartAsync();
+
             if (ServiceProvider == null)
             {
                 MessageBox.Show("Service Provider is not initialized.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -72,7 +67,7 @@ namespace New_Student_Management
             }
 
             // create a fresh login window
-            var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+            MainWindow mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
             //var loginWindow = ServiceProvider.GetRequiredService<LoginViewWindow>();
             //bool? loginResult = loginWindow.ShowDialog();
 

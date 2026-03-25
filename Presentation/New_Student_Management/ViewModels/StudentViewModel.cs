@@ -1,10 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using School_Management.Application.Services;
 using School_Management.Core.Enums;
+using School_Management.Core.Interfaces;
 using School_Management.Core.Models;
 using School_Management.Infrastructure.Repositories;
 using School_Management.Presentation.Shared.Components;
+using School_Management.Presentation.Shared.Enums;
 using School_Management.Presentation.Shared.Helpers;
 using System.ComponentModel;
 using System.Windows;
@@ -12,26 +13,27 @@ using System.Windows.Data;
 
 namespace New_Student_Management.ViewModels
 {
-    public enum DataStateFilterOptions
-    {
-        [Description("គ្រប់ប្រភេទ")]
-        All,
-        [Description("គ្រប់គ្រាន់")]
-        Completed,
-        [Description("ខ្វះខាតទិន្នន័យ")]
-        MissingData,
-        [Description("ខ្វះខាតរូបភាព")]
-        NoPicture,
-        [Description("ខ្វះខាតទិន្នន័យ និងរូបភាព")]
-        MissingDataAndPicture,
-    }
 
     public partial class StudentViewModel : ObservableObject, IAsyncLoadable
     {
-        private readonly IStudentRepository _repository;
-        public StudentViewModel(IStudentRepository repository)
+        private readonly ICandidateRepository _repository;
+        private readonly IPhotoUploadService _photoUploadService;
+        private readonly IPhotoDeleteService _photoDeleteService;
+        private readonly IPhotoFetchService _photoFetchService;
+        private readonly IMessageService _messageService;
+        public StudentViewModel(
+            ICandidateRepository repository,
+            IPhotoUploadService photoUploadService,
+            IPhotoDeleteService photoDeleteService,
+            IPhotoFetchService photoFetchService,
+            IMessageService messageService)
         {
             _repository = repository;
+            _photoUploadService = photoUploadService;
+            _photoDeleteService = photoDeleteService;
+            _photoFetchService = photoFetchService;
+            _messageService = messageService;
+
             ToggleLatinNames = false;
         }
 
@@ -62,7 +64,6 @@ namespace New_Student_Management.ViewModels
         }
         // ច្រោះទិន្នន័យតាម​ស្ថានភាពទិន្នន័យ
         private DataStateFilterOptions _dataStateFilter = DataStateFilterOptions.All;
-        // ច្រោះទិន្នន័យតាម​ស្ថានភាពទិន្នន័យ
         public DataStateFilterOptions DataStateFilter
         {
             get => _dataStateFilter;
@@ -129,8 +130,10 @@ namespace New_Student_Management.ViewModels
                         Description = EnumExtensions.GetDescription(f)
                     };
                 });
+
         // ផ្លាស់ប្ដូរការបង្ហាញឈ្មោះជាអក្សរខ្មែរនិងឡាតាំង
         private bool _toggleLatinNames;
+
         // ផ្លាស់ប្ដូរការបង្ហាញឈ្មោះជាអក្សរខ្មែរនិងឡាតាំង
         public bool ToggleLatinNames
         {
@@ -157,9 +160,12 @@ namespace New_Student_Management.ViewModels
             try
             {
                 DataLoading = true;
-                List<Candidate> students = await _repository.GetAllStudentsAsync();
+                List<Candidate> students = await _repository.GetAllAsync();
 
+                // Create collection view and apply filtering on background thread
                 AllStudents = [.. students];
+
+                // Create view on UI thread AFTER data is ready
                 Students = CollectionViewSource.GetDefaultView(AllStudents);
                 Students.Filter = FilterStudent;
 
@@ -176,7 +182,7 @@ namespace New_Student_Management.ViewModels
             if (SelectedStudent == null) return;
 
             Candidate previous = SelectedStudent;
-            var vm = new EditStudentViewModel(SelectedStudent, _repository);
+            var vm = new EditStudentViewModel(SelectedStudent, _repository, _photoFetchService, _photoDeleteService, _photoUploadService, _messageService);
             var wizard = new Views.Wizards.EditStudentWizard(vm)
             {
                 Owner = App.Current.MainWindow,
@@ -191,17 +197,27 @@ namespace New_Student_Management.ViewModels
         [RelayCommand]
         private async Task DeleteStudentAsync(Candidate student)
         {
-            MessageBoxResult result = MessageBox.Show($"Are you sure you want to delete {student.FullName}?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            MessageBoxResult result = _messageService.Show($"Are you sure you want to delete {student.FullName}?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxIcon.Exclamation);
             if (result != MessageBoxResult.Yes) return;
 
             if (SelectedStudent == null) return;
-            await _repository.DeleteStudentAsync(student);
+            await _repository.DeleteAsync(student);
+
+            try
+            {
+                await _photoDeleteService.DeleteStudentPhoto(student.PhotoKey);
+            }
+            catch (Exception ex)
+            {
+                _messageService.Show($"There was an unexpected error when trying to delete the student's photo\n{ex.Message}");
+            }
+
             await LoadStudentsAsync();
         }
         [RelayCommand]
         private async Task SaveStudentAsync()
         {
-            await _repository.SaveStudentAsync();
+            await _repository.SaveAsync();
         }
 
         // Initial async load
@@ -211,6 +227,14 @@ namespace New_Student_Management.ViewModels
         }
 
         // Helper functions
+        private static bool CandidateValidation(Candidate student)
+        {
+            if (student.HasAllData("Age", "OtherInfo", "CreatedAt", "LatinFullName", "FullName"))
+            {
+                return true;
+            }
+            return false;
+        }
         private bool FilterStudent(object obj)
         {
             if (obj is not Candidate student) return false;
@@ -229,10 +253,10 @@ namespace New_Student_Management.ViewModels
             // 📊 DATA STATE FILTER
             return DataStateFilter switch
             {
-                DataStateFilterOptions.Completed => student.HasAllData(),
-                DataStateFilterOptions.MissingData => !student.HasAllData() && !string.IsNullOrEmpty(student.PhotoPath),
-                DataStateFilterOptions.NoPicture => string.IsNullOrEmpty(student.PhotoPath),
-                DataStateFilterOptions.MissingDataAndPicture => string.IsNullOrEmpty(student.PhotoPath) || !student.HasAllData(),
+                DataStateFilterOptions.Completed => CandidateValidation(student) == true,
+                DataStateFilterOptions.MissingData => CandidateValidation(student) == false  && !string.IsNullOrEmpty(student.PhotoKey),
+                DataStateFilterOptions.NoPicture => string.IsNullOrEmpty(student.PhotoKey),
+                DataStateFilterOptions.MissingDataAndPicture => string.IsNullOrEmpty(student.PhotoKey) || CandidateValidation(student) == false ,
                 _ => true,
             };
         }

@@ -6,12 +6,19 @@ using School_Management.Core.Enums;
 using School_Management.Infrastructure.Repositories;
 using System.Windows;
 using School_Management.Presentation.Shared.Helpers;
+using School_Management.Core.Interfaces;
+using School_Management.Presentation.Shared.Components;
+using School_Management.Presentation.Shared.Enums;
 
 namespace New_Student_Management.ViewModels
 {
     public partial class EditStudentViewModel : ObservableObject
     {
-        private readonly IStudentRepository _repo;
+        private readonly ICandidateRepository _repo;
+        private readonly IPhotoFetchService _photoFetchService;
+        private readonly IPhotoDeleteService _photoDeleteService;
+        private readonly IPhotoUploadService _photoUploadService;
+        private readonly IMessageService _messageService;
         public Action<bool>? RequestClose { get; set; }
 
         [ObservableProperty]
@@ -23,53 +30,26 @@ namespace New_Student_Management.ViewModels
         private Candidate _defaultStudent;
 
         [ObservableProperty]
-        private string? currentPhotoPath;
+        private FileObject? currentPhoto;
 
-        public EditStudentViewModel(Candidate studentToEdit, IStudentRepository repository)
+        public EditStudentViewModel(
+            Candidate studentToEdit,
+            ICandidateRepository repository,
+            IPhotoFetchService photoFetchService,
+            IPhotoDeleteService photoDeleteService,
+            IPhotoUploadService photoUploadService,
+            IMessageService messageService)
         {
             _repo = repository;
+            _photoDeleteService = photoDeleteService;
+            _photoFetchService = photoFetchService;
+            _photoUploadService = photoUploadService;
+            _messageService = messageService;
+
             // create an editable copy so we only persist on Save
-            _defaultStudent = Clone(studentToEdit);
-            EditedStudent = Clone(_defaultStudent);
-            CurrentPhotoPath = EditedStudent.PhotoPath;
-        }
-
-        private static Candidate Clone(Candidate s)
-        {
-            return new Candidate
-            {
-                Id = s.Id,
-                FirstName = s.FirstName,
-                LastName = s.LastName,
-                LatinFirstName = s.LatinFirstName,
-                LatinLastName = s.LatinLastName,
-                Gender = s.Gender,
-                DateOfBirth = s.DateOfBirth,
-                Skill = s.Skill,
-                Religion = s.Religion,
-                SiblingsCount = s.SiblingsCount,
-                PhoneNumber = s.PhoneNumber,
-
-                BirthVillage = s.BirthVillage,
-                BirthCommune = s.BirthCommune,
-                BirthDistrict = s.BirthDistrict,
-                BirthProvince = s.BirthProvince,
-
-                MotherName = s.MotherName,
-                MotherOccupation = s.MotherOccupation,
-                FatherName = s.FatherName,
-                FatherOccupation = s.FatherOccupation,
-
-                ExamCenter = s.ExamCenter,
-                ExamDate = s.ExamDate,
-                ExamTable = s.ExamTable,
-                ExamRoom = s.ExamRoom,
-
-                FromSchool = s.FromSchool,
-                StayType = s.StayType,
-                OtherInfo = s.OtherInfo,
-                PhotoPath = s.PhotoPath
-            };
+            _defaultStudent = studentToEdit.Clone();
+            EditedStudent = _defaultStudent.Clone();
+            CurrentPhoto = new(EditedStudent.PhotoKey);
         }
 
         [RelayCommand]
@@ -91,35 +71,35 @@ namespace New_Student_Management.ViewModels
             {
                 if (EditedStudent.Id == 0)
                 {
-                    await _repo.AddStudentAsync(EditedStudent);
+                    await _repo.AddAsync(EditedStudent);
                 }
                 else
                 {
                     EditedStudent.LatinFirstName = EditedStudent.LatinFirstName.ToUpper();
                     EditedStudent.LatinLastName = EditedStudent.LatinLastName.ToUpper();
-                    await _repo.UpdateStudentAsync(EditedStudent);
+                    await _repo.UpdateAsync(EditedStudent);
                 }
                 RequestClose?.Invoke(true);
             }
             catch (Exception ex)
             {
                 RequestClose?.Invoke(false);
-                MessageBox.Show("There was an error saving the student data.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                MessageBox.Show(ex.Message);
+                _messageService.Show("There was an error saving the student data.", "Error", MessageBoxButton.OK, MessageBoxIcon.Error);
+                _messageService.Show(ex.Message);
             }
         }
 
         [RelayCommand]
         private void Cancel()
         {
-            EditedStudent = Clone(_defaultStudent);
-            CurrentPhotoPath = EditedStudent.PhotoPath;
+            EditedStudent = _defaultStudent.Clone();
+            CurrentPhoto = new(EditedStudent.PhotoKey);
             CurrentStep = 0;
             RequestClose?.Invoke(false);
         }
 
         [RelayCommand]
-        private void UploadPhoto()
+        private async Task UploadPhotoAsync()
         {
             OpenFileDialog openFileDialog = new()
             {
@@ -129,22 +109,19 @@ namespace New_Student_Management.ViewModels
             };
             if (openFileDialog.ShowDialog() == true)
             {
-                EditedStudent.PhotoPath = openFileDialog.FileName;
-                CurrentPhotoPath = openFileDialog.FileName;
+                FileObject uploadedPath = await _photoUploadService.UploadStudentPhoto(openFileDialog.FileName);
+                EditedStudent.PhotoKey = uploadedPath.FullFileName;
+                CurrentPhoto = new(uploadedPath.FilePath);
             }
         }
 
         // Expose enum options as value & description
         public IEnumerable<object> GenderOptions
         { get;  } = Enum.GetValues<Gender>()
-            .Select(g => new {Value = g, Description = EnumExtensions .GetDescription(g)});
+            .Select(g => new { Value = g, Description = EnumExtensions.GetDescription(g) });
 
         public IEnumerable<object> StayTypeOptions
         { get; } = Enum.GetValues<StudentStayType>()
-            .Select(s => new { Value = s, Description = EnumExtensions.GetDescription(s)});
-
-        public IEnumerable<object> SkillOptions
-        { get; } = Enum.GetValues<StudentSkill>()
             .Select(s => new { Value = s, Description = EnumExtensions.GetDescription(s)});
     }
 }
