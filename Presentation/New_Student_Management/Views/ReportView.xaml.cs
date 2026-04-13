@@ -14,7 +14,7 @@ namespace New_Student_Management.Views
 
             if (DataContext is ReportViewModel viewModel)
             {
-                
+
             }
         }
 

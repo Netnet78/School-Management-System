@@ -1,106 +1,111 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using New_Student_Management.Views.Wizards.Services;
 using School_Management.Core.Enums;
-using School_Management.Core.Interfaces;
+using School_Management.Core.Helpers;
+using School_Management.Core.Interfaces.Application;
+using School_Management.Core.Interfaces.Presentation;
 using School_Management.Core.Models;
-using School_Management.Infrastructure.Repositories;
-using School_Management.Presentation.Shared.Components;
-using School_Management.Presentation.Shared.Enums;
-using School_Management.Presentation.Shared.Helpers;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Windows;
 using System.Windows.Data;
 
 namespace New_Student_Management.ViewModels
 {
-
     public partial class StudentViewModel : ObservableObject, IAsyncLoadable
     {
-        private readonly ICandidateRepository _repository;
-        private readonly IPhotoUploadService _photoUploadService;
+        private readonly ICandidateService _candidateService;
         private readonly IPhotoDeleteService _photoDeleteService;
         private readonly IPhotoFetchService _photoFetchService;
         private readonly IMessageService _messageService;
+        private readonly IEditStudentWizardService _editStudentWizardService;
+
+        // Debouncing and async filtering
+        private CancellationTokenSource? _filterCancellationTokenSource;
+        private Timer? _searchDebounceTimer;
+        private const int SearchDebounceDelayMs = 300;
+
         public StudentViewModel(
-            ICandidateRepository repository,
-            IPhotoUploadService photoUploadService,
+            ICandidateService candidateService,
             IPhotoDeleteService photoDeleteService,
             IPhotoFetchService photoFetchService,
-            IMessageService messageService)
+            IMessageService messageService,
+            IEditStudentWizardService editStudentWizardService)
         {
-            _repository = repository;
-            _photoUploadService = photoUploadService;
+            _candidateService = candidateService;
             _photoDeleteService = photoDeleteService;
             _photoFetchService = photoFetchService;
             _messageService = messageService;
+            _editStudentWizardService = editStudentWizardService;
 
             ToggleLatinNames = false;
         }
+
+        private readonly int _studentsPerPage = 100;
 
         // Loading states
         [ObservableProperty]
         private bool _dataLoading = false;
 
-        // MVVM Bindings
         [ObservableProperty]
-        private List<Candidate> _allStudents = [];
+        private int? _lastId = null;
+
+        [ObservableProperty]
+        private int _currentPage = 1;
+
+        [ObservableProperty]
+        private int _maximumPages = 1;
+
+        // ទិន្នន័យសិស្សទាំងអស់ដែលមាននៅក្នុង database
+        public ObservableCollection<Candidate> AllStudents = [];
+
+        // ទិន្នន័យសិស្សដែលត្រូវបានបង្ហាញនៅលើ UI
+        [ObservableProperty]
         private ICollectionView? _studentsView;
-        public ICollectionView? Students
-        {
-            get => _studentsView;
-            private set => SetProperty(ref _studentsView, value);
-        }
 
         // សិស្សដែលកំពុងជ្រើសរើស
+        [ObservableProperty]
         private Candidate? _selectedStudent;
-        // សិស្សដែលកំពុងជ្រើសរើស
-        public Candidate? SelectedStudent
-        {
-            get => _selectedStudent;
-            set
-            {
-                SetProperty(ref _selectedStudent, value);
-            }
-        }
+
         // ច្រោះទិន្នន័យតាម​ស្ថានភាពទិន្នន័យ
-        private DataStateFilterOptions _dataStateFilter = DataStateFilterOptions.All;
-        public DataStateFilterOptions DataStateFilter
+        [ObservableProperty]
+        private StudentDataStateFilterOptions _dataStateFilter = StudentDataStateFilterOptions.All;
+
+        partial void OnDataStateFilterChanged(StudentDataStateFilterOptions value)
         {
-            get => _dataStateFilter;
-            set
-            {
-                SetProperty(ref _dataStateFilter, value);
-                Students?.Refresh();
-            }
+            // Only refresh the view; preserve SelectedStudent if it still matches the filter
+            RefreshStudentsViewAsync();
         }
+
         // ទិន្នន័យសម្រាប់ Combo box ​ច្រោះទិន្នន័យតាម​ស្ថានភាពទិន្នន័យ
         public IEnumerable<object> DataStateFilterItems
-        { get; } = Enum.GetValues<DataStateFilterOptions>()
-            .Select(s => new { Value = s, Description = $"{EnumExtensions.GetDescription(s)}"});
+        { get; } = Enum.GetValues<StudentDataStateFilterOptions>()
+            .Select(s => new { Value = s, Description = $"{s.GetDescription()}" });
+
         // ច្រោះទិន្នន័យតាម​ការស្វែងរក
+        [ObservableProperty]
         private string _studentSearch = string.Empty;
-        // ច្រោះទិន្នន័យតាម​ការស្វែងរក
-        public string StudentSearch
+
+        partial void OnStudentSearchChanged(string value)
         {
-            get => _studentSearch;
-            set
-            {
-                SetProperty(ref _studentSearch, value);
-                Students?.Refresh();
-            }
+            // Debounce the search: wait 300ms after user stops typing before filtering
+            _searchDebounceTimer?.Dispose();
+            _searchDebounceTimer = new Timer(
+                (_) => RefreshStudentsViewAsync(),
+                null,
+                SearchDebounceDelayMs,
+                Timeout.Infinite);
         }
+
         // ច្រោះទិន្នន័យតាម​ការស្វែងរក
+        [ObservableProperty]
         private StudentField _currentSearchField = StudentField.FullName;
-        public StudentField CurrentSearchField
+
+        partial void OnCurrentSearchFieldChanged(StudentField value)
         {
-            get => _currentSearchField;
-            set
-            {
-                SetProperty(ref _currentSearchField, value);
-                StudentSearch = string.Empty;
-                Students?.Refresh();
-            }
+            RefreshStudentsViewAsync();
         }
+
         // Fields ដែលត្រូវបានរំលងក្នុងការ Filter/Search
         private static readonly HashSet<StudentField> IgnoredFields =
         [
@@ -111,6 +116,7 @@ namespace New_Student_Management.ViewModels
             StudentField.PhotoPath,
             StudentField.CreatedAt,
         ];
+
         // ទិន្នន័យសម្រាប់ Combo box ​ច្រោះទិន្នន័យតាម​ការស្វែងរក
         public IEnumerable<object> StudentFieldItems { get; } =
             Enum.GetValues<StudentField>()
@@ -132,92 +138,108 @@ namespace New_Student_Management.ViewModels
                 });
 
         // ផ្លាស់ប្ដូរការបង្ហាញឈ្មោះជាអក្សរខ្មែរនិងឡាតាំង
+        [ObservableProperty]
         private bool _toggleLatinNames;
 
-        // ផ្លាស់ប្ដូរការបង្ហាញឈ្មោះជាអក្សរខ្មែរនិងឡាតាំង
-        public bool ToggleLatinNames
+        partial void OnToggleLatinNamesChanged(bool value)
         {
-            get => _toggleLatinNames;
-            set
+            if (CurrentSearchField == StudentField.FullName || CurrentSearchField == StudentField.LatinFullName)
             {
-                SetProperty(ref _toggleLatinNames, value);
-
-                if (CurrentSearchField == StudentField.FullName || CurrentSearchField == StudentField.LatinFullName)
-                {
-                    StudentField searchField = value
-                        ? StudentField.LatinFullName
-                        : StudentField.FullName;
-                    CurrentSearchField = searchField;
-                }
-                Students?.Refresh();
+                StudentField searchField = value
+                    ? StudentField.LatinFullName
+                    : StudentField.FullName;
+                CurrentSearchField = searchField;
             }
+            RefreshStudentsViewAsync();
         }
 
         // Relay Commands
         [RelayCommand]
         private async Task LoadStudentsAsync()
         {
+            DataLoading = true;
             try
             {
-                DataLoading = true;
-                List<Candidate> students = await _repository.GetAllAsync();
+                ReturnResponse<int> studentsCount = await _candidateService.GetAllCandidatesCountAsync();
 
-                // Create collection view and apply filtering on background thread
-                AllStudents = [.. students];
+                ReturnResponse<List<Candidate>> studentsResponse = await _candidateService.GetAllCandidatesAsync(LastId, _studentsPerPage);
+                List<Candidate>? students = studentsResponse.Value;
 
-                // Create view on UI thread AFTER data is ready
-                Students = CollectionViewSource.GetDefaultView(AllStudents);
-                Students.Filter = FilterStudent;
+                if (studentsCount.Status == ReturnStatus.Failed)
+                {
+                    _messageService.Show(studentsCount.Message, "Error", button: MessageButton.OK, MessageIcon.Error);
+                    return;
+                }
 
-                SelectedStudent = null;
+                if (studentsResponse.Status == ReturnStatus.Failed || students == null)
+                {
+                    _messageService.Show(studentsResponse.Message, "Error", button: MessageButton.OK, MessageIcon.Error);
+                    return;
+                }
+
+                // Load data with minimal UI disruption
+                AllStudents = [..students];
+                MaximumPages = studentsCount.Value / _studentsPerPage;
+
+                // Create collection view with optimized filtering
+                if (StudentsView == null)
+                {
+                    StudentsView = CollectionViewSource.GetDefaultView(AllStudents);
+                    StudentsView.Filter = FilterStudent;
+                }
+                else
+                {
+                    // Refresh the existing view to apply filters
+                    StudentsView.Refresh();
+                }
             }
             finally
             {
                 DataLoading = false;
             }
         }
+
         [RelayCommand]
-        private async Task EditStudentAsync(Candidate student)
+        private async Task EditStudentAsync()
         {
             if (SelectedStudent == null) return;
-
             Candidate previous = SelectedStudent;
-            var vm = new EditStudentViewModel(SelectedStudent, _repository, _photoFetchService, _photoDeleteService, _photoUploadService, _messageService);
-            var wizard = new Views.Wizards.EditStudentWizard(vm)
-            {
-                Owner = App.Current.MainWindow,
-            };
-            bool? result = wizard.ShowDialog();
+
+            bool? result = _editStudentWizardService.Show(SelectedStudent);
             if (result == true)
             {
                 await LoadStudentsAsync();
                 SelectedStudent = previous;
             }
         }
+
         [RelayCommand]
-        private async Task DeleteStudentAsync(Candidate student)
+        private async Task DeleteStudentAsync()
         {
-            MessageBoxResult result = _messageService.Show($"Are you sure you want to delete {student.FullName}?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxIcon.Exclamation);
-            if (result != MessageBoxResult.Yes) return;
+            Candidate? student = SelectedStudent;
 
-            if (SelectedStudent == null) return;
-            await _repository.DeleteAsync(student);
+            if (student == null) return;
 
-            try
+            MessageResult result = _messageService.Show($"តើអ្នកប្រាកដថាលុបសិស្សឈ្មោះ {student.FullName} ដែរឬទេ?", "Confirm Delete", MessageButton.YesNo, MessageIcon.Exclamation);
+            if (result != MessageResult.Yes) return;
+
+            ReturnResponse deleteResponse = await _candidateService.DeleteCandidateAsync(student.Id);
+
+            if (deleteResponse.Status == ReturnStatus.Failed || deleteResponse.Status == ReturnStatus.Rejected)
             {
-                await _photoDeleteService.DeleteStudentPhoto(student.PhotoKey);
+                _messageService.Show($"{deleteResponse.Message}", "ហាក... ស្អីគេ?", icon: MessageIcon.Error);
+                return;
             }
-            catch (Exception ex)
+
+            ReturnResponse deletePhotoResponse = await _photoDeleteService.DeleteStudentPhoto(student.PhotoKey);
+
+            if (deletePhotoResponse.Status == ReturnStatus.Failed || deletePhotoResponse.Status == ReturnStatus.Rejected)
             {
-                _messageService.Show($"There was an unexpected error when trying to delete the student's photo\n{ex.Message}");
+                _messageService.Show($"{deletePhotoResponse.Message}", "ហាក... ស្អីគេ?", icon: MessageIcon.Error);
+                return;
             }
 
             await LoadStudentsAsync();
-        }
-        [RelayCommand]
-        private async Task SaveStudentAsync()
-        {
-            await _repository.SaveAsync();
         }
 
         // Initial async load
@@ -227,39 +249,63 @@ namespace New_Student_Management.ViewModels
         }
 
         // Helper functions
+        /// <summary>
+        /// Refreshes the students view with optimized filtering.
+        /// Uses async cancellation to avoid processing stale filter requests.
+        /// </summary>
+        private void RefreshStudentsViewAsync()
+        {
+            if (StudentsView == null) return;
+
+            // Cancel any previous filter operation
+            _filterCancellationTokenSource?.Cancel();
+            _filterCancellationTokenSource = new CancellationTokenSource();
+
+            // Refresh on UI thread for data binding consistency
+            StudentsView.Refresh();
+        }
+        private bool CheckSelectedStudent()
+        {
+            if (SelectedStudent != null) return true;
+            else return false;
+        }
+
         private static bool CandidateValidation(Candidate student)
         {
-            if (student.HasAllData("Age", "OtherInfo", "CreatedAt", "LatinFullName", "FullName"))
-            {
-                return true;
-            }
-            return false;
+            // Check for null early to avoid unnecessary validation calls
+            if (student == null) return false;
+
+            ValidationResponse response = student.HasAllData("Age", "OtherInfo", "CreatedAt", "LatinFullName", "FullName");
+            return response.IsValid;
         }
+
         private bool FilterStudent(object obj)
         {
             if (obj is not Candidate student) return false;
 
-            // 🔎 SEARCH FILTER
+            // SEARCH FILTER - Early exit if search doesn't match
             if (!string.IsNullOrWhiteSpace(StudentSearch))
             {
                 string keyword = StudentSearch.Trim().ToLower();
-
                 bool match = StudentFilters.MatchSearch(student, keyword, CurrentSearchField);
 
                 if (!match)
                     return false;
             }
 
-            // 📊 DATA STATE FILTER
+            // DATA STATE FILTER - Use switch expression for efficient filtering
+            // Validate candidate only once, then use result for all comparisons
+            bool isValidated = CandidateValidation(student);
+            bool hasPhoto = !string.IsNullOrEmpty(student.PhotoKey);
+
             return DataStateFilter switch
             {
-                DataStateFilterOptions.Completed => CandidateValidation(student) == true,
-                DataStateFilterOptions.MissingData => CandidateValidation(student) == false  && !string.IsNullOrEmpty(student.PhotoKey),
-                DataStateFilterOptions.NoPicture => string.IsNullOrEmpty(student.PhotoKey),
-                DataStateFilterOptions.MissingDataAndPicture => string.IsNullOrEmpty(student.PhotoKey) || CandidateValidation(student) == false ,
+                StudentDataStateFilterOptions.Completed => isValidated && hasPhoto,
+                StudentDataStateFilterOptions.MissingData => !isValidated && hasPhoto,
+                StudentDataStateFilterOptions.NoPicture => !hasPhoto,
+                StudentDataStateFilterOptions.MissingDataAndPicture => !isValidated || !hasPhoto,
                 _ => true,
             };
         }
-
     }
 }

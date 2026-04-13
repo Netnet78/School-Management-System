@@ -1,16 +1,32 @@
-﻿using System.Text.Json;
-using School_Management.Core.Interfaces;
+﻿using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
+using System.Text.Json;
 
 namespace School_Management.Infrastructure.Services
 {
     public class SettingsService : ISettingsService
     {
-        private readonly JsonDocument _json;
+        private JsonDocument _json;
+        private readonly JsonSerializerOptions _jsonSerializerOptions;
+
+        public string SettingsPath { get; }
 
         public SettingsService()
         {
-            string jsonString = File.ReadAllText("appsettings.json");
+            string assemblyPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            string assemblyDirectory = Path.GetDirectoryName(assemblyPath) ?? string.Empty;
+            SettingsPath = Path.Combine(assemblyDirectory, "appsettings.json");
+
+            if (!Path.Exists(SettingsPath))
+            {
+                CreateSettingsFile();
+            }
+
+            string jsonString = File.ReadAllText(SettingsPath);
+            _jsonSerializerOptions = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            };
             _json = JsonDocument.Parse(jsonString);
 
             CheckPhotoPathConfig();
@@ -39,19 +55,43 @@ namespace School_Management.Infrastructure.Services
             {
                 SaveAllSettings(previous);
             }
+
+            Directory.CreateDirectory(previous.StudentPhotoFolderPath);
+            Directory.CreateDirectory(previous.EmployeePhotoFolderPath);
+        }
+
+        private void CreateSettingsFile()
+        {
+            File.Create(SettingsPath);
+            var obj = new
+            {
+                Theme = string.Empty,
+                Storage = new
+                {
+                    StudentPhotoFolderPath = string.Empty,
+                    StudentPhotoFolderBucketPath = string.Empty,
+                    EmployeePhotoFolderPath = string.Empty,
+                    EmployeePhotoFolderBucketPath = string.Empty,
+                    BucketName = string.Empty,
+                }
+            };
+
+            string json = JsonSerializer.Serialize(obj, _jsonSerializerOptions);
+            File.WriteAllText(SettingsPath, json);
         }
 
         public Settings GetAllSettings()
         {
             JsonElement root = _json.RootElement;
-            JsonElement storage = _json.RootElement.GetProperty("Storage");
+            JsonElement storage = root.GetProperty("Storage");
             return new Settings
             {
                 Theme = root.GetProperty("Theme").GetString() ?? "Light",
-                StudentPhotoFolderPath = storage.GetProperty("StudentPhotoFolderPath").GetString() ?? "",
-                StudentPhotoFolderBucketPath = storage.GetProperty("StudentPhotoFolderBucketPath").GetString() ?? "",
-                EmployeePhotoFolderPath = storage.GetProperty("EmployeePhotoFolderPath").GetString() ?? "",
-                EmployeePhotoFolderBucketPath = storage.GetProperty("EmployeePhotoFolderBucketPath").GetString() ?? "",
+                StudentPhotoFolderPath = storage.GetProperty("StudentPhotoFolderPath").GetString() ?? string.Empty,
+                StudentPhotoFolderBucketPath = storage.GetProperty("StudentPhotoFolderBucketPath").GetString() ?? string.Empty,
+                EmployeePhotoFolderPath = storage.GetProperty("EmployeePhotoFolderPath").GetString() ?? string.Empty,
+                EmployeePhotoFolderBucketPath = storage.GetProperty("EmployeePhotoFolderBucketPath").GetString() ?? string.Empty,
+                BucketName = storage.GetProperty("BucketName").GetString() ?? string.Empty,
             };
         }
 
@@ -59,15 +99,22 @@ namespace School_Management.Infrastructure.Services
         {
             var obj = new
             {
-                Storage = settings
+                Theme = settings.Theme,
+                Storage = new
+                {
+                    settings.StudentPhotoFolderPath,
+                    settings.StudentPhotoFolderBucketPath,
+                    settings.EmployeePhotoFolderPath,
+                    settings.EmployeePhotoFolderBucketPath,
+                    settings.BucketName,
+                }
             };
 
-            var json = JsonSerializer.Serialize(obj, new JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
+            string json = JsonSerializer.Serialize(obj, _jsonSerializerOptions);
+            File.WriteAllText(SettingsPath, json);
 
-            File.WriteAllText("appsettings.json", json);
+            string jsonString = File.ReadAllText(SettingsPath);
+            _json = JsonDocument.Parse(jsonString);
         }
     }
 }

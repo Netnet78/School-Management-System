@@ -1,6 +1,7 @@
-﻿using School_Management.Core.Interfaces;
+﻿using School_Management.Core.Enums;
+using School_Management.Core.Interfaces.Application;
+using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
-using System.Text.Json;
 
 namespace School_Management.Application.Services
 {
@@ -23,7 +24,7 @@ namespace School_Management.Application.Services
         /// <param name="path">The path of the student photo to be deleted. This must be a valid file path pointing to an existing photo.</param>
         /// <returns>The path of the deleted student photo.</returns>
         /// <exception cref="ArgumentException">Thrown if the specified path does not point to an existing photo.</exception>
-        public async Task<FileObject> DeleteStudentPhoto(string photoKey)
+        public async Task<ReturnResponse> DeleteStudentPhoto(string photoKey)
         {
             Settings config = settingsService.GetAllSettings();
             string photoDirectory = Path.Combine(config.StudentPhotoFolderPath);
@@ -32,10 +33,15 @@ namespace School_Management.Application.Services
             {
                 File.Delete(destination);
             }
-            await s3Service.DeleteFile(photoKey, config.StudentPhotoFolderBucketPath);
-            return new(destination);
+            ReturnResponse response = await s3Service.DeleteFile(photoKey, config.StudentPhotoFolderBucketPath);
+
+            return new()
+            {
+                Status = response.Status,
+                Message = response.Message,
+            };
         }
-        public async Task<FileObject> DeleteEmployeePhoto(string photoKey)
+        public async Task<ReturnResponse> DeleteEmployeePhoto(string photoKey)
         {
             Settings config = settingsService.GetAllSettings();
             string photoDirectory = Path.Combine(config.EmployeePhotoFolderPath);
@@ -44,8 +50,14 @@ namespace School_Management.Application.Services
             {
                 File.Delete(destination);
             }
-            await s3Service.DeleteFile(photoKey, config.EmployeePhotoFolderBucketPath);
-            return new(destination);
+
+            ReturnResponse response = await s3Service.DeleteFile(photoKey, config.EmployeePhotoFolderBucketPath);
+
+            return new()
+            {
+                Message = response.Message,
+                Status = response.Status,
+            };
         }
     }
 }

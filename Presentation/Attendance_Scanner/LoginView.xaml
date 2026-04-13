@@ -1,0 +1,91 @@
+﻿<Window x:Class="Attendance_Scanner.LoginView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Attendance_Scanner"
+        xmlns:components="clr-namespace:School_Management.Presentation.Shared.Components;assembly=School_Management.Presentation.Shared"
+        xmlns:materialDesigns="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        WindowStyle="None"
+        Background="Transparent"
+        AllowsTransparency="True"
+        Title="LoginView" MinHeight="450" MinWidth="600">
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0" ResizeBorderThickness="6" />
+    </WindowChrome.WindowChrome>
+
+    <Border BorderBrush="{DynamicResource MaterialDesign.Brush.Primary}"
+                    BorderThickness="6"
+                    CornerRadius="6">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <components:TitleBar Title="Action Required" Grid.Row="0"/>
+
+            <Grid Background="{DynamicResource MaterialDesign.Brush.Primary}" Grid.Row="1">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Border Background="White" Padding="20" CornerRadius="10">
+                        <StackPanel>
+                            <StackPanel TextElement.FontSize="24">
+                                <TextBlock Text="សូមធ្វើការចូលគណនីដើម្បីបន្តទៅមុខ" TextAlignment="Center"/>
+                                <TextBlock Text="Please sign in to continue" TextAlignment="Center" Margin="0 10 0 0"/>
+                            </StackPanel>
+                            <Rectangle Fill="{DynamicResource MaterialDesign.Brush.Primary}" Height="1" Margin="0 20"/>
+                            <Grid TextElement.FontSize="18" Margin="0 0 0 20">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <materialDesigns:PackIcon Kind="User" Width="24" Height="24" Margin="0 0 10 0"/>
+                                    <TextBlock Text="Username" TextAlignment="Left" VerticalAlignment="Center" Grid.Column="0"/>
+                                </StackPanel>
+                                <TextBox Margin="10 0 0 0" Grid.Column="1" ToolTip="Enter your username"/>
+                            </Grid>
+                            <Grid TextElement.FontSize="18" Margin="0 0 0 10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <materialDesigns:PackIcon Kind="Key" Width="24" Height="24" Margin="0 0 10 0"/>
+                                    <TextBlock Text="Password" TextAlignment="Left" VerticalAlignment="Center" Grid.Column="0"/>
+                                </StackPanel>
+                                <PasswordBox Margin="10 0 0 0" Grid.Column="1" ToolTip="Enter your password"/>
+                            </Grid>
+
+                            <Grid Margin="0 20 0 0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Button Margin="0 0 10 0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesigns:PackIcon Kind="ExitToApp" Margin="0 0 10 0" RenderTransformOrigin="0.5,0.5" >
+                                            <materialDesigns:PackIcon.RenderTransform>
+                                                <TransformGroup>
+                                                    <RotateTransform Angle="180"/>
+                                                </TransformGroup>
+                                            </materialDesigns:PackIcon.RenderTransform>
+                                        </materialDesigns:PackIcon>
+                                        <TextBlock Text="Exit"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Grid.Column="1" Margin="10 0 0 0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Continue"/>
+                                        <materialDesigns:PackIcon Kind="ArrowRight" Margin="10 0 0 0"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

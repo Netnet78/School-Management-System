@@ -1,18 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using School_Management.Infrastructure.Data;
+using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
+using School_Management.Infrastructure.Data;
 
 namespace School_Management.Infrastructure.Repositories
 {
-    public interface IGradeRepository
-    {
-        Task<List<Grade>> GetAllAsync();
-        Task<Grade?> GetByIdAsync(int id);
-        Task AddAsync(Grade grade);
-        Task UpdateAsync(Grade grade);
-        Task DeleteAsync(Grade grade);
-        Task SaveAsync();
-    }
 
     public class GradeRepository : IGradeRepository
     {

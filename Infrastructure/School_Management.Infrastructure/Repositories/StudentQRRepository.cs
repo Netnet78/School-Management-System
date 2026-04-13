@@ -1,19 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using School_Management.Infrastructure.Data;
+using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
+using School_Management.Infrastructure.Data;
 
 namespace School_Management.Infrastructure.Repositories
 {
-    public interface IStudentQRRepository
-    {
-        Task<List<StudentQR>> GetAllAsync();
-        Task<StudentQR?> GetByIdAsync(int id);
-        Task<StudentQR?> GetByQRValueAsync(string value);
-        Task AddAsync(StudentQR studentQR);
-        Task UpdateAsync(StudentQR studentQR);
-        Task DeleteAsync(StudentQR studentQR);
-        Task SaveAsync();
-    }
 
     public class StudentQRRepository : IStudentQRRepository
     {
@@ -36,7 +27,11 @@ namespace School_Management.Infrastructure.Repositories
 
         public async Task<StudentQR?> GetByQRValueAsync(string value)
         {
-            return await _context.StudentQRs.FirstOrDefaultAsync(s => s.QRCodeValue == value);
+            return await _context.StudentQRs
+                .Include(s => s.Student)
+                .Include(s => s.Student.Candidate)
+                .Include(s => s.Student.Candidate.Skill)
+                .FirstOrDefaultAsync(s => s.QRCodeValue == value);
         }
 
         public async Task AddAsync(StudentQR studentQR)

@@ -1,18 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using School_Management.Infrastructure.Data;
+using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
+using School_Management.Infrastructure.Data;
 
 namespace School_Management.Infrastructure.Repositories
 {
-    public interface IStudentClassRepository
-    {
-        Task<List<StudentClass>> GetAllAsync();
-        Task<StudentClass?> GetByIdAsync(int id);
-        Task AddAsync(StudentClass studentClass);
-        Task UpdateAsync(StudentClass studentClass);
-        Task DeleteAsync(StudentClass studentClass);
-        Task SaveAsync();
-    }
 
     public class StudentClassRepository : IStudentClassRepository
     {
@@ -66,6 +58,17 @@ namespace School_Management.Infrastructure.Repositories
         public async Task SaveAsync()
         {
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<StudentClass>?> GetAllFromStudentIdAsync(int studentId)
+        {
+            Student? student = await _context.Students.FirstOrDefaultAsync(s => s.Id == studentId);
+
+            if (student == null) return null;
+
+            List<StudentClass> studentClasses = student.Classes.ToList();
+
+            return studentClasses;
         }
     }
 }

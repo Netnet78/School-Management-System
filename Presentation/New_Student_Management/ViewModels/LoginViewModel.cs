@@ -1,9 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using School_Management.Core.Enums;
+using School_Management.Core.Interfaces.Application;
+using School_Management.Core.Interfaces.Presentation;
 using School_Management.Core.Models;
-using School_Management.Core.Interfaces;
-using School_Management.Presentation.Shared.Components;
-using School_Management.Presentation.Shared.Enums;
+using System.Diagnostics;
+using System.Security;
+using System.Windows;
 
 namespace New_Student_Management.ViewModels
 {
@@ -22,31 +25,34 @@ namespace New_Student_Management.ViewModels
 
         // MVVM Bindings
         [ObservableProperty]
-        private string username = "";
-        [ObservableProperty]
-        private string password = "";
+        private string username = string.Empty;
         public Action<bool>? LoginSucceeded { get; set; }
 
         // Login logics
         [RelayCommand]
-        private async Task<bool> LoginAsync()
+        private async Task<bool> LoginAsync(SecureString password)
         {
             try
             {
-                User? user = await _userValidationService.ValidateUserAsync(Username, Password);
+                ReturnResponse<User> response = await _userValidationService.ValidateUserAsync(Username, password);
 
-                if (user == null)
+                string messageHeader = string.Empty;
+
+                if (response.Status == ReturnStatus.Failed) messageHeader = "ខុសព័ត៌មាន!";
+                else if (response.Status == ReturnStatus.Rejected) messageHeader = "ត្រជាក់ៗ! មួយៗ កុំលឿនពេក!";
+
+                if (response.Value == null)
                 {
-                    _messageService.Show("Invalid username or password information, please try again!", "Wrong Credentials", 
-                        System.Windows.MessageBoxButton.OK, MessageBoxIcon.Error);
+                    _messageService.Show(response.Message, messageHeader,
+                        MessageButton.OK, MessageIcon.Error);
                     return false;
                 }
 
-                await _userSessionService.SetSession(user);
+                await _userSessionService.SetSession(response.Value.Id);
                 LoginSucceeded?.Invoke(true);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
                 _messageService.Show("There's something wrong when trying to login..." +
                     "\nThere are reasons that this error appears:" +
@@ -54,7 +60,9 @@ namespace New_Student_Management.ViewModels
                     "\n2. Failed to initialize services" +
                     "\n3. Corrupted program files\n" +
                     "\n If you see this error, contact the administrator or the developer immediately.", "Critical Error",
-                    System.Windows.MessageBoxButton.OK, MessageBoxIcon.Error);
+                    MessageButton.OK, MessageIcon.Error);
+
+                Debug.WriteLine(ex.Message);
 
                 LoginSucceeded?.Invoke(false);
                 return false;

@@ -1,15 +1,15 @@
 ﻿using ClosedXML.Excel;
 using Microsoft.Win32;
-using School_Management.Core.Models;
 using School_Management.Core.Enums;
+using School_Management.Core.Helpers;
+using School_Management.Core.Models;
 using System.Windows;
-using School_Management.Presentation.Shared.Helpers;
+using KhmerCalendar;
 
 namespace New_Student_Management.Reports
 {
     public class CandidateReport
     {
-        private readonly List<Candidate> _students;
         private readonly DateTime _reportDate;
         private readonly int _studyYearStart;
         private readonly int _studyYearEnd;
@@ -17,9 +17,8 @@ namespace New_Student_Management.Reports
         public string TemplatePath { get; set; } = @".\Sources\Spreadsheets\candidate_list.xlsx";
         public string OutputPath { get; private set; } = @"";
         public string FileName { get; private set; } = @"";
-        public CandidateReport(List<Candidate> students, DateTime? date, int? startYear, int? endYear, List<Skill> skills)
+        public CandidateReport(DateTime? date, int? startYear, int? endYear, List<Skill> skills)
         {
-            _students = students;
             _reportDate = date ?? DateTime.Now;
             _studyYearStart = startYear ?? (DateTime.Now.Month >= 9 ? DateTime.Now.Year : DateTime.Now.Year - 1);
             _studyYearEnd = endYear ?? (DateTime.Now.Month >= 9 ? DateTime.Now.Year + 1 : DateTime.Now.Year);
@@ -38,6 +37,8 @@ namespace New_Student_Management.Reports
                 List<Candidate> studentsInSkill = skillGroup.Students.ToList();
 
                 if (studentsInSkill.Count <= 0) continue;
+
+                EnsureWorksheetExists(workbook, sheetName); 
 
                 for (int i = 0; i < studentsInSkill.Count; i++)
                 {
@@ -75,11 +76,7 @@ namespace New_Student_Management.Reports
         }
         private void InsertStudent(XLWorkbook workbook, Candidate student, string sheetName, int index)
         {
-            if (!workbook.TryGetWorksheet(sheetName, out var ws))
-            {
-                MessageBox.Show("Worksheet not found!", "Worksheet Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
+            var ws = workbook.Worksheet(sheetName);
 
             int summaryRow = FindSummaryRow(ws);
             if (summaryRow == -1)
@@ -98,11 +95,11 @@ namespace New_Student_Management.Reports
             ws.Cell(newRow, 1).Value = index; // Serial number
             ws.Cell(newRow, 2).Value = student.LastName;
             ws.Cell(newRow, 3).Value = student.FirstName;
-            ws.Cell(newRow, 4).Value = (student.Gender).GetDescription(); // "ប្រុស"/"ស្រី"
-            ws.Cell(newRow, 5).Value = student.DateOfBirth.ToDateTime(TimeOnly.MinValue);
+            ws.Cell(newRow, 4).Value = student.Gender.GetDescription(); // "ប្រុស"/"ស្រី"
+            ws.Cell(newRow, 5).Value = student.DateOfBirth?.ToDateTime(TimeOnly.MinValue);
             ws.Cell(newRow, 6).Value = student.Age;
-            ws.Cell(newRow, 7).Value = (student.ExamCenter);
-            ws.Cell(newRow, 8).Value = student.ExamDate.ToDateTime(TimeOnly.MinValue);
+            ws.Cell(newRow, 7).Value = student.ExamCenter;
+            ws.Cell(newRow, 8).Value = student.ExamDate?.ToDateTime(TimeOnly.MinValue);
             ws.Cell(newRow, 9).Value = student.ExamTable;
             ws.Cell(newRow, 10).Value = student.ExamRoom;
             ws.Cell(newRow, 11).Value = student.FromSchool;
@@ -114,6 +111,39 @@ namespace New_Student_Management.Reports
             UpdateSummary(ws, summaryRow + 1, student);
             // Update report date
             UpdateReportDate(ws, _reportDate);
+        }
+        private void EnsureWorksheetExists(XLWorkbook workbook, string sheetName)
+        {
+            if (workbook.TryGetWorksheet(sheetName, out _))
+            {
+                return;
+            }
+
+            IXLWorksheet templateSheet = workbook.Worksheets.First();
+            IXLWorksheet newSheet = workbook.Worksheets.Add(sheetName);
+
+            foreach (IXLRow row in templateSheet.Rows())
+            {
+                IXLRow newRow = newSheet.Row(row.RowNumber());
+                newRow.Height = row.Height;
+
+                foreach (IXLCell cell in row.Cells())
+                {
+                    IXLCell newCell = newRow.Cell(cell.Address.ColumnNumber);
+                    newCell.Value = cell.Value;
+
+                    if (cell.HasFormula)
+                    {
+                        newCell.FormulaA1 = cell.FormulaA1;
+                    }
+                }
+            }
+
+            var templateColumns = templateSheet.Columns();
+            foreach (var templateColumn in templateColumns)
+            {
+                newSheet.Column(templateColumn.ColumnNumber()).Width = templateColumn.Width;
+            }
         }
         private static int FindSummaryRow(IXLWorksheet ws)
         {

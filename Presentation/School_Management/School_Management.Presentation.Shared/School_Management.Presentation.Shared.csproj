@@ -44,8 +44,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AForge.Video" Version="2.2.5" />
+    <PackageReference Include="AForge.Video.DirectShow" Version="2.2.5" />
     <PackageReference Include="MaterialDesignColors" Version="5.3.0" />
     <PackageReference Include="MaterialDesignThemes" Version="5.3.0" />
+    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260330" />
+    <PackageReference Include="OpenCvSharp4.Extensions" Version="4.13.0.20260330" />
+    <PackageReference Include="OpenCvSharp4.WpfExtensions" Version="4.13.0.20260330" />
   </ItemGroup>
 
   <ItemGroup>

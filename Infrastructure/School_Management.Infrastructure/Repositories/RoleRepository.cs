@@ -1,19 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using School_Management.Infrastructure.Data;
+using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
+using School_Management.Infrastructure.Data;
 
 namespace School_Management.Infrastructure.Repositories
 {
-    public interface IRoleRepository
-    {
-        Task<List<Role>> GetAllAsync();
-        Task<Role?> GetByIdAsync(int id);
-        Task<Role?> GetByNameAsync(string name);
-        Task AddAsync(Role role);
-        Task UpdateAsync(Role role);
-        Task DeleteAsync(Role role);
-        Task SaveAsync();
-    }
 
     public class RoleRepository : IRoleRepository
     {

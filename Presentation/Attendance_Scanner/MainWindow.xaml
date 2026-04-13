@@ -6,8 +6,8 @@
         xmlns:local="clr-namespace:Attendance_Scanner"
         xmlns:materialDesigns="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:components="clr-namespace:School_Management.Presentation.Shared.Components;assembly=School_Management.Presentation.Shared"
-        xmlns:converters="clr-namespace:School_Management.Presentation.Shared.Converters;assembly=School_Management.Presentation.Shared" 
-        xmlns:viewmodels="clr-namespace:Attendance_Scanner.ViewModels" 
+        xmlns:converters="clr-namespace:School_Management.Presentation.Shared.XAMLConverters;assembly=School_Management.Presentation.Shared"
+        xmlns:viewmodels="clr-namespace:Attendance_Scanner.ViewModels"
         d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
         mc:Ignorable="d"
         Title="Attendance Scanner" Height="580" Width="1020"
@@ -20,7 +20,7 @@
         MinWidth="1020"
         MinHeight="580"
         Closing="Window_Closing">
-    
+
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="0" ResizeBorderThickness="5" />
     </WindowChrome.WindowChrome>
@@ -30,8 +30,10 @@
         <converters:PhotoPathToImageSourceConverter x:Key="PhotoPathToImageSourceConverter" />
         <converters:ValidPathToVisibility x:Key="ValidPathToVisibilityReversed" Reversed="True" />
         <converters:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter" />
-        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" Collapse="True"/>
-        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverterReversed" Collapse="True" IsReversed="True"/>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" Collapse="True" />
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverterReversed" Collapse="True" IsReversed="True" />
+        <converters:BooleanInverseConverter x:Key="BooleanInverseConverter" />
+        <converters:BitmapToBitmapSourceConverter x:Key="BitmapToBitmapSourceConverter" />
     </Window.Resources>
 
     <Border CornerRadius="8" BorderBrush="{DynamicResource MaterialDesign.Brush.Primary}" BorderThickness="8" Padding="0">
@@ -48,163 +50,189 @@
             <!--Main content-->
             <Grid Background="White" Grid.Row="1" TextElement.Foreground="White">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="500" />
+                    <ColumnDefinition Width="0*" x:Name="MainContentFirstGridDefinition"/>
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="50"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="50" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
                 <!--Left Side Header-->
-                <Border Padding="10" 
-                        BorderBrush="White" 
-                        BorderThickness="0 0 0 2" 
+                <Border x:Name="LeftSideHeader"
+                        Padding="10"
+                        BorderBrush="White"
+                        BorderThickness="0 0 0 2"
                         DockPanel.Dock="Top" Grid.Row="0"
                         Background="{DynamicResource MaterialDesign.Brush.Secondary}">
-                    <StackPanel Orientation="Horizontal" 
-                                HorizontalAlignment="Center" 
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center"
                                 TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}">
-                        <materialDesigns:PackIcon Kind="UserCheck" 
+                        <materialDesigns:PackIcon Kind="UserCheck"
                                                   VerticalAlignment="Center"
-                                                  Width="24" Height="24" Margin="0 0 10 0"/>
-                        <TextBlock Text="ព័ត៌មានសិស្សដែលបានស្កេន" FontSize="18" VerticalAlignment="Center" FontWeight="Bold" Margin="0 0 10 0"/>
+                                                  Width="24" Height="24" Margin="0 0 10 0" />
+                        <TextBlock Text="ព័ត៌មានសិស្សដែលបានស្កេន" FontSize="18" VerticalAlignment="Center" FontWeight="Bold" Margin="0 0 10 0" />
                     </StackPanel>
                 </Border>
+                <!--Left Side Content Container-->
+                <Grid x:Name="LeftSideContentContainer" Background="{DynamicResource MaterialDesign.Brush.Secondary}" Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-                <!--Left Side Container-->
-                <DockPanel LastChildFill="True" Background="{DynamicResource MaterialDesign.Brush.Secondary}" Grid.Row="1">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        
-                        <!--Left Section-->
+                    <!--Left Section-->
+                    <Viewbox Stretch="Uniform">
                         <Border Grid.Column="0" Padding="10" TextElement.FontSize="18">
                             <StackPanel>
                                 <StackPanel Orientation="Vertical">
-                                    <TextBlock Text="+ ឈ្មោះសិស្ស៖" Margin="0 0 7 5"/>
-                                    <TextBlock TextDecorations="Underline" Text="{Binding CurrentStudent.Candidate.FullName, FallbackValue='ស៊ី សុផានិត'}" />
+                                    <TextBlock Text="+ ឈ្មោះសិស្ស៖" Margin="0 0 7 5" />
+                                    <TextBlock TextDecorations="Underline" Text="{Binding CurrentStudent.Candidate.FullName, FallbackValue=''}" />
                                 </StackPanel>
                                 <StackPanel Orientation="Vertical" Margin="0 10 0 0">
-                                    <TextBlock Text="+ ឈ្មោះសិស្សជាឡាតាំង៖" Margin="0 0 7 5"/>
+                                    <TextBlock Text="+ ឈ្មោះសិស្សជាឡាតាំង៖" Margin="0 0 7 5" />
                                     <TextBlock TextDecorations="Underline" Text="{Binding CurrentStudent.Candidate.LatinFullName}" />
                                 </StackPanel>
                                 <StackPanel Orientation="Vertical" Margin="0 10 0 0">
-                                    <TextBlock Text="+ ភេទ៖" Margin="0 0 7 5"/>
+                                    <TextBlock Text="+ ភេទ៖" Margin="0 0 7 5" />
                                     <TextBlock TextDecorations="Underline" Text="{Binding CurrentStudent.Candidate.Gender, Converter={StaticResource EnumToDescriptionConverter}}" />
                                 </StackPanel>
                                 <StackPanel Orientation="Vertical" Margin="0 10 0 0">
-                                    <TextBlock Text="+ អាយុ៖" Margin="0 0 7 5"/>
-                                    <TextBlock TextDecorations="Underline" Text="{Binding CurrentStudent.Candidate.Age}" />
+                                    <TextBlock Text="+ អាយុ៖" Margin="0 0 7 5" />
+                                    <TextBlock TextDecorations="Underline" Text="{Binding CurrentStudent.Candidate.Age, StringFormat=0 ឆ្នាំ}" />
                                 </StackPanel>
                                 <StackPanel Orientation="Vertical" Margin="0 10 0 0">
-                                    <TextBlock Text="+ ជំនាញ៖" Margin="0 0 7 5"/>
-                                    <TextBlock TextDecorations="Underline" Text="{Binding CurrentStudent.Candidate.Skill}" />
+                                    <TextBlock Text="+ ជំនាញ៖" Margin="0 0 7 5" />
+                                    <TextBlock TextDecorations="Underline" Text="{Binding CurrentStudent.Candidate.Skill.Name}" />
                                 </StackPanel>
                                 <StackPanel Orientation="Vertical" Margin="0 10 0 0">
-                                    <TextBlock Text="+ កម្រិត៖" Margin="0 0 7 5"/>
-                                    <TextBlock TextDecorations="Underline" Text="{Binding CurrentStudent.OtherInfo}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Vertical" Margin="0 10 0 0">
-                                    <TextBlock Text="+ ព័ត៌មានផ្សេងៗ៖" Margin="0 0 7 5"/>
-                                    <TextBlock TextDecorations="Underline" Text="{Binding CurrentStudent.OtherInfo}" />
+                                    <!--<TextBlock Text="+ កម្រិត៖" Margin="0 0 7 5" />
+                    <TextBlock TextDecorations="Underline" Text="{Binding CurrentStudent}" />-->
                                 </StackPanel>
                             </StackPanel>
                         </Border>
-                        
-                        <!--Right Section-->
-                        <Border Grid.Column="1" Padding="10">
-                            <StackPanel>
-                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top">
-                                    <TextBlock Text="រូបថតសិស្សានុសិស្ស" HorizontalAlignment="Center" FontWeight="Bold" FontSize="18"/>
-                                    <Image Width="120" Height="220"
-                                   Stretch="Uniform"
-                                   Visibility="{Binding CurrentPhotoPath, Converter={StaticResource ValidPathToVisibility}, FallbackValue='Collapsed'}"
-                                   Source="{Binding CurrentPhotoPath, Converter={StaticResource PhotoPathToImageSourceConverter}}" />
+                    </Viewbox>
 
-                                    <Border Width="120" Height="160"
-                                    Margin="0 5"
-                                    BorderThickness="2"
-                                    BorderBrush="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"
-                                    Visibility="{Binding CurrentPhotoPath, Converter={StaticResource ValidPathToVisibilityReversed}}">
+                    <!--Right Section-->
+                    <Viewbox Stretch="Uniform" Grid.Column="1" VerticalAlignment="Top">
+                        <Border Padding="20 20 20 0">
+                            <StackPanel>
+                                <StackPanel HorizontalAlignment="Center">
+                                    <!--<TextBlock Text="រូបថតសិស្សានុសិស្ស" HorizontalAlignment="Center" FontWeight="Bold" FontSize="18" />-->
+                                    <Image Width="120" Height="180"
+                                       Stretch="Uniform"
+                                       Visibility="{Binding CurrentPhotoPath, Converter={StaticResource ValidPathToVisibility}, FallbackValue=Collapsed}"
+                                       Source="{Binding CurrentPhotoPath, Converter={StaticResource PhotoPathToImageSourceConverter}}" />
+
+                                    <Border Width="120" Height="180"
+                                        Margin="0 5"
+                                        BorderThickness="2"
+                                        BorderBrush="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"
+                                        Visibility="{Binding CurrentPhotoPath, Converter={StaticResource ValidPathToVisibilityReversed}}">
                                         <TextBlock Text="?"
-                                       FontSize="72"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center" />
+                                           FontSize="72"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" />
                                     </Border>
                                 </StackPanel>
 
-                                <StackPanel TextElement.FontSize="18" Orientation="Vertical" HorizontalAlignment="Center" Margin="0 5 0 0">
-                                    <TextBlock Text="លេខសម្គាល់" HorizontalAlignment="Center"/>
-                                    <TextBlock TextDecorations="Underline" HorizontalAlignment="Center" Text="{Binding CurrentStudent.Id, StringFormat=SDBS{0:0000}}" />
+                                <StackPanel TextElement.FontSize="18" Orientation="Vertical" HorizontalAlignment="Center" Margin="0 0 0 0">
+                                    <TextBlock Text="{Binding CurrentStudent.Candidate.FullName}" HorizontalAlignment="Center" />
+                                    <TextBlock TextDecorations="Underline" HorizontalAlignment="Center" Text="{Binding CurrentStudent.Id, StringFormat=SDBS\{0:0000\}}" />
                                 </StackPanel>
-
-                                <StackPanel TextElement.FontSize="18" Orientation="Vertical" HorizontalAlignment="Center" Margin="0 5 0 0">
-                                    <TextBlock Text="លេខកូដ" HorizontalAlignment="Center"/>
-                                    <TextBlock TextDecorations="Underline" HorizontalAlignment="Center" Text="{Binding ScannedCode}" />
-                                </StackPanel>
-
                             </StackPanel>
                         </Border>
-                    </Grid>
-                </DockPanel>
-                
+                    </Viewbox>
+                </Grid>
+
                 <!--Right Side Header-->
-                <Border Padding="10" 
-                        BorderBrush="White" 
-                        BorderThickness="0 0 0 2" 
+                <Border Padding="10"
+                        BorderBrush="White"
+                        BorderThickness="0 0 0 2"
                         DockPanel.Dock="Top" Grid.Row="0" Grid.Column="1"
                         Background="{DynamicResource MaterialDesign.Brush.Secondary}">
-                    <StackPanel Orientation="Horizontal" 
-                                HorizontalAlignment="Center" 
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center"
                                 TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesigns:PackIcon Kind="Camera" 
+                            <materialDesigns:PackIcon Kind="Camera"
                                                   VerticalAlignment="Center"
-                                                  Width="24" Height="24" Margin="0 0 10 0"/>
+                                                  Width="24" Height="24" Margin="0 0 10 0" />
                             <TextBlock Text="ឧបករណ៍កាមេរ៉ា" FontSize="18" VerticalAlignment="Center" FontWeight="Bold" />
                         </StackPanel>
                         <Border BorderBrush="White" BorderThickness="2" Margin="10 0 0 0" VerticalAlignment="Center">
-                            <ComboBox Width="200" Padding="0 0 10 0" 
+                            <ComboBox Width="200" Padding="0 0 10 0"
                                       ItemsSource="{Binding AvailableDevices}"
                                       SelectedIndex="{Binding SelectedDevice}"
-                                      x:Name="DeviceSelector">
-                            </ComboBox>
+                                      x:Name="DeviceSelector"
+                                      IsEnabled="{Binding IsLive, FallbackValue=True, Converter={StaticResource BooleanInverseConverter}, Mode=OneWay}"/>
                         </Border>
                     </StackPanel>
                 </Border>
-
-                <!--Right Side Container-->
+                <!--Right Side Content Container-->
                 <Grid Grid.Column="1" Grid.Row="1">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="3*" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="186" />
                     </Grid.RowDefinitions>
 
                     <Border Grid.Row="0" BorderBrush="{DynamicResource MaterialDesign.Brush.Secondary}"
-                                BorderThickness="5" Background="AliceBlue">
-                        <Image Source="{Binding BitmapFrame}"
+                                BorderThickness="0 0 0 5" Background="AliceBlue" Visibility="{Binding IsLive, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Visible}">
+                        <Grid>
+                            <Image Source="{Binding BitmapFrame, Converter={StaticResource BitmapToBitmapSourceConverter}}"
                                    SnapsToDevicePixels="True"
-                                   Stretch="Uniform" 
+                                   Stretch="Uniform"
                                    RenderTransformOrigin="0.5,0.5">
-                            <Image.RenderTransform>
-                                <ScaleTransform ScaleX="-1" />
-                            </Image.RenderTransform>
-                        </Image>
+                                <Image.RenderTransform>
+                                    <ScaleTransform ScaleX="-1" />
+                                </Image.RenderTransform>
+                            </Image>
+                            <Border x:Name="SuccessMessage"
+                                Opacity="0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Padding="20 10 20 20"
+                                CornerRadius="10"
+                                Background="White">
+                                <Border.Effect>
+                                    <DropShadowEffect RenderingBias="Quality" BlurRadius="10" ShadowDepth="10" Opacity="0.25"/>
+                                </Border.Effect>
+                                <StackPanel Orientation="Vertical">
+                                    <materialDesigns:PackIcon
+                                    Kind="CheckCircle"
+                                    Foreground="Green"
+                                    Width="128"
+                                    Height="128"
+                                    HorizontalAlignment="Center" />
+                                    <TextBlock
+                                    Text="ស្កេនបានដោយ​ជោគជ័យ! សូមអរគុណ!"
+                                    FontSize="24"
+                                    Margin="0 20 0 0"
+                                    Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
                     </Border>
 
-                    <StackPanel Orientation="Vertical" 
+                    <Border Grid.Row="0" BorderBrush="{DynamicResource MaterialDesign.Brush.Secondary}"
+                                BorderThickness="5" Background="AliceBlue" Visibility="{Binding IsLive, Converter={StaticResource BooleanToVisibilityConverterReversed}, FallbackValue=Collapsed}">
+                        <materialDesigns:PackIcon
+                            Kind="VideoOff" Width="128" Height="128"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+                    </Border>
+
+                    <StackPanel Orientation="Vertical"
                                 Grid.Row="1"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Center"
                                 TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Secondary}">
                         <TextBlock HorizontalAlignment="Center" Text="Scanner is Ready!" FontSize="24" FontWeight="Bold"
-                                   Visibility="{Binding IsReady, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Visible}"/>
+                                   Visibility="{Binding IsReady, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Visible}" />
                         <TextBlock HorizontalAlignment="Center" Text="Scanner is Busy... Please wait..." FontSize="24" FontWeight="Bold"
-                                   Visibility="{Binding IsReady, Converter={StaticResource BooleanToVisibilityConverterReversed}, FallbackValue=Collapsed}"/>
+                                   Visibility="{Binding IsReady, Converter={StaticResource BooleanToVisibilityConverterReversed}, FallbackValue=Collapsed}" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 5 0 0">
                             <StackPanel VerticalAlignment="Center">
                                 <Button
@@ -214,8 +242,8 @@
                                     <StackPanel Orientation="Horizontal">
                                         <Ellipse x:Name="Indicator" Width="14" Height="14"
                                          Fill="Red" Margin="0 0 15 0"
-                                         VerticalAlignment="Center"/>
-                                        <TextBlock x:Name="IndicatorText" Text="Scanning..." VerticalAlignment="Bottom"/>
+                                         VerticalAlignment="Center" />
+                                        <TextBlock x:Name="IndicatorText" Text="Scanning..." VerticalAlignment="Bottom" />
                                     </StackPanel>
                                 </Button>
                                 <Button
@@ -225,12 +253,12 @@
                                     <StackPanel Orientation="Horizontal">
                                         <Ellipse Width="14" Height="14"
                                          Fill="Red" Margin="0 0 15 0"
-                                         VerticalAlignment="Center"/>
-                                        <TextBlock Text="Start LIVE" VerticalAlignment="Bottom"/>
+                                         VerticalAlignment="Center" />
+                                        <TextBlock Text="Start LIVE" VerticalAlignment="Bottom" />
                                     </StackPanel>
                                 </Button>
                             </StackPanel>
-                            <Button Margin="10 0 0 0" 
+                            <Button Margin="10 0 0 0"
                                     VerticalAlignment="Center"
                                     Command="{Binding RefreshValueCommand}">
                                 <materialDesigns:PackIcon Kind="Refresh" />
@@ -241,5 +269,4 @@
             </Grid>
         </Grid>
     </Border>
-
 </Window>

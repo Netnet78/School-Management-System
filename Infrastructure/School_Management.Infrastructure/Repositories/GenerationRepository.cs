@@ -1,18 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using School_Management.Infrastructure.Data;
+using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
+using School_Management.Infrastructure.Data;
 
 namespace School_Management.Infrastructure.Repositories
 {
-    public interface IGenerationRepository
-    {
-        Task<List<Generation>> GetAllAsync();
-        Task<Generation?> GetByIdAsync(int id);
-        Task AddAsync(Generation generation);
-        Task UpdateAsync(Generation generation);
-        Task DeleteAsync(Generation generation);
-        Task SaveAsync();
-    }
 
     public class GenerationRepository : IGenerationRepository
     {

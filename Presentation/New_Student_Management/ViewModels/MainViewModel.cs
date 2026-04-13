@@ -1,11 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using School_Management.Presentation.Shared.Helpers;
-using System.Windows;
-using School_Management.Core.Interfaces;
+using School_Management.Core.Enums;
+using School_Management.Core.Helpers;
+using School_Management.Core.Interfaces.Application;
+using School_Management.Core.Interfaces.Presentation;
 using School_Management.Core.Models;
-using School_Management.Presentation.Shared.Components;
-using School_Management.Presentation.Shared.Enums;
+using System.Windows;
 
 namespace New_Student_Management.ViewModels
 {
@@ -77,7 +77,7 @@ namespace New_Student_Management.ViewModels
             catch (Exception ex)
             {
                 _messageService.Show($"Failed to initialize views: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxIcon.Error);
+                    MessageButton.OK, MessageIcon.Error);
             }
             finally
             {
@@ -91,8 +91,8 @@ namespace New_Student_Management.ViewModels
             bool result = _messageService.Show(
                 "Are you sure you want to exit the application?",
                 "Confirm Exit",
-                MessageBoxButton.YesNo,
-                MessageBoxIcon.Question) == MessageBoxResult.Yes;
+                MessageButton.YesNo,
+                MessageIcon.Question) == MessageResult.Yes;
 
             if (!result) return;
 

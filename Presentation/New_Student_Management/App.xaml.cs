@@ -1,13 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using New_Student_Management.ViewModels;
+using New_Student_Management.ViewModels.Factories;
 using New_Student_Management.Views;
 using New_Student_Management.Views.Wizards;
+using New_Student_Management.Views.Wizards.Services;
 using School_Management.Application;
 using School_Management.Infrastructure;
 using School_Management.Presentation.Shared;
-using School_Management.Presentation.Shared.Components;
-using School_Management.Presentation.Shared.Enums;
 using System.Windows;
 
 namespace New_Student_Management
@@ -18,7 +18,6 @@ namespace New_Student_Management
     public partial class App : Application
     {
         public static new App Current => (App)Application.Current;
-        public IServiceProvider? ServiceProvider { get; }
         public IHost AppHost { get; }
         public App()
         {
@@ -28,14 +27,20 @@ namespace New_Student_Management
                     services.AddPresentationShared();
                     services.AddInfrastructure();
                     services.AddApplication();
-                    
+
                     // Register ViewModels
-                    services.AddScoped<MainViewModel>();
-                    services.AddScoped<StudentViewModel>();
-                    services.AddSingleton<EditStudentViewModel>();
-                    services.AddScoped<InsertStudentViewModel>();
-                    services.AddScoped<ReportViewModel>();
-                    services.AddScoped<LoginViewModel>();
+                    services.AddSingleton<MainViewModel>();
+                    services.AddSingleton<StudentViewModel>();
+                    services.AddTransient<EditStudentViewModel>();
+                    services.AddSingleton<InsertStudentViewModel>();
+                    services.AddSingleton<ReportViewModel>();
+                    services.AddSingleton<LoginViewModel>();
+
+                    // Register ViewModel Factories
+                    services.AddSingleton<IEditStudentViewModelFactory, EditStudentViewModelFactory>();
+
+                    // Register UI Services
+                    services.AddTransient<IEditStudentWizardService, EditStudentWizardService>();
 
                     // Register Views
                     services.AddTransient<MainWindow>();
@@ -59,16 +64,20 @@ namespace New_Student_Management
         {
             await AppHost.StartAsync();
 
-            if (ServiceProvider == null)
+            IServiceProvider serviceProvider = AppHost.Services;
+
+            if (serviceProvider == null)
             {
                 MessageBox.Show("Service Provider is not initialized.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                await AppHost.StopAsync();
+                AppHost.Dispose();
                 Shutdown();
                 return;
             }
 
             // create a fresh login window
-            MainWindow mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-            //var loginWindow = ServiceProvider.GetRequiredService<LoginViewWindow>();
+            MainWindow mainWindow = serviceProvider.GetRequiredService<MainWindow>();
+            //var loginWindow = serviceProvider.GetRequiredService<LoginViewWindow>();
             //bool? loginResult = loginWindow.ShowDialog();
 
             //if (loginResult == true)
@@ -77,9 +86,12 @@ namespace New_Student_Management
             //}
             //else
             //{
+            //    await AppHost.StopAsync();
+            //    AppHost.Dispose();
             //    Shutdown();
             //    return;
             //}
+
             mainWindow.Show();
             base.OnStartup(e);
         }

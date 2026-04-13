@@ -14,6 +14,7 @@
   <Project Path="Presentation/New_Student_Management/New_Student_Management.csproj" />
   <Project Path="Presentation/School_Management/School_Management.Presentation.Shared/School_Management.Presentation.Shared.csproj" Id="eaa22539-5ac0-43bb-a774-a2204a7e4a7a" />
   <Project Path="Presentation/School_Management/School_Management.Presentation/School_Management.Presentation.csproj" Id="c5528bca-7709-4c47-9c86-7da1f7253996" />
-  <Project Path="Tests/DataMigrator/DataMigrator.csproj" Id="2a06cd3a-867f-498a-a4ff-eb9099df51eb" />
+  <Project Path="Tests/Attendance_Scanner.UnitTests/Attendance_Scanner.UnitTests.csproj" />
   <Project Path="Tests/School_Management.Tests/School_Management.Tests.csproj" Id="2c2518dc-bbca-495d-8e14-7653e4f3fd96" />
+  <Project Path="Tests/TestConsole/TestConsole/TestConsole.csproj" />
 </Solution>

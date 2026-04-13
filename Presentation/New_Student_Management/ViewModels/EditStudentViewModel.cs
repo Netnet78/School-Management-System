@@ -1,31 +1,31 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
-using School_Management.Core.Models;
 using School_Management.Core.Enums;
-using School_Management.Infrastructure.Repositories;
-using System.Windows;
-using School_Management.Presentation.Shared.Helpers;
-using School_Management.Core.Interfaces;
-using School_Management.Presentation.Shared.Components;
-using School_Management.Presentation.Shared.Enums;
+using School_Management.Core.Helpers;
+using School_Management.Core.Interfaces.Application;
+using School_Management.Core.Interfaces.Presentation;
+using School_Management.Core.Models;
+using School_Management.Presentation.Shared.Services;
 
 namespace New_Student_Management.ViewModels
 {
-    public partial class EditStudentViewModel : ObservableObject
+    public partial class EditStudentViewModel : ObservableObject, IAsyncLoadable
     {
-        private readonly ICandidateRepository _repo;
+        private readonly ICandidateService _candidateService;
         private readonly IPhotoFetchService _photoFetchService;
         private readonly IPhotoDeleteService _photoDeleteService;
         private readonly IPhotoUploadService _photoUploadService;
         private readonly IMessageService _messageService;
+        private readonly IFileDialogService _fileDialogService;
+
         public Action<bool>? RequestClose { get; set; }
 
         [ObservableProperty]
-        private int currentStep = 0;
+        private int _currentStep = 0;
 
         [ObservableProperty]
-        private Candidate editedStudent;
+        private Candidate _editedStudent;
 
         private Candidate _defaultStudent;
 
@@ -34,22 +34,23 @@ namespace New_Student_Management.ViewModels
 
         public EditStudentViewModel(
             Candidate studentToEdit,
-            ICandidateRepository repository,
+            ICandidateService candidateService,
             IPhotoFetchService photoFetchService,
             IPhotoDeleteService photoDeleteService,
             IPhotoUploadService photoUploadService,
-            IMessageService messageService)
+            IMessageService messageService,
+            IFileDialogService fileDialogService)
         {
-            _repo = repository;
+            _candidateService = candidateService;
             _photoDeleteService = photoDeleteService;
             _photoFetchService = photoFetchService;
             _photoUploadService = photoUploadService;
             _messageService = messageService;
+            _fileDialogService = fileDialogService;
 
-            // create an editable copy so we only persist on Save
             _defaultStudent = studentToEdit.Clone();
-            EditedStudent = _defaultStudent.Clone();
-            CurrentPhoto = new(EditedStudent.PhotoKey);
+            EditedStudent = null!;
+            CurrentPhoto = null;
         }
 
         [RelayCommand]
@@ -71,20 +72,20 @@ namespace New_Student_Management.ViewModels
             {
                 if (EditedStudent.Id == 0)
                 {
-                    await _repo.AddAsync(EditedStudent);
+                    await _candidateService.InsertCandidateAsync(EditedStudent);
                 }
                 else
                 {
                     EditedStudent.LatinFirstName = EditedStudent.LatinFirstName.ToUpper();
                     EditedStudent.LatinLastName = EditedStudent.LatinLastName.ToUpper();
-                    await _repo.UpdateAsync(EditedStudent);
+                    await _candidateService.EditCandidateAsync(EditedStudent);
                 }
                 RequestClose?.Invoke(true);
             }
             catch (Exception ex)
             {
                 RequestClose?.Invoke(false);
-                _messageService.Show("There was an error saving the student data.", "Error", MessageBoxButton.OK, MessageBoxIcon.Error);
+                _messageService.Show("មិនអាចរក្សាទុកទិន្នន័យសិស្សនេះបានទេ សូមត្រួតពិនិត្យទៅលើ​មូលហេតុខាងក្រោម៖", "មានកំហុសបច្ចេកទេស", MessageButton.OK, MessageIcon.Error);
                 _messageService.Show(ex.Message);
             }
         }
@@ -101,27 +102,38 @@ namespace New_Student_Management.ViewModels
         [RelayCommand]
         private async Task UploadPhotoAsync()
         {
-            OpenFileDialog openFileDialog = new()
+            if (CurrentPhoto != null)
             {
-                Filter = "Image Files (*.png;*.jpg;*.jpeg;*.bmp;*.gif)|*.png;*.jpg;*.jpeg,*.bmp,*.gif",
-                Title = "Select a Photo",
-                Multiselect = false,
-            };
-            if (openFileDialog.ShowDialog() == true)
-            {
-                FileObject uploadedPath = await _photoUploadService.UploadStudentPhoto(openFileDialog.FileName);
-                EditedStudent.PhotoKey = uploadedPath.FullFileName;
-                CurrentPhoto = new(uploadedPath.FilePath);
+                ReturnResponse deleteResponse = await _photoDeleteService.DeleteStudentPhoto(CurrentPhoto.FileKey);
+
+                if (deleteResponse.Status == ReturnStatus.Failed)
+                {
+                    _messageService.Show($"Failed to delete student photo for some reason...\n{deleteResponse.Message}");
+                    return;
+                }
             }
+
+            FileObjectDialog fileDialog = _fileDialogService.ShowDialog("Select a Photo", false, "Image Files", "png", "jpg", "jpeg", "bmp", "gif");
+
+            FileObject uploadedPath = await _photoUploadService.UploadStudentPhoto(fileDialog.GetFilePath());
+            EditedStudent.PhotoKey = uploadedPath.FileKey;
+            CurrentPhoto = new(uploadedPath.FilePath);
+        }
+
+        public async Task LoadAsync()
+        {
+            // create an editable copy so we only persist on Save
+            EditedStudent = _defaultStudent.Clone();
+            CurrentPhoto = await _photoFetchService.GetStudentPhoto(EditedStudent.PhotoKey);
         }
 
         // Expose enum options as value & description
         public IEnumerable<object> GenderOptions
-        { get;  } = Enum.GetValues<Gender>()
+        { get; } = Enum.GetValues<Gender>()
             .Select(g => new { Value = g, Description = EnumExtensions.GetDescription(g) });
 
         public IEnumerable<object> StayTypeOptions
         { get; } = Enum.GetValues<StudentStayType>()
-            .Select(s => new { Value = s, Description = EnumExtensions.GetDescription(s)});
+            .Select(s => new { Value = s, Description = EnumExtensions.GetDescription(s) });
     }
 }

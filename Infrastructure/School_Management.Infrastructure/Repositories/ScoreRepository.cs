@@ -1,18 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using School_Management.Infrastructure.Data;
+using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
+using School_Management.Infrastructure.Data;
 
 namespace School_Management.Infrastructure.Repositories
 {
-    public interface IScoreRepository
-    {
-        Task<List<Score>> GetAllAsync();
-        Task<Score?> GetByIdAsync(int id);
-        Task AddAsync(Score score);
-        Task UpdateAsync(Score score);
-        Task DeleteAsync(Score score);
-        Task SaveAsync();
-    }
 
     public class ScoreRepository : IScoreRepository
     {

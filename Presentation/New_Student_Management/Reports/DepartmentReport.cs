@@ -1,10 +1,10 @@
 ﻿using ClosedXML.Excel;
 using ClosedXML.Excel.Drawings;
 using Microsoft.Win32;
-using School_Management.Core.Models;
 using School_Management.Core.Enums;
+using School_Management.Core.Helpers;
+using School_Management.Core.Models;
 using System.Windows;
-using School_Management.Presentation.Shared.Helpers;
 
 namespace New_Student_Management.Reports
 {
@@ -16,8 +16,8 @@ namespace New_Student_Management.Reports
         private readonly List<Skill> _skills;
         public DepartmentReport(int? startYear, int? endYear, List<Skill> skills)
         {
-            _studyYearStart = startYear ?? (DateTime.Now.Month >= 9 ? DateTime.Now.Year : DateTime.Now.Year - 1);
-            _studyYearEnd = endYear ?? (DateTime.Now.Month >= 9 ? DateTime.Now.Year + 1 : DateTime.Now.Year);
+            _studyYearStart = startYear ?? (DateTime.Now.Month >= 7 ? DateTime.Now.Year : DateTime.Now.Year - 1);
+            _studyYearEnd = endYear ?? (DateTime.Now.Month >= 7 ? DateTime.Now.Year + 1 : DateTime.Now.Year);
             _startRow = 4;
             _skills = skills;
         }
@@ -25,7 +25,7 @@ namespace New_Student_Management.Reports
         public string OutputPath { get; private set; } = @"";
         public string FileName { get; private set; } = @"";
 
-        public ReturnStatus GenerateReport()
+        public ReturnResponse GenerateReport()
         {
             XLWorkbook workbook = new(TemplatePath);
 
@@ -62,17 +62,17 @@ namespace New_Student_Management.Reports
                 try
                 {
                     workbook.SaveAs(saveFileDialog.FileName);
-                    return ReturnStatus.Success;
+                    return new() { Status= ReturnStatus.Success };
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Report failed to generate\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return ReturnStatus.Failed;
+                    string message = $"Report failed to generate\n{ex.Message}";
+                    return new() { Status = ReturnStatus.Failed, Message = message };
                 }
             }
             else
             {
-                return ReturnStatus.Rejected;
+                return new() { Status = ReturnStatus.Rejected };
             }
         }
 
@@ -113,9 +113,9 @@ namespace New_Student_Management.Reports
             // Phone Number
             ws.Cell(newStartRow + 2, 3).SetValue(student.PhoneNumber);
             // Date of Birth
-            ws.Cell(newStartRow + 2, 5).SetValue(student.DateOfBirth.Day);
-            ws.Cell(newStartRow + 1, 5).SetValue(student.DateOfBirth.Month);
-            ws.Cell(newStartRow, 5).SetValue(student.DateOfBirth.Year);
+            ws.Cell(newStartRow + 2, 5).SetValue(student.DateOfBirth?.Day);
+            ws.Cell(newStartRow + 1, 5).SetValue(student.DateOfBirth?.Month);
+            ws.Cell(newStartRow, 5).SetValue(student.DateOfBirth?.Year);
             // Exam Degree
             ws.Cell(newStartRow, 6).SetValue("ឌីប្លូម (ថ្នាក់ទី៩)");
             // Place of Birth

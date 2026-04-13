@@ -1,6 +1,6 @@
-﻿using School_Management.Core.Interfaces;
+﻿using School_Management.Core.Interfaces.Application;
+using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
-using School_Management.Infrastructure.Repositories;
 
 namespace School_Management.Application.Services
 {

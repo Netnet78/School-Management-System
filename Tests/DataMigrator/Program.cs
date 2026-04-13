@@ -1,5 +1,4 @@
 ﻿using Npgsql;
-using School_Management.Application;
 using School_Management.Application.Services;
 using School_Management.Core.Enums;
 using School_Management.Core.Interfaces;
@@ -8,14 +7,15 @@ using School_Management.Infrastructure.Services;
 using System.Data;
 using System.Data.OleDb;
 using System.Text.RegularExpressions;
+using School_Management.Core.Helpers;
 
 internal class Program
 {
-    private static readonly IS3Service s3Service = new S3Service();
     private static readonly ISettingsService settingsService = new SettingsService();
+    private static readonly IS3Service s3Service = new S3Service(settingsService);
     private static readonly IPhotoUploadService uploadService = new PhotoUploadService(settingsService, s3Service);
 
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
 
         string accessFile = @"D:\Office Projects\MS Access Projects\Technical Student Database\StundentandstaffData(update2026).accdb";
@@ -25,12 +25,13 @@ internal class Program
         //DataTable classes = GetClassesFromAccess(connString);
         //BulkInsertClasses(pgConn, classes);
 
-        //DataTable students = GetStudentsFromAccess(connString);
-        //BulkInsertStudents(pgConn, students);
+        DataRow[] students = GetStudentsFromAccess(connString).Select("StudID > 0", "StudID ASC");
+        DataTable dataTable = students.CopyToDataTable();
+        await BulkInsertStudents(pgConn, dataTable);
 
-        //Console.WriteLine("Migration finished.");
+        Console.WriteLine("Migration finished.");
 
-        InsertStudent(pgConn);
+        //InsertStudent(pgConn);
 
         Console.WriteLine("Success!!");
 
@@ -155,17 +156,17 @@ internal class Program
             writer.StartRow();
 
             int id = (int)row["StudID"];
-            string[] name = ((string)row["StudName"]).Split(" ");
-            string[] latinName = ((string)row["LatangName"]).Split(" ");
+            string[] name = ((string)row["StudName"]).RemoveHiddenSpaces().Split(" ");
+            string[] latinName = ((string)row["LatangName"]).RemoveHiddenSpaces().Split(" ");
 
             writer.Write(id);
             writer.Write(name[0]);
-            writer.Write(string.Join(" ", name.Skip(1)));
+            writer.Write(string.Join(" ", name.Length > 1 ? name.Skip(1) : []));
             writer.Write(latinName[0]);
-            writer.Write(string.Join(" ", latinName.Skip(1)));
+            writer.Write(string.Join(" ", latinName.Length > 1 ? latinName.Skip(1) : []));
             writer.Write((string)row["Sex"] == "Male" ? Gender.Male.ToString() : Gender.Female.ToString());
             if (row["DateOfBirth"] is DBNull)
-                writer.Write(new DateOnly(1000, 1, 1));
+                writer.WriteNull();
             else
                 writer.Write(DateOnly.FromDateTime((DateTime)row["DateOfBirth"]));
 
@@ -201,7 +202,7 @@ internal class Program
             writer.Write(string.Empty);
             writer.Write(string.Empty);
             writer.Write(string.Empty);
-            writer.Write(new DateOnly(1000,1,1));
+            writer.WriteNull();
             writer.Write(0);
             writer.Write(0);
             writer.Write(string.Empty);
@@ -214,12 +215,12 @@ internal class Program
             writer.Write(row["Religions"] is DBNull ? "" : row["Religions"]);
             writer.Write((bool)row["Stay"] ? StudentStayType.Inside.ToString() : StudentStayType.Outside.ToString());
 
-            string photoPath = Path.Combine("E:/AccessPhotos/All", $"{id}_{row["LatangName"]}.jpg");
+            string photoPath = Path.Combine("E:\\AccessPhotos\\All", $"{id}_{row["LatangName"]}.jpg");
 
             if (Path.Exists(photoPath))
             {
                 FileObject file = await uploadService.UploadStudentPhoto(photoPath);
-                writer.Write(file.FileName);
+                writer.Write(file.FileKey);
             }
             else
             {

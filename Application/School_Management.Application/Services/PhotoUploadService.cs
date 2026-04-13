@@ -1,4 +1,6 @@
-﻿using School_Management.Core.Interfaces;
+﻿using School_Management.Core.Enums;
+using School_Management.Core.Interfaces.Application;
+using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
 
 namespace School_Management.Application.Services
@@ -30,7 +32,13 @@ namespace School_Management.Application.Services
             string fileName = $"{uuid}{extension}";
             string destination = Path.Combine(photoDirectory, fileName);
 
-            await _s3Service.UploadFile(destination, config.StudentPhotoFolderBucketPath);
+            File.Copy(path, destination, true);
+            ReturnResponse returnResponse = await _s3Service.UploadFile(destination, config.StudentPhotoFolderBucketPath);
+
+            if (returnResponse.Status == ReturnStatus.Failed)
+            {
+                throw new Exception(returnResponse.Message);
+            }
 
             return new FileObject(destination);
         }
@@ -51,7 +59,12 @@ namespace School_Management.Application.Services
             string fileName = $"{uuid}{extension}";
             string destination = Path.Combine(photoDirectory, fileName);
 
-            await _s3Service.UploadFile(destination, config.EmployeePhotoFolderBucketPath);
+            File.Copy(path, destination, true);
+            ReturnResponse returnResponse = await _s3Service.UploadFile(destination, config.EmployeePhotoFolderBucketPath);
+            if (returnResponse.Status == ReturnStatus.Failed)
+            {
+                throw new Exception(returnResponse.Message);
+            }
 
             return new FileObject(destination);
         }

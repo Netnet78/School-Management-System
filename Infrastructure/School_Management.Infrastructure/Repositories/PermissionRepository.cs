@@ -1,18 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using School_Management.Infrastructure.Data;
+using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
+using School_Management.Infrastructure.Data;
 
 namespace School_Management.Infrastructure.Repositories
 {
-    public interface IPermissionRepository
-    {
-        Task<List<Permission>> GetAllAsync();
-        Task<Permission?> GetByIdAsync(int id);
-        Task AddAsync(Permission permission);
-        Task UpdateAsync(Permission permission);
-        Task DeleteAsync(Permission permission);
-        Task SaveAsync();
-    }
 
     public class PermissionRepository : IPermissionRepository
     {

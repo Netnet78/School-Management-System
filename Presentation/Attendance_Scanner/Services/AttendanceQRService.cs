@@ -1,58 +1,135 @@
-﻿using School_Management.Core.Models;
-using School_Management.Infrastructure.Repositories;
-using School_Management.Presentation.Shared.Components;
-using School_Management.Presentation.Shared.Enums;
+﻿using School_Management.Core.Enums;
+using School_Management.Core.Interfaces.Infrastructure;
+using School_Management.Core.Models;
 
 
 namespace Attendance_Scanner.Services
 {
     public interface IAttendanceQRService
     {
-        Task<Student?> GetStudentByQRCode(string code);
+        Task<StudentQRResponse> GetStudentByQRCode(string code);
     }
 
     public class AttendanceQRService : IAttendanceQRService
     {
-        private readonly IStudentRepository _studentRepository;
         private readonly IStudentQRRepository _studentQRRepository;
         private readonly IAttendanceRepository _attendanceRepository;
-        private readonly IMessageService _messageService;
+        private readonly IStudentClassRepository _studentClassRepository;
 
-        public AttendanceQRService(IStudentRepository sr, IStudentQRRepository sqr, IAttendanceRepository atr, IMessageService ims)
+        public AttendanceQRService(IStudentQRRepository sqr, IAttendanceRepository atr, IStudentClassRepository scr)
         {
-            _studentRepository = sr;
             _studentQRRepository = sqr;
             _attendanceRepository = atr;
-            _messageService = ims;
+            _studentClassRepository = scr;
         }
 
-        public async Task<Student?> GetStudentByQRCode(string code)
+        public async Task<StudentQRResponse> GetStudentByQRCode(string code)
         {
-            if (string.IsNullOrEmpty(code))
+            try
             {
-                _messageService.Show("QR Code cannot be null or empty!", "Argument Exception", System.Windows.MessageBoxButton.OK, MessageBoxIcon.Error);
-                return null;
+                //bool disableTimeCheck = true;
+                TimeSpan scanTime = DateTime.Now.TimeOfDay;
+                TimeSpan startTime = new(5, 0, 0);
+                TimeSpan endTime = new(17, 0, 0);
+
+                if ((scanTime >= startTime && scanTime < endTime) == false)
+                {
+                    return new()
+                    {
+                        Status = ReturnStatus.Failed,
+                        Message = "ប្អូនមិនអាចស្កេនវត្តមាននៅពេលវេលាម៉ោងនេះទេ! សូមព្យាយាមនៅពេលក្រោយ!",
+                        Student = null
+                    };
+                }
+
+                if (string.IsNullOrEmpty(code))
+                {
+                    return new()
+                    {
+                        Status = ReturnStatus.Failed,
+                        Message = "QR Code cannot be null or empty!",
+                        Student = null
+                    };
+                }
+
+                StudentQR? studentQR = await _studentQRRepository.GetByQRValueAsync(code);
+
+                if (studentQR == null)
+                {
+                    return new()
+                    {
+                        Status = ReturnStatus.Failed,
+                        Message = "គ្មាន​ទិន្នន័យសិស្សនៃ QR Code មួយនេះទេ! សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ!",
+                        Student = null
+                    };
+                }
+
+                if (studentQR.IsActive == false)
+                {
+                    return new()
+                    {
+                        Status = ReturnStatus.Failed,
+                        Message = "ទិន្នន័យ QR នៃកាតមួយនេះត្រូវបានបិទ! ប្រសិនបើប្អូនគិតថា វាជាកំហុសបច្ចេកទេស, សូមប្អូនជូនដំណឹងទៅកាន់លោកគ្រូអ្នកគ្រូភ្លាមៗ!",
+                        Student = null
+                    };
+                }
+
+                List<Attendance> studentAttendances = await _attendanceRepository.GetAllFromStudentId(studentQR.Student.Id);
+                Attendance? latestAttendance = studentAttendances.OrderByDescending(sa => new DateTime(sa.AttendanceDate, sa.ScanTime)).FirstOrDefault();
+
+                if (latestAttendance != null && DateOnly.FromDateTime(DateTime.Now) == latestAttendance.AttendanceDate)
+                {
+                    return new()
+                    {
+                        Status = ReturnStatus.Failed,
+                        Message = "ប្អូនមិនអាចស្កេនលើសពីពីរដងក្នុងមួយថ្ងៃបានទេ!",
+                        Student = null
+                    };
+                }
+
+                AttendanceStatus attendanceStatus = AttendanceStatus.Present;
+
+                TimeSpan lateTime = new(7, 30, 0);
+                TimeSpan tooLateTime = new(11, 30, 0);
+
+                if (scanTime > lateTime)
+                {
+                    attendanceStatus = AttendanceStatus.Late;
+                }
+                if (scanTime > tooLateTime)
+                {
+                    attendanceStatus = AttendanceStatus.Absent;
+                }
+
+                StudentClass latestStudentClass = (await _studentClassRepository.GetAllFromStudentIdAsync(studentQR!.Student.Id))!.OrderByDescending(sc => sc.EndDate).FirstOrDefault()!;
+
+                Attendance attendance = new()
+                {
+                    StudentClassId = latestStudentClass.Id,
+                    AttendanceDate = DateOnly.FromDateTime(DateTime.Now),
+                    ScanTime = TimeOnly.FromTimeSpan(DateTime.Now.TimeOfDay),
+                    MarkedByEmployeeId = null,
+                    Status = attendanceStatus,
+                    OtherInfo = "This attendance was auto-marked by the system",
+                };
+                await _attendanceRepository.AddAsync(attendance);
+
+                return new()
+                {
+                    Status = ReturnStatus.Success,
+                    Message = string.Empty,
+                    Student = studentQR.Student
+                };
             }
-
-            StudentQR? studentQR = await _studentQRRepository.GetByQRValueAsync(code);
-
-            if (studentQR == null)
+            catch (Exception ex)
             {
-                _messageService.Show(
-                    "QR Code does not exist!",
-                    "Null Value Error",
-                    System.Windows.MessageBoxButton.OK,
-                    MessageBoxIcon.Error);
-                return null;
+                return new()
+                {
+                    Status = ReturnStatus.Failed,
+                    Message = $"An unexpected error occurred while processing the QR code.\n{ex.Message}",
+                    Student = null
+                };
             }
-
-            if (studentQR.IsActive == false)
-            {
-                _messageService.Show("QR Code has been replaced and expired!", "Expired QR Code", icon: MessageBoxIcon.Error);
-                return null;
-            }
-
-            return studentQR?.Student;
         }
     }
 }

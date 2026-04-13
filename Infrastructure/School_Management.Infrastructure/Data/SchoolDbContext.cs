@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using School_Management.Core.Models;
 
 namespace School_Management.Infrastructure.Data

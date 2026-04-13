@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:New_Student_Management"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        xmlns:conv="clr-namespace:School_Management.Presentation.Shared.Converters;assembly=School_Management.Presentation.Shared"
+        xmlns:conv="clr-namespace:School_Management.Presentation.Shared.XAMLConverters;assembly=School_Management.Presentation.Shared"
         xmlns:components="clr-namespace:School_Management.Presentation.Shared.Components;assembly=School_Management.Presentation.Shared"
         xmlns:viewModels="clr-namespace:New_Student_Management.ViewModels"
         d:DataContext="{d:DesignInstance Type=viewModels:MainViewModel}"
@@ -19,25 +19,35 @@
         Background="Transparent"
         Icon="/Sources/Images/dbslogo_filled.png">
 
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0" ResizeBorderThickness="6"/>
+    </WindowChrome.WindowChrome>
+
     <Window.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverterReversed" IsReversed="True"/>
-        <Style x:Key="MenuBar" TargetType="{x:Type Grid}">
-            <Style.Resources>
-                <Storyboard x:Key="MenuBarAnimation">
-                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)">
-                        <EasingDoubleKeyFrame KeyTime="00:00:00" Value="0"/>
-                        <EasingDoubleKeyFrame KeyTime="00:00:01" Value="1"/>
-                    </DoubleAnimationUsingKeyFrames>
-                </Storyboard>
-            </Style.Resources>
+        <Style x:Key="MenuBar" TargetType="{x:Type Border}">
             <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Secondary}"/>
+            <Setter Property="CornerRadius" Value="0 0 0 10" />
         </Style>
+        <Storyboard x:Key="MenuBarAnimation">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)">
+                <EasingDoubleKeyFrame KeyTime="00:00:00" Value="0"/>
+                <EasingDoubleKeyFrame KeyTime="00:00:01" Value="1"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
     </Window.Resources>
 
-    <Border Background="{DynamicResource MaterialDesign.Brush.Background}"
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="Window.Loaded">
+            <BeginStoryboard Storyboard="{StaticResource MenuBarAnimation}"/>
+        </EventTrigger>
+    </Window.Triggers>
+
+    <Border Background="{DynamicResource MaterialDesign.Brush.Primary}"
                     BorderBrush="Transparent"
-                    CornerRadius="20">
+                    CornerRadius="20"
+                    Padding="10">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
@@ -54,116 +64,123 @@
                 </Grid.ColumnDefinitions>
 
                 <!--Tab Menu-->
-                <Grid Style="{DynamicResource MenuBar}" Grid.Column="0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="auto"/>
-                    </Grid.RowDefinitions>
-
-                    <Grid Margin="20 10">
+                <Border Grid.Column="0" Style="{DynamicResource MenuBar}">
+                    <Grid >
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
                             <RowDefinition Height="auto"/>
-                            <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <!--School Name & Logo-->
-                        <StackPanel 
-                TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"
-                Margin="0 10 0 20" HorizontalAlignment="Center">
-                            <Image Width="128">
-                                <Image.Source>
-                                    <BitmapImage DecodePixelWidth="128" UriSource="/Sources/Images/dbslogo_filled.png"/>
-                                </Image.Source>
-                            </Image>
-                            <TextBlock Margin="0 10 0 0"
+                        <Grid Margin="20 10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!--School Name & Logo-->
+                            <StackPanel 
+                                TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"
+                                Margin="0 10 0 20" HorizontalAlignment="Center">
+                                <Image Width="128">
+                                    <Image.Source>
+                                        <BitmapImage DecodePixelWidth="128" UriSource="/Sources/Images/dbslogo_filled.png"/>
+                                    </Image.Source>
+                                </Image>
+                                <TextBlock Margin="0 10 0 0"
                            Text="កម្មវិធីគ្រប់គ្រងបេក្ខជនចូលរៀន" 
                            FontSize="20" 
                            HorizontalAlignment="Center" FontWeight="Bold"
                            />
-                            <StackPanel Margin="0 15 0 0" Orientation="Horizontal" HorizontalAlignment="Center">
-                                <TextBlock
+                                <StackPanel Margin="0 15 0 0" Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <TextBlock
                            Text="សូមស្វាគមន៍, " 
                            FontSize="18" 
                            HorizontalAlignment="Center"
                            />
-                                <TextBlock
+                                    <TextBlock
                            Text="{Binding Username, FallbackValue='Username'}" 
                            FontSize="18" 
                            HorizontalAlignment="Center"
                            />
+                                </StackPanel>
                             </StackPanel>
-                        </StackPanel>
 
-                        <!--Tab items-->
-                        <StackPanel Grid.Row="1">
-                            <Button Margin="0 0 0 20" Command="{Binding ShowTableViewCommand}" IsEnabled="{Binding CanNavigate}">
+                            <!--Tab items-->
+                            <StackPanel Grid.Row="1">
+                                <Button Margin="0 0 0 20" Command="{Binding ShowTableViewCommand}">
+                                    <Grid TextElement.FontSize="16" Width="231">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Grid.Column="0" Kind="Table" VerticalAlignment="Center" Width="20" Height="20"/>
+                                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 0 0 0">Table View</TextBlock>
+                                    </Grid>
+                                </Button>
+
+                                <Button Margin="0 0 0 20" Command="{Binding ShowInsertViewCommand}">
+                                    <Grid TextElement.FontSize="16" Width="231">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Grid.Column="0" Kind="PlusBold" VerticalAlignment="Center" Width="20" Height="20"/>
+                                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 0 0 0">Insert Student</TextBlock>
+                                    </Grid>
+                                </Button>
+
+                                <Button Margin="0 0 0 20" Command="{Binding ShowReportViewCommand}">
+                                    <Grid TextElement.FontSize="16" Width="231">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Grid.Column="0" Kind="DocumentSign" VerticalAlignment="Center" Width="20" Height="20"/>
+                                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 0 0 0">Generate Report</TextBlock>
+                                    </Grid>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid Grid.Row="1" Margin="20 20">
+                            <Button Margin="0 0 0 0" Command="{Binding ExitApplicationCommand}">
                                 <Grid TextElement.FontSize="16" Width="231">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0" Kind="Table" VerticalAlignment="Center" Width="20" Height="20"/>
-                                    <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 0 0 0">Table View</TextBlock>
+                                    <materialDesign:PackIcon Grid.Column="0" Kind="ExitToApp" VerticalAlignment="Center" Width="20" Height="20"/>
+                                    <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 0 0 0">Exit app</TextBlock>
                                 </Grid>
                             </Button>
-
-                            <Button Margin="0 0 0 20" Command="{Binding ShowInsertViewCommand}" IsEnabled="{Binding CanNavigate}">
-                                <Grid TextElement.FontSize="16" Width="231">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0" Kind="PlusBold" VerticalAlignment="Center" Width="20" Height="20"/>
-                                    <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 0 0 0">Insert Student</TextBlock>
-                                </Grid>
-                            </Button>
-
-                            <Button Margin="0 0 0 20" Command="{Binding ShowReportViewCommand}" IsEnabled="{Binding CanNavigate}">
-                                <Grid TextElement.FontSize="16" Width="231">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0" Kind="DocumentSign" VerticalAlignment="Center" Width="20" Height="20"/>
-                                    <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 0 0 0">Generate Report</TextBlock>
-                                </Grid>
-                            </Button>
-                        </StackPanel>
+                        </Grid>
                     </Grid>
-
-                    <Grid Grid.Row="1" Margin="20 20">
-                        <Button Margin="0 0 0 0" Command="{Binding ExitApplicationCommand}" IsEnabled="{Binding CanNavigate}">
-                            <Grid TextElement.FontSize="16" Width="231">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <materialDesign:PackIcon Grid.Column="0" Kind="ExitToApp" VerticalAlignment="Center" Width="20" Height="20"/>
-                                <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 0 0 0">Exit app</TextBlock>
-                            </Grid>
-                        </Button>
-                    </Grid>
-                </Grid>
+                </Border>
 
                 <!--Content-->
-                <ContentControl Grid.Column="1" 
-                                       Content="{Binding CurrentView}" 
+                <Border CornerRadius="0 0 10 0" Grid.Column="1" >
+                    <ContentControl
                                        SnapsToDevicePixels="True"
                                        HorizontalAlignment="Stretch" 
                                        VerticalAlignment="Stretch" 
-                                       UseLayoutRounding="True"/>
+                                       UseLayoutRounding="True">
+                        <materialDesign:TransitioningContent Content="{Binding CurrentView}" />
+                    </ContentControl>
+                </Border>
 
-                <Grid Grid.Column="1" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid Grid.Column="1" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel Width="500" Height="100" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <TextBlock Text="សូមរងចាំមួយភ្លេទសិន..." FontSize="32" 
                                HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
-                        <ProgressBar 
-                    IsIndeterminate="True"
-                    Width="400"
-                    Height="6" 
-                    Margin="0 10 0 0"
-                    VerticalAlignment="Center"/>
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource MaterialDesign.Brush.Primary.Foreground}"/>
+                        <ProgressBar
+                            Background="{DynamicResource MaterialDesign.Brush.Primary.Foreground}"
+                            IsIndeterminate="True"
+                            Width="400"
+                            Height="6" 
+                            Margin="0 10 0 0"
+                            VerticalAlignment="Center"/>
                     </StackPanel>
                 </Grid>
             </Grid>

@@ -1,16 +1,8 @@
-﻿Dictionary<int, string> khDayString = new();
+﻿string[]? filters = ["png", "jpg", "gif", "bmp", "webp"];
+filters = filters.Select(f => "*." + f).ToArray();
+string filterNames = string.Join(";", filters ?? []);
+string label = $"Images ({filterNames})|{filterNames}";
 
-for (int i = 1; i <= 30; i++)
-{
-    string type = i <= 15 ? "កើត" : "រោច";
-    int day = i % (15 + 1);
-    int index = i <= 15 ? day : day + 1;
-    khDayString.Add(i, $"{index}{type}");
-}
-
-foreach (var item in khDayString)
-{
-    Console.WriteLine(item);
-}
+Console.WriteLine(label);
 
 Console.ReadKey();

@@ -1,18 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using School_Management.Infrastructure.Data;
+using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
+using School_Management.Infrastructure.Data;
 
 namespace School_Management.Infrastructure.Repositories
 {
-    public interface IExamRepository
-    {
-        Task<List<Exam>> GetAllAsync();
-        Task<Exam?> GetByIdAsync(int id);
-        Task AddAsync(Exam exam);
-        Task UpdateAsync(Exam exam);
-        Task DeleteAsync(Exam exam);
-        Task SaveAsync();
-    }
 
     public class ExamRepository : IExamRepository
     {

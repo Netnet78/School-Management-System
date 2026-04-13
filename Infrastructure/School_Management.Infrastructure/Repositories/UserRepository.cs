@@ -1,16 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using School_Management.Infrastructure.Data;
+using School_Management.Core.Helpers;
+using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
+using School_Management.Infrastructure.Data;
 
 namespace School_Management.Infrastructure.Repositories
 {
-    public interface IUserRepository
-    {
-        public Task CreateUserAsync(string username, string plainPassword, string role="User");
-        public Task<IEnumerable<User>> GetAllUsersAsync();
-        public Task<User?> GetUserAsync(int id);
-        public Task<User?> GetUserAsync(string name);
-    }
 
     public class UserRepository : IUserRepository
     {
@@ -28,7 +23,7 @@ namespace School_Management.Infrastructure.Repositories
 
         public async Task CreateUserAsync(string username, string plainPassword, string role = "user")
         {
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(plainPassword);
+            string hashedPassword = plainPassword.ToHashedPassword();
 
             User user = new()
             {
@@ -51,6 +46,19 @@ namespace School_Management.Infrastructure.Repositories
         {
             User? user = await _context.Users.FirstOrDefaultAsync(u => u.Username == name);
             return user;
+        }
+
+        public async Task UpdateUserAsync(User user)
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteUserAsync(int userId)
+        {
+            User? user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user != null) _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
         }
     }
 }

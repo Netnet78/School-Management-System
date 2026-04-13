@@ -1,6 +1,4 @@
 ﻿using New_Student_Management.ViewModels;
-using School_Management.Presentation.Shared.Components;
-using School_Management.Presentation.Shared.Enums;
 using System.Windows;
 
 namespace New_Student_Management.Views

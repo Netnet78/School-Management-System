@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace School_Management.Core.Models
+﻿namespace School_Management.Core.Models
 {
     public class AuditLog
     {

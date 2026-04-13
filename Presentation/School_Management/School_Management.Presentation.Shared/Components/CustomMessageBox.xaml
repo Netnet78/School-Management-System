@@ -36,7 +36,7 @@
 
             <StackPanel Margin="0 0 0 20" Orientation="Horizontal">
                 <Border Name="IconBorder" Margin="0 0 10 0" Padding="6px" CornerRadius="100" Background="{DynamicResource MaterialDesign.Brush.Primary}">
-                    <materialDesigns:PackIcon Name="Icon" Foreground="White" Kind="QuestionMark"  VerticalAlignment="Center" Width="24" Height="24"/>
+                    <materialDesigns:PackIcon Name="MessageViewIcon" Foreground="White" Kind="QuestionMark"  VerticalAlignment="Center" Width="24" Height="24"/>
                 </Border>
                 <TextBlock x:Name="TitleText"
                        Text="Title"

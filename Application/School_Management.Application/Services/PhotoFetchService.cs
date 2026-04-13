@@ -1,4 +1,6 @@
-﻿using School_Management.Core.Interfaces;
+﻿using School_Management.Core.Enums;
+using School_Management.Core.Interfaces.Application;
+using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
 
 namespace School_Management.Application.Services
@@ -16,21 +18,35 @@ namespace School_Management.Application.Services
 
         public async Task<FileObject?> GetStudentPhoto(string photoKey)
         {
+            if (string.IsNullOrWhiteSpace(photoKey))
+            {
+                return null;
+            }
+
             Settings config = _settings.GetAllSettings();
+
+            if (string.IsNullOrWhiteSpace(config.StudentPhotoFolderPath))
+            {
+                return null;
+            }
+
+            Directory.CreateDirectory(config.StudentPhotoFolderPath);
             string path = Path.Combine(config.StudentPhotoFolderPath, photoKey);
 
-            try
+            if (!File.Exists(path))
             {
-                if (!File.Exists(path))
+                ReturnResponse returnResponse = await _s3Service.DownloadFile(
+                    photoKey,
+                    config.StudentPhotoFolderPath,
+                    config.StudentPhotoFolderBucketPath
+                );
+                if (returnResponse.Status == ReturnStatus.Failed)
                 {
-                    await _s3Service.DownloadFile(
-                        photoKey,
-                        config.StudentPhotoFolderPath,
-                        config.StudentPhotoFolderBucketPath
-                    );
+                    return null;
                 }
             }
-            catch
+
+            if (!File.Exists(path))
             {
                 return null;
             }
@@ -40,21 +56,35 @@ namespace School_Management.Application.Services
 
         public async Task<FileObject?> GetEmployeePhoto(string photoKey)
         {
+            if (string.IsNullOrWhiteSpace(photoKey))
+            {
+                return null;
+            }
+
             Settings config = _settings.GetAllSettings();
+
+            if (string.IsNullOrWhiteSpace(config.EmployeePhotoFolderPath))
+            {
+                return null;
+            }
+
+            Directory.CreateDirectory(config.EmployeePhotoFolderPath);
             string path = Path.Combine(config.EmployeePhotoFolderPath, photoKey);
 
-            try
+            if (!File.Exists(path))
             {
-                if (!File.Exists(path))
+                ReturnResponse returnResponse = await _s3Service.DownloadFile(
+                    photoKey,
+                    config.EmployeePhotoFolderPath,
+                    config.EmployeePhotoFolderBucketPath
+                );
+                if (returnResponse.Status == ReturnStatus.Failed)
                 {
-                    await _s3Service.DownloadFile(
-                        photoKey,
-                        config.EmployeePhotoFolderPath,
-                        config.EmployeePhotoFolderBucketPath
-                    );
+                    return null;
                 }
             }
-            catch
+
+            if (!File.Exists(path))
             {
                 return null;
             }

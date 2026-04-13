@@ -1,21 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
 using School_Management.Infrastructure.Data;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace School_Management.Infrastructure.Repositories
 {
-    public interface ISkillRepository
-    {
-        Task AddAsync(Skill skill);
-        Task DeleteAsync(Skill skill);
-        Task<List<Skill>> GetAllAsync();
-        Task<Skill?> GetByIdAsync(int id);
-        Task SaveAsync();
-        Task UpdateAsync(Skill skill);
-    }
 
     public class SkillRepository : ISkillRepository
     {

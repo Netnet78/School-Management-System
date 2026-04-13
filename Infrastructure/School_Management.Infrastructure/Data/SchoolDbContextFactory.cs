@@ -1,10 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using School_Management.Core.Helpers;
 
 namespace School_Management.Infrastructure.Data
 {
@@ -13,12 +9,8 @@ namespace School_Management.Infrastructure.Data
         public SchoolDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<SchoolDbContext>();
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", true)
-                .Build();
 
-            string connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string not found.");
+            string connectionString = Env.Get("DB_CONNECTION");
 
             // Use Npgsql with connection pooling for better performance
             optionsBuilder.UseNpgsql(connectionString, npgsqlOptions =>

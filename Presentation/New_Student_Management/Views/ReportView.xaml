@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:New_Student_Management.Views"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             xmlns:conv="clr-namespace:School_Management.Presentation.Shared.Converters;assembly=School_Management.Presentation.Shared"
+             xmlns:conv="clr-namespace:School_Management.Presentation.Shared.XAMLConverters;assembly=School_Management.Presentation.Shared"
              xmlns:viewmodels="clr-namespace:New_Student_Management.ViewModels"
              xmlns:components="clr-namespace:School_Management.Presentation.Shared.Components;assembly=School_Management.Presentation.Shared"
              d:DataContext="{d:DesignInstance Type=viewmodels:ReportViewModel}"
@@ -109,12 +109,10 @@
                         <!--Content Template-->
                         <TabControl.ContentTemplate>
                             <DataTemplate>
-                                <ScrollViewer >
-                                    <components:StudentDataGrid
+                                <components:StudentDataGrid
                                        ItemsSource="{Binding Data}"
                                        SelectedItem="{Binding DataContext.SelectedStudent,
                                        RelativeSource={RelativeSource AncestorType=TabControl}}" />
-                                </ScrollViewer>
                             </DataTemplate>
                         </TabControl.ContentTemplate>
                     </TabControl>

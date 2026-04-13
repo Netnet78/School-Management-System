@@ -48,7 +48,7 @@ namespace School_Management.Infrastructure.Migrations
                     b.Property<DateOnly>("AttendanceDate")
                         .HasColumnType("date");
 
-                    b.Property<int>("MarkedByEmployeeId")
+                    b.Property<int?>("MarkedByEmployeeId")
                         .HasColumnType("integer");
 
                     b.Property<string>("OtherInfo")
@@ -89,7 +89,7 @@ namespace School_Management.Infrastructure.Migrations
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -126,14 +126,14 @@ namespace School_Management.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateOnly>("DateOfBirth")
+                    b.Property<DateOnly?>("DateOfBirth")
                         .HasColumnType("date");
 
                     b.Property<string>("ExamCenter")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateOnly>("ExamDate")
+                    b.Property<DateOnly?>("ExamDate")
                         .HasColumnType("date");
 
                     b.Property<int?>("ExamRoom")
@@ -676,10 +676,16 @@ namespace School_Management.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime>("LastLogin")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("LockedOutEnd")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PasswordHash")
@@ -719,9 +725,7 @@ namespace School_Management.Infrastructure.Migrations
                 {
                     b.HasOne("School_Management.Core.Models.Employee", "MarkedByEmployee")
                         .WithMany("MarkedAttendances")
-                        .HasForeignKey("MarkedByEmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("MarkedByEmployeeId");
 
                     b.HasOne("School_Management.Core.Models.StudentClass", "StudentClass")
                         .WithMany("Attendances")
@@ -738,9 +742,7 @@ namespace School_Management.Infrastructure.Migrations
                 {
                     b.HasOne("School_Management.Core.Models.User", "User")
                         .WithMany("AuditLogs")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });

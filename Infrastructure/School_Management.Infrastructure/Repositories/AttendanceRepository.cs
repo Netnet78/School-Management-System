@@ -1,18 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using School_Management.Infrastructure.Data;
+using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
+using School_Management.Infrastructure.Data;
 
 namespace School_Management.Infrastructure.Repositories
 {
-    public interface IAttendanceRepository
-    {
-        Task<List<Attendance>> GetAllAsync();
-        Task<Attendance?> GetByIdAsync(int id);
-        Task AddAsync(Attendance attendance);
-        Task UpdateAsync(Attendance attendance);
-        Task DeleteAsync(Attendance attendance);
-        Task SaveAsync();
-    }
 
     public class AttendanceRepository : IAttendanceRepository
     {
@@ -31,6 +23,25 @@ namespace School_Management.Infrastructure.Repositories
         public async Task<Attendance?> GetByIdAsync(int id)
         {
             return await _context.Attendances.FirstOrDefaultAsync(a => a.Id == id);
+        }
+
+        public async Task<List<Attendance>> GetAllFromStudentId(int studentId)
+        {
+            Student? student = await _context.Students.Include(s => s.Classes).FirstOrDefaultAsync(s => s.Id == studentId);
+            List<Attendance>? attendances = student?.Classes.SelectMany(s => s.Attendances).ToList();
+            return attendances ?? [];
+        }
+
+        public async Task<List<Attendance>> GetAllFromStudentClassId(int studentClassId)
+        {
+            StudentClass? studentClass = await _context.StudentClasses.FirstOrDefaultAsync(sc => sc.Id == studentClassId);
+            List<Attendance>? attendances = studentClass?.Attendances.ToList();
+            return attendances ?? [];
+        }
+
+        public async Task<Attendance?> GetByStudentClassId(int studentClassId)
+        {
+            return await _context.Attendances.FirstOrDefaultAsync(a => a.StudentClassId == studentClassId);
         }
 
         public async Task AddAsync(Attendance attendance)

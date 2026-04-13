@@ -2,12 +2,11 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using School_Management.Core.Enums;
-using School_Management.Core.Interfaces;
+using School_Management.Core.Helpers;
+using School_Management.Core.Interfaces.Application;
+using School_Management.Core.Interfaces.Infrastructure;
+using School_Management.Core.Interfaces.Presentation;
 using School_Management.Core.Models;
-using School_Management.Infrastructure.Repositories;
-using School_Management.Presentation.Shared.Components;
-using School_Management.Presentation.Shared.Enums;
-using School_Management.Presentation.Shared.Helpers;
 using System.Media;
 using System.Windows;
 
@@ -72,14 +71,14 @@ namespace New_Student_Management.ViewModels
                     if (value == null)
                     {
                         errorPlayer.Play();
-                        _messageService.Show("Please enter the student's name!", "Name error", MessageBoxButton.OK, MessageBoxIcon.Error);
+                        _messageService.Show("Please enter the student's name!", "Name error", MessageButton.OK, MessageIcon.Error);
                         return;
                     }
 
                     if (string.IsNullOrWhiteSpace(value))
                     {
                         errorPlayer.Play();
-                        _messageService.Show("Please enter the student's name!", "Name error", MessageBoxButton.OK, MessageBoxIcon.Error);
+                        _messageService.Show("Please enter the student's name!", "Name error", MessageButton.OK, MessageIcon.Error);
                         return;
                     }
                 }
@@ -87,7 +86,7 @@ namespace New_Student_Management.ViewModels
                 if (Data.Age < (DateTime.Now.Year - DateTime.Now.AddYears(-12).Year))
                 {
                     errorPlayer.Play();
-                    _messageService.Show("Please make sure that you enter a valid date of birth!", "Birthday error", MessageBoxButton.OK, MessageBoxIcon.Error);
+                    _messageService.Show("Please make sure that you enter a valid date of birth!", "Birthday error", MessageButton.OK, MessageIcon.Error);
                     return;
                 }
 
@@ -99,9 +98,9 @@ namespace New_Student_Management.ViewModels
                     await _photoUploadService.UploadStudentPhoto(CurrentPhoto.FullFileName);
                 }
 
-                _messageService.Show("Successfully added the candidate!", "Insert Success!", MessageBoxButton.OK, MessageBoxIcon.Information);
+                _messageService.Show("Successfully added the candidate!", "Insert Success!", MessageButton.OK, MessageIcon.Information);
 
-                DateOnly previousExamDate = Data.ExamDate;
+                DateOnly? previousExamDate = Data.ExamDate;
                 Data = new()
                 {
                     FirstName = string.Empty,
@@ -119,7 +118,7 @@ namespace New_Student_Management.ViewModels
             catch (Exception ex)
             {
                 errorPlayer.Play();
-                _messageService.Show("There was an error when trying to add another student.", "ERROR", MessageBoxButton.OK, MessageBoxIcon.Error);
+                _messageService.Show("There was an error when trying to add another student.", "ERROR", MessageButton.OK, MessageIcon.Error);
                 _messageService.Show(ex.Message);
             }
         }

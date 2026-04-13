@@ -4,7 +4,7 @@ using System.Windows.Data;
 
 namespace School_Management.Presentation.Shared.Helpers
 {
-    public abstract class FilterableViewModel<T> 
+    public abstract class FilterableViewModel<T>
     {
         protected ObservableCollection<T> _items = new();
         public ICollectionView ItemsView { get; }

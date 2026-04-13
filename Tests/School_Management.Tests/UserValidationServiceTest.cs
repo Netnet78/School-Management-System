@@ -1,7 +1,9 @@
 ﻿using Moq;
 using School_Management.Application.Services;
+using School_Management.Core.Helpers;
+using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
-using School_Management.Infrastructure.Repositories;
+using School_Management.Core.Enums;
 
 namespace School_Management.Tests
 {
@@ -23,7 +25,7 @@ namespace School_Management.Tests
             User user = new()
             {
                 Username = username,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+                PasswordHash = password.ToHashedPassword(),
                 RoleId = 1
             };
 
@@ -32,10 +34,10 @@ namespace School_Management.Tests
                 .Setup(r => r.GetUserAsync("admin"))
                 .ReturnsAsync(user);
 
-            User result = await _userValidationService.ValidateUserAsync(username, password);
+            ReturnResponse<User> result = await _userValidationService.ValidateUserAsync(username, password);
 
-            Assert.NotNull(result);
-            Assert.Equal("admin", result.Role.Name);
+            Assert.NotNull(result.Value);
+            Assert.Equal("admin", result.Value.Username);
         }
 
         [Fact]
@@ -43,18 +45,48 @@ namespace School_Management.Tests
         {
             string username = "admin";
             string password = "admin";
+            string wrongPassword = "wrongwrongwrong";
             User user = new()
             {
                 Username = username,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+                PasswordHash = password.ToHashedPassword(),
                 RoleId = 1
             };
             _userRepositoryMock
                 .Setup(r => r.GetUserAsync("admin"))
                 .ReturnsAsync(user);
-            var ex = await Assert.ThrowsAsync<Exception>(async () =>
-                await _userValidationService.ValidateUserAsync("admin", "wrongpassword"));
-            Assert.Equal("Invalid username or password", ex.Message);
+            ReturnResponse<User> result = await _userValidationService.ValidateUserAsync(username, wrongPassword);
+            Assert.Equal(ReturnStatus.Failed, result.Status);
+        }
+
+        [Fact]
+        public async Task Login_Exceeded_Failed_Attempts()
+        {
+            string username = "admin";
+            string password = "admin";
+            User user = new()
+            {
+                Username = username,
+                PasswordHash = password.ToHashedPassword(),
+                RoleId = 1,
+            };
+            _userRepositoryMock
+                .Setup(r => r.GetUserAsync("admin"))
+                .ReturnsAsync(user);
+
+            bool isRejected = false;
+
+            for (int i = 0; i <= 6; i++)
+            {
+                ReturnResponse<User> result = await _userValidationService.ValidateUserAsync(username, "123");
+                if (result.Status == ReturnStatus.Rejected)
+                {
+                    isRejected = true;
+                    break;
+                }
+            }
+
+            Assert.True(isRejected);
         }
     }
 }
