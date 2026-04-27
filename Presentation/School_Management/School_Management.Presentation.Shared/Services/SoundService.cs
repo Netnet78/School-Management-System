@@ -1,55 +1,67 @@
 ﻿using School_Management.Core.Interfaces.Presentation;
 using School_Management.Core.Models;
-using System.IO;
 using System.Media;
 
 namespace School_Management.Presentation.Shared.Services
 {
+
     public class SoundService : ISoundService
     {
-        private List<SoundPlayer> _loadedSoundPlayer = [];
+        internal class SoundMetaData
+        {
+            required public SoundPlayer Sound { get; set; }
+            required public string SoundKey { get; set; }
+        }
 
-        public void Load(FileObject sound)
+        private List<SoundMetaData> _loadedSoundPlayer = [];
+
+        public void Load(SoundObject sound)
         {
             string fullPath = sound.FilePath;
             SoundPlayer player = new(fullPath);
 
-            if (_loadedSoundPlayer.Contains(player)) return;
+            string[] keys = _loadedSoundPlayer.Select(s => s.SoundKey).ToArray();
+
+            if (keys.Contains(sound.SoundId)) return;
 
             player.LoadAsync();
-            _loadedSoundPlayer.Add(player);
+            _loadedSoundPlayer.Add(new() { Sound = player, SoundKey = sound.SoundId });
         }
 
-        public void Load(params FileObject[] sounds)
+        public void Load(params SoundObject[] sounds)
         {
-            foreach (FileObject sound in sounds)
+            foreach (SoundObject sound in sounds)
             {
                 string fullPath = sound.FilePath;
                 SoundPlayer player = new(fullPath);
 
+                string[] keys = _loadedSoundPlayer.Select(s => s.SoundKey).ToArray();
+
+                if (keys.Contains(sound.SoundId)) return;
+
                 player.LoadAsync();
-                _loadedSoundPlayer.Add(player);
+                _loadedSoundPlayer.Add(new() { Sound = player, SoundKey = sound.SoundId });
             }
         }
 
-        public void Play(FileObject sound)
+        public void Play(SoundObject sound)
         {
             string fullPath = sound.FilePath;
-            SoundPlayer? existingSound = _loadedSoundPlayer.FirstOrDefault(l => l.SoundLocation == fullPath);
+            SoundPlayer? existingSound = _loadedSoundPlayer.FirstOrDefault(l => l.SoundKey == sound.SoundId)?.Sound;
 
             if (existingSound == null)
             {
                 existingSound = new(fullPath);
-                _loadedSoundPlayer.Add(existingSound);
+                _loadedSoundPlayer.Add(new() { Sound = existingSound, SoundKey = sound.SoundId });
             }
 
             existingSound.PlaySync();
         }
 
-        public void Stop(FileObject sound)
+        public void Stop(SoundObject sound)
         {
             string fullPath = sound.FilePath;
-            SoundPlayer? existingSound = _loadedSoundPlayer.FirstOrDefault(l => l.SoundLocation == fullPath);
+            SoundPlayer? existingSound = _loadedSoundPlayer.FirstOrDefault(l => l.SoundKey == fullPath)?.Sound;
 
             existingSound?.Stop();
         }

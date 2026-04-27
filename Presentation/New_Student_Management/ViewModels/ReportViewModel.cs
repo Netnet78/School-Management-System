@@ -12,16 +12,20 @@ using System.Windows;
 using System.Windows.Data;
 using KhmerCalendar;
 using School_Management.Core.Interfaces.Infrastructure;
+using School_Management.Core.Interfaces.Presentation;
+using School_Management.Core.Interfaces;
+using School_Management.Core.Interfaces.Application;
 
 namespace New_Student_Management.ViewModels
 {
-    public partial class ReportViewModel : ObservableObject, IAsyncLoadable
+    public partial class ReportViewModel : ObservableObject, IAsyncLoadable, IViewModel
     {
         private readonly ICandidateRepository _studentRepository;
-        private readonly ISkillRepository _skillRepository;
+        private readonly IPhotoFetchService _photoFetchService;
+        private readonly IMessageService _messageService;
 
         [ObservableProperty]
-        private List<DataGridTabConstructor> _studentTabs;
+        private IEnumerable<DataGridTabConstructor> _studentTabs;
 
         [ObservableProperty]
         private int _currentTabIndex;
@@ -36,7 +40,7 @@ namespace New_Student_Management.ViewModels
         private string _currentTabFemaleStudentCount;
 
         [ObservableProperty]
-        private List<Candidate> _allStudents;
+        private IEnumerable<Candidate> _allStudents;
 
         [ObservableProperty]
         private Candidate? _selectedStudent;
@@ -45,23 +49,25 @@ namespace New_Student_Management.ViewModels
         private DateTime _reportDate = DateTime.Now;
 
         [ObservableProperty]
-        private string _studyYear = "2025-2026";
+        private DateTime? createdAtStart = new DateTime(DateTime.Now.Year, 1, 1);
 
         [ObservableProperty]
-        private DateTime? createdAtStart = null;
+        private DateTime? createdAtEnd = new DateTime(DateTime.Now.Year + 1, 12, 
+            DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month));
 
         [ObservableProperty]
-        private DateTime? createdAtEnd = null;
+        private string _studyYear = string.Empty;
 
         [ObservableProperty]
         private bool hideStudents = true; // Property for hiding students that don't have enough information
 
-        public ICollectionView AllStudentsView { get; }
+        public ICollectionView AllStudentsView { get; private set; }
 
-        public ReportViewModel(ICandidateRepository studentRepository, ISkillRepository skillRepository)
+        public ReportViewModel(ICandidateRepository studentRepository, IMessageService messageService, IPhotoFetchService photoFetchService)
         {
             _studentRepository = studentRepository;
-            _skillRepository = skillRepository;
+            _messageService = messageService;
+            _photoFetchService = photoFetchService;
 
             // Initialize Students List
             AllStudents = [];
@@ -75,28 +81,42 @@ namespace New_Student_Management.ViewModels
             CurrentTabFemaleStudentCount = "០";
             CurrentTabHeader = "";
             CurrentTabIndex = 0;
+
+            if (CreatedAtStart != null)
+            {
+                DateTime value = CreatedAtStart.Value;
+                StudyYear += value.Year + "-";
+            }
+            if (CreatedAtEnd != null)
+            {
+                DateTime value = CreatedAtEnd.Value;
+                StudyYear += value.Year;
+            }
         }
 
         [RelayCommand]
         private async Task GenerateDepartmentReportAsync()
         {
-            List<Candidate> students = [];
+            List<Candidate> students = GetCurrentFilteredStudents();
 
-            foreach (Candidate student in AllStudentsView)
+            if (students.Count == 0)
             {
-                students.Add(student);
+                _messageService.Show(
+                    "No candidates match the current filters. Please adjust date range or disable hiding incomplete students, then try again.",
+                    "No Data",
+                    MessageButton.OK,
+                    MessageIcon.Exclamation);
+                return;
             }
 
-            List<Skill> skills = await _skillRepository.GetAllAsync();
-
-            DepartmentReport departmentReport = new(int.Parse(StudyYear.Split('-')[0]), int.Parse(StudyYear.Split('-')[1]), skills);
+            DepartmentReport departmentReport = new(int.Parse(StudyYear.Split('-')[0]), int.Parse(StudyYear.Split('-')[1]), students, _photoFetchService);
 
             ReturnResponse response = await Task.Run(() => departmentReport.GenerateReport());
 
             if (response.Status == ReturnStatus.Success)
             {
-                MessageBoxResult result = MessageBox.Show("Report generated successfully!\n Do you wish to see the files?", "Success", MessageBoxButton.YesNo, MessageBoxImage.Information);
-                if (result.Equals(MessageBoxResult.Yes))
+                MessageResult result = _messageService.Show("Report generated successfully!\n Do you wish to see the files?", "Success", MessageButton.YesNo, MessageIcon.Information);
+                if (result.Equals(MessageResult.Yes))
                 {
                     Process.Start("explorer.exe", Path.Combine(departmentReport.OutputPath, departmentReport.FileName));
                 }
@@ -106,23 +126,26 @@ namespace New_Student_Management.ViewModels
         [RelayCommand]
         private async Task GenerateCandidateReportAsync()
         {
-            List<Candidate> students = [];
+            List<Candidate> students = GetCurrentFilteredStudents();
 
-            foreach (Candidate student in AllStudentsView)
+            if (students.Count == 0)
             {
-                students.Add(student);
+                _messageService.Show(
+                    "No candidates match the current filters. Please adjust date range or disable hiding incomplete students, then try again.",
+                    "No Data",
+                    MessageButton.OK,
+                    MessageIcon.Exclamation);
+                return;
             }
 
-            List<Skill> skills = await _skillRepository.GetAllAsync();
-
-            CandidateReport candidateReport = new(ReportDate, int.Parse(StudyYear.Split('-')[0]), int.Parse(StudyYear.Split('-')[1]), skills);
+            CandidateReport candidateReport = new(ReportDate, int.Parse(StudyYear.Split('-')[0]), int.Parse(StudyYear.Split('-')[1]), students);
 
             ReturnStatus status = await Task.Run(() => candidateReport.GenerateReport());
 
             if (status == ReturnStatus.Success)
             {
-                MessageBoxResult result = MessageBox.Show("Report generated successfully!\n Do you wish to see the files?", "Success", MessageBoxButton.YesNo, MessageBoxImage.Information);
-                if (result.Equals(MessageBoxResult.Yes))
+                MessageResult result = _messageService.Show("Report generated successfully!\n Do you wish to see the files?", "Success", MessageButton.YesNo, MessageIcon.Information);
+                if (result.Equals(MessageResult.Yes))
                 {
                     Process.Start("explorer.exe", $"{candidateReport.OutputPath}\\{candidateReport.FileName}");
                 }
@@ -165,26 +188,40 @@ namespace New_Student_Management.ViewModels
         {
             AllStudentsView?.Refresh();
 
-            if (CurrentTabIndex >= 0 && CurrentTabIndex < StudentTabs?.Count)
+            if (CurrentTabIndex >= 0 && CurrentTabIndex < StudentTabs?.Count())
             {
-                StudentTabs[CurrentTabIndex].Data?.Refresh();
+                StudentTabs.ElementAt(CurrentTabIndex).Data?.Refresh();
             }
+        }
+
+        private List<Candidate> GetCurrentFilteredStudents()
+        {
+            ICollectionView? activeView = null;
+
+            if (StudentTabs != null && CurrentTabIndex >= 0 && CurrentTabIndex < StudentTabs.Count())
+            {
+                activeView = StudentTabs.ElementAt(CurrentTabIndex).Data;
+            }
+
+            activeView ??= AllStudentsView;
+
+            return activeView?.Cast<Candidate>().ToList() ?? [];
         }
 
         private void UpdateCurrentTabStats(int value)
         {
-            if (value < 0 || StudentTabs == null || value >= StudentTabs.Count)
+            if (value < 0 || StudentTabs == null || value >= StudentTabs.Count())
                 return;
 
             // Offload to thread pool to avoid blocking UI
             _ = Task.Run(() =>
             {
-                var view = StudentTabs[value].Data;
+                var view = StudentTabs.ElementAt(value).Data;
                 if (view == null) return;
 
                 var candidates = view.Cast<Candidate>().ToList();
 
-                var totalCount = candidates.Count.UseKhmerNumbers();
+                var totalCount = candidates.Count().UseKhmerNumbers();
                 var femaleCount = candidates.Count(c => c.Gender == Gender.Female).UseKhmerNumbers();
 
                 // Update UI on main thread
@@ -211,61 +248,50 @@ namespace New_Student_Management.ViewModels
             if (value < 0)
                 return;
 
-            if (StudentTabs == null || StudentTabs.Count <= value)
+            if (StudentTabs == null || StudentTabs.Count() <= value)
                 return;
 
-            ICollectionView? data = StudentTabs[value].Data;
+            ICollectionView? data = StudentTabs.ElementAt(value).Data;
             if (data == null)
                 return;
 
-            CurrentTabHeader = StudentTabs[value].Header;
+            CurrentTabHeader = StudentTabs.ElementAt(value).Header;
+            RefreshFilters();
             UpdateCurrentTabStats(value);
         }
 
         [RelayCommand]
         public async Task LoadStudentsAsync()
         {
-            List<Candidate> students = await _studentRepository.GetCandidatesOnlyAsync(null, int.MaxValue);
+            IEnumerable<Candidate> students = await _studentRepository.GetCandidatesOnlyPagedAsync(1, 100);
 
             // Move heavy grouping to background thread, but NOT CollectionViewSource creation
-            var groupedData = await Task.Run(() =>
-            {
-                var grouped = students.GroupBy(s => s.Skill)
-                    .Where(g => g.Key != null && g.Count() > 0)
-                    .Select(g => new
-                    {
-                        g.Key,
-                        Items = g.ToList()
-                    })
-                    .ToList();
-
-                System.Diagnostics.Debug.WriteLine($"[GroupingDebug] Total students: {students.Count}");
-                System.Diagnostics.Debug.WriteLine($"[GroupingDebug] Grouped into {grouped.Count} skill groups");
-                foreach (var g in grouped)
+            var groupedData = students
+                .Where(g => g.Skill != null && g.Skill.IsActive)
+                .GroupBy(s => s.Skill.Id)
+                .Select(g => new
                 {
-                    System.Diagnostics.Debug.WriteLine($"  - {g.Key.Name}: {g.Items.Count} students");
-                }
+                    g.First().Skill,
+                    Items = g.ToList()
+                })
+                .ToList();
 
-                return grouped;
-            });
+            AllStudents = [..students];
 
-            AllStudents.Clear();
-            foreach (var s in students)
-            {
-                AllStudents.Add(s);
-            }
+            ICollectionView mainView = CollectionViewSource.GetDefaultView(AllStudents);
+            mainView.Filter = StudentFilter;
+            AllStudentsView = mainView;
 
-            // Create CollectionViewSource on UI thread
             var tabs = new List<DataGridTabConstructor>
             {
                 new DataGridTabConstructor
                 {
                     Header = "គ្រប់ជំនាញ",
-                    Data = CollectionViewSource.GetDefaultView(AllStudents)
+                    Data = mainView
                 }
             };
 
-            System.Diagnostics.Debug.WriteLine($"[TabCreation] Creating tabs. GroupedData count: {groupedData.Count}");
+            Debug.WriteLine($"[TabCreation] Creating tabs. GroupedData count: {groupedData.Count()}");
 
             // Add grouped tabs on UI thread
             foreach (var group in groupedData)
@@ -276,19 +302,18 @@ namespace New_Student_Management.ViewModels
 
                 tabs.Add(new DataGridTabConstructor
                 {
-                    Header = group.Key.Name,
+                    Header = group.Skill.KhmerName,
                     Data = view,
                 });
 
-                System.Diagnostics.Debug.WriteLine($"[TabCreation] Added tab: {group.Key.Name} with {list.Count} students");
+                Debug.WriteLine($"[TabCreation] Added tab: {group.Skill.Name} with {list.Count()} students");
             }
 
             StudentTabs = tabs;
 
-            System.Diagnostics.Debug.WriteLine($"[TabCreation] Total tabs created: {StudentTabs.Count}");
+            Debug.WriteLine($"[TabCreation] Total tabs created: {StudentTabs.Count()}");
 
             // Set filter on main view
-            AllStudentsView.Filter = StudentFilter;
             AllStudentsView.Refresh();
             OnCurrentTabIndexChanged(CurrentTabIndex);
         }

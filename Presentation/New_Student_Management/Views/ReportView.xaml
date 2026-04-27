@@ -14,7 +14,7 @@
              Background="{DynamicResource MaterialDesign.Brush.Background}">
 
     <UserControl.Resources>
-        <conv:StudentRowBrushConverter x:Key="StudentRowBrushConverter" />
+        <conv:DataRowBrushConverter x:Key="DataRowBrushConverter" />
         <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" CollapseWhenNull="True"/>
         <conv:NullToBooleanConverter x:Key="NullToBooleanConverter" FalseOnNull="True"/>
         <conv:PhotoPathToImageSourceConverter x:Key="PhotoPathToImageSourceConverter" />
@@ -153,6 +153,7 @@
                 <StackPanel Grid.Column="0">
                     <!--Generate Candidate Report Button-->
                     <Button Height="40" 
+                            Width="250"
                             VerticalAlignment="Top"
                             Command="{Binding GenerateCandidateReportCommand}"
                             HorizontalAlignment="Left"
@@ -165,6 +166,7 @@
                     
                     <!--Generate Department Report Button-->
                     <Button Height="40" 
+                            Width="250"
                             VerticalAlignment="Top"
                             Command="{Binding GenerateDepartmentReportCommand}"
                             HorizontalAlignment="Left">

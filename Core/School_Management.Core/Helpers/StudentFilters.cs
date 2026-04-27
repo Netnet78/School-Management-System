@@ -6,7 +6,7 @@ namespace School_Management.Core.Helpers
     public static class StudentFilters
     {
         public static bool MatchSearch(
-            Candidate student,
+            this Candidate student,
             string keyword,
             StudentField currentSearchField)
         {
@@ -33,12 +33,14 @@ namespace School_Management.Core.Helpers
                         .Contains(keyword, StringComparison.OrdinalIgnoreCase),
 
                 StudentField.DateOfBirth =>
-                    student.DateOfBirth.ToString()
-                        .Contains(keyword, StringComparison.OrdinalIgnoreCase),
+                    student.DateOfBirth.ToString()?
+                        .Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false,
 
                 StudentField.Age =>
-                    student.Age.ToString()
-                        .Contains(keyword),
+                    student.Age.ToString()?.Contains(keyword) ?? false,
+
+                StudentField.Skill =>
+                    student.Skill.KhmerName.Contains(keyword, StringComparison.OrdinalIgnoreCase),
 
                 // ===== PERSONAL INFORMATION =====
 
@@ -82,8 +84,8 @@ namespace School_Management.Core.Helpers
                     student.ExamCenter.Contains(keyword, StringComparison.OrdinalIgnoreCase),
 
                 StudentField.ExamDate =>
-                    student.ExamDate.ToString()
-                        .Contains(keyword, StringComparison.OrdinalIgnoreCase),
+                    student.ExamDate.ToString()?
+                        .Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false,
 
                 StudentField.ExamTable =>
                     student.ExamTable?.ToString()
@@ -114,6 +116,26 @@ namespace School_Management.Core.Helpers
                 // CreatedAt
 
                 _ => false
+            };
+        }
+
+        public static bool MatchDataState(this Candidate student, StudentDataStateFilterOptions dataState)
+        {
+            return dataState switch
+            {
+                StudentDataStateFilterOptions.Completed =>
+                    student.HasAllData("Age", "OtherInfo", "CreatedAt", "LatinFullName", "FullName").IsValid && student.PhotoKey != null,
+
+                StudentDataStateFilterOptions.MissingData =>
+                    !student.HasAllData("Age", "OtherInfo", "CreatedAt", "LatinFullName", "FullName").IsValid && student.PhotoKey != null,
+
+                StudentDataStateFilterOptions.NoPicture =>
+                    student.PhotoKey == null,
+
+                StudentDataStateFilterOptions.MissingDataAndPicture =>
+                    !student.HasAllData("Age", "OtherInfo", "CreatedAt", "LatinFullName", "FullName").IsValid || student.PhotoKey == null,
+
+                _ => true
             };
         }
     }

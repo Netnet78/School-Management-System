@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
 using School_Management.Infrastructure.Data;
+using System.Linq.Expressions;
 
 namespace School_Management.Infrastructure.Repositories
 {
@@ -15,7 +16,7 @@ namespace School_Management.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<List<ClassSubject>> GetAllAsync()
+        public async Task<IEnumerable<ClassSubject>> GetAllAsync()
         {
             return await _context.ClassSubjects.ToListAsync();
         }
@@ -58,6 +59,27 @@ namespace School_Management.Infrastructure.Repositories
         public async Task SaveAsync()
         {
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<ClassSubject>> FindAsync(Expression<Func<ClassSubject, bool>> predicate, int? page, int pageSize, Func<IQueryable<ClassSubject>, IOrderedQueryable<ClassSubject>>? orderBy = null, params Expression<Func<ClassSubject, object>>[] includes)
+        {
+            IQueryable<ClassSubject> query = _context.ClassSubjects;
+
+            // Apply includes first
+            foreach (var include in includes)
+                query = query.Include(include);
+
+            // Apply filter
+            query = query.Where(predicate);
+
+            // Apply sorting
+            if (orderBy != null)
+                query = orderBy(query);
+
+            return await query
+                .Skip((pageSize * (page - 1)) ?? pageSize)
+                .Take(pageSize)
+                .ToListAsync();
         }
     }
 }

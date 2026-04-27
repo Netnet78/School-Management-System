@@ -2,16 +2,17 @@ using School_Management.Core.Models;
 
 namespace School_Management.Core.Interfaces.Infrastructure
 {
-    public interface ICandidateRepository
+    public interface ICandidateRepository : IBaseRepository<Candidate>
     {
-        Task<List<Candidate>> GetAllAsync(int? lastId, int pageSize);
-        Task<List<Candidate>> GetCandidatesOnlyAsync(int? lastId, int pageSize);
+        Task<IEnumerable<Candidate>> GetAllAsync(int? lastId, int pageSize);
+        Task<IEnumerable<Candidate>> GetAllPagedAsync(int page, int pageSize);
+        Task<IEnumerable<Candidate>> GetAllPagedAsync(int page, int pageSize, StudentFilterOptions options);
+        Task<IEnumerable<Candidate>> GetCandidatesOnlyAsync(int? lastId, int pageSize);
+        Task<IEnumerable<Candidate>> GetCandidatesOnlyPagedAsync(int page, int pageSize);
+        Task<IEnumerable<Candidate>> GetCandidatesOnlyPagedAsync(int page, int pageSize, StudentFilterOptions options);
         Task<int> GetCandidatesOnlyCountAsync();
+        Task<int> GetCandidatesOnlyCountAsync(StudentFilterOptions options);
         Task<int> GetAllCountAsync();
-        Task<Candidate?> GetByIdAsync(int id);
-        Task AddAsync(Candidate candidate);
-        Task UpdateAsync(Candidate candidate);
-        Task DeleteAsync(Candidate candidate);
-        Task SaveAsync();
+        Task<int> GetAllCountAsync(StudentFilterOptions options);
     }
 }

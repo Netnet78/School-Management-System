@@ -17,48 +17,7 @@ namespace School_Management.Application.Services
         }
         public async Task<ReturnResponse<User>> ValidateUserAsync(string username, SecureString password)
         {
-            await Task.Delay(1000);
-            User? user = await _repo.GetUserAsync(username);
-
-            if (user != null && user.LockedOutEnd > DateTime.UtcNow)
-            {
-                DateTime lockedOutEnd = user.LockedOutEnd.Value;
-                string time = lockedOutEnd.TimeOfDay <= new TimeSpan(12, 0, 0) ? "ព្រឹក" : "ល្ងាច";
-                return new()
-                {
-                    Status = ReturnStatus.Rejected,
-                    Message = $"ការចូលប្រើប្រាស់របស់អ្នក ត្រូវបានបិទ/ផ្អាកជាមុនសិន!\nម៉ោងដែលត្រូវបើកវិញ៖ ម៉ោង {lockedOutEnd.Hour}, {lockedOutEnd.Minute} នាទី {time} \nរយៈពេល៖ {user.LockedOutEnd}",
-                };
-            }
-
-            string unsecuredPassword = password.ToUnsecureString();
-            bool isValidPassword = user == null ? false : unsecuredPassword.ComparePassword(user.PasswordHash) == true;
-
-            if (user != null && isValidPassword)
-            {
-                user.FailedLoginAttempts = 0;
-                return new()
-                {
-                    Status = ReturnStatus.Success,
-                    Value = user,
-                };
-            }
-
-            if (user != null && !isValidPassword)
-            {
-                user.FailedLoginAttempts++;
-
-                if (user.FailedLoginAttempts >= maximumAttempts)
-                {
-                    user.LockedOutEnd = DateTime.UtcNow.AddMinutes(5);
-                }
-            }
-
-            return new()
-            {
-                Status = ReturnStatus.Failed,
-                Message = "ព័ត៌មាន Username ឬ Password មិនត្រឹមត្រូវទេ សូមព្យាយាមម្ដងទៀត!"
-            };
+            return await ValidateUserAsync(username, password.ToUnsecureString());
         }
 
         public async Task<ReturnResponse<User>> ValidateUserAsync(string username, string password)
@@ -66,22 +25,23 @@ namespace School_Management.Application.Services
             await Task.Delay(1000);
             User? user = await _repo.GetUserAsync(username);
 
-            if (user != null && user.LockedOutEnd > DateTime.UtcNow)
+            if (user != null && user.LockedOutEnd != null && user.LockedOutEnd > DateTime.UtcNow)
             {
-                DateTime lockedOutEnd = user.LockedOutEnd.Value;
+                DateTime lockedOutEnd = TimeHelper.ToLocalTimeZone(user.LockedOutEnd.Value);
                 string time = lockedOutEnd.TimeOfDay <= new TimeSpan(12, 0, 0) ? "ព្រឹក" : "ល្ងាច";
                 return new()
                 {
                     Status = ReturnStatus.Rejected,
-                    Message = $"ការចូលប្រើប្រាស់របស់អ្នក ត្រូវបានបិទ/ផ្អាកជាមុនសិន!\nម៉ោងដែលត្រូវបើកវិញ៖ ម៉ោង {lockedOutEnd.Hour}, {lockedOutEnd.Minute} នាទី {time} \nរយៈពេល៖ {user.LockedOutEnd}",
+                    Message = $"ការចូលប្រើប្រាស់របស់អ្នក ត្រូវបានបិទ/ផ្អាកជាមុនសិន!\nម៉ោងដែលត្រូវបើកវិញ៖ ម៉ោង {lockedOutEnd.Hour}, {lockedOutEnd.Minute} នាទី {time} \nរយៈពេល៖ {(user.LockedOutEnd.Value - DateTime.UtcNow).TotalMinutes} នាទី",
                 };
             }
 
-            bool isValidPassword = user == null ? false : password.ComparePassword(user.PasswordHash) == true;
+            bool isValidPassword = user != null && password.ComparePassword(user.PasswordHash) == true;
 
             if (user != null && isValidPassword)
             {
                 user.FailedLoginAttempts = 0;
+                await _repo.UpdateAsync(user);
                 return new()
                 {
                     Status = ReturnStatus.Success,
@@ -97,6 +57,8 @@ namespace School_Management.Application.Services
                 {
                     user.LockedOutEnd = DateTime.UtcNow.AddMinutes(5);
                 }
+
+                await _repo.UpdateAsync(user);
             }
 
             return new()

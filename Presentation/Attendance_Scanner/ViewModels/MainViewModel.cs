@@ -1,6 +1,4 @@
-﻿using AForge.Video;
-using AForge.Video.DirectShow;
-using Attendance_Scanner.Services;
+﻿using Attendance_Scanner.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using School_Management.Core.Enums;
@@ -8,14 +6,12 @@ using School_Management.Core.Interfaces.Application;
 using School_Management.Core.Interfaces.Presentation;
 using School_Management.Core.Models;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
-using ZXing;
-using ZXing.Windows.Compatibility;
+using System.Windows.Media.Imaging;
 
 namespace Attendance_Scanner.ViewModels;
 
-public partial class MainViewModel : ObservableObject
+public partial class MainViewModel : ObservableObject, IDisposable, IViewModel
 {
     // Internal services
     private readonly IMessageService _messageService;
@@ -23,58 +19,54 @@ public partial class MainViewModel : ObservableObject
     private readonly IPhotoFetchService _photoFetchService;
     private readonly IUserSessionService _userSessionService;
     private readonly ISoundService _soundService;
+    private readonly ICameraService _cameraService;
+    private readonly IFrameProcessingService _frameService;
+    private readonly IQRScannerService _qRScannerService;
+    private readonly IDispatcherService _dispatcherService;
+    public ILoadingService LoadingService { get; }
 
     // Sound effects
-    private readonly FileObject _successSound = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sources/Audio/sfx/scan_success.wav"));
-    private readonly FileObject _errorSound = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sources/Audio/sfx/scan_error.wav"));
-
-    //Barcode reader 
-    //private readonly BarcodeReader<BitmapSource> _reader = new(
-    //    b => new BitmapSourceLuminanceSource(b)
-    //)
-    //{
-    //    AutoRotate = true,
-    //    Options = new ZXing.Common.DecodingOptions
-    //    {
-    //        TryHarder = true,
-    //    }
-    //};
-    private readonly IBarcodeReader _barcodeReader;
+    private readonly SoundObject _successSound = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sources/Audio/sfx/scan_success.wav"));
+    private readonly SoundObject _errorSound = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sources/Audio/sfx/scan_error.wav"));
 
     // Events
-    public event Action? OnSuccessfulScan;
+    public event Action<ReturnResponse>? OnScanStatusChanged;
+
+    // Boolean
+    private bool _debugMode = true;
 
     // Students Data
     [ObservableProperty]
-    private string currentPhotoPath;
+    private string _currentPhotoPath;
     [ObservableProperty]
-    private Student currentStudent;
+    private Student _currentStudent;
     [ObservableProperty]
-    private StudentClass studentClass;
+    private StudentClass _studentClass;
 
     // Video Cameras Selection
     [ObservableProperty]
-    private VideoCaptureDevice? videoCaptureDevice;
+    private CameraItem[] _availableDevices;
     [ObservableProperty]
-    private FilterInfoCollection filterInfoCollection;
+    private CameraItem _selectedDevice;
     [ObservableProperty]
-    private List<string> availableDevices;
+    private BitmapSource? _frameSource;
     [ObservableProperty]
-    private int selectedDevice;
-    [ObservableProperty]
-    private Bitmap? bitmapFrame;
-    [ObservableProperty]
-    private string scannedCode;
+    private string _scannedCode;
+    private string _lastScannedCode = string.Empty;
 
     // Last scan time for Scan Cooldown
     private DateTime _lastScanTime = DateTime.MinValue;
+    private int _isDecoding = 0;
+    private bool _isProcessingScan = false;
 
     [ObservableProperty]
-    private bool isReady;
+    private bool _isReady;
     [ObservableProperty]
-    private bool isLive;
+    private bool _isLive;
+    [ObservableProperty]
+    private bool _isCameraInitialized;
 
-    private readonly int cooldown = 5;
+    private readonly int _cooldown = 3;
 
     public MainViewModel(
         IAttendanceQRService attendanceQRService,
@@ -82,93 +74,91 @@ public partial class MainViewModel : ObservableObject
         IPhotoFetchService photoFetchService,
         IUserSessionService userSessionService,
         ISoundService soundService,
-        IBarcodeReader barcodeReader)
+        ICameraService cameraService,
+        IFrameProcessingService frameProcessingService,
+        IQRScannerService qRScannerService,
+        IDispatcherService dispatcherService,
+        ILoadingService loadingService)
     {
         _qrService = attendanceQRService;
         _messageService = messageService;
         _photoFetchService = photoFetchService;
         _userSessionService = userSessionService;
         _soundService = soundService;
-        _barcodeReader = barcodeReader;
+        _cameraService = cameraService;
+        _frameService = frameProcessingService;
+        _qRScannerService = qRScannerService;
+        _dispatcherService = dispatcherService;
+        LoadingService = loadingService;
 
         CurrentPhotoPath = string.Empty;
         CurrentStudent = new();
         StudentClass = new();
 
-        FilterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
-        VideoCaptureDevice = new();
-        AvailableDevices = [];
-        SelectedDevice = 0;
-        BitmapFrame = null;
-        foreach (FilterInfo device in FilterInfoCollection)
-        {
-            AvailableDevices.Add(device.Name);
-        }
+        AvailableDevices = _cameraService.GetCameras();
+        SelectedDevice = AvailableDevices.First();
 
         IsReady = true;
         IsLive = false;
+        IsCameraInitialized = false;
 
         ScannedCode = string.Empty;
 
         _soundService.Load(_errorSound);
         _soundService.Load(_successSound);
+
+        // Camera service updates
+        _cameraService.FrameReady += frame =>
+        {
+            DecodeFrame(frame);
+
+            _dispatcherService.Invoke(() =>
+            {
+                FrameSource = (WriteableBitmap)_frameService.ProcessFrame(frame);
+            });
+        };
+
     }
 
     [RelayCommand]
     private async Task StartScanAsync()
     {
-        if (_userSessionService.CurrentUser == null) return;
+        if (_userSessionService.CurrentUser == null && !_debugMode) return;
         IsLive = true;
     }
 
     [RelayCommand]
     private async Task StopScanAsync()
     {
-        if (_userSessionService.CurrentUser == null) return;
+        if (_userSessionService.CurrentUser == null && !_debugMode) return;
         IsLive = false;
     }
 
     [RelayCommand]
     private void RefreshValue()
     {
-        if (_userSessionService.CurrentUser == null) return;
+        if (_userSessionService.CurrentUser == null && !_debugMode) return;
         ScannedCode = string.Empty;
+        _lastScannedCode = string.Empty;
+    }
+
+    [RelayCommand]
+    private async Task RefreshCameraList()
+    {
+        AvailableDevices = _cameraService.GetCameras();
+
+        if (AvailableDevices.Length == 0)
+        {
+            AvailableDevices = [new() { Name = "No cameras found" }];
+        }
+
+        SelectedDevice = AvailableDevices.FirstOrDefault(d => d.Name == SelectedDevice.Name) ?? AvailableDevices.FirstOrDefault()!;
     }
 
     [RelayCommand]
     private void OnAppClosing()
     {
-        if (VideoCaptureDevice != null && VideoCaptureDevice.IsRunning)
-        {
-            VideoCaptureDevice.NewFrame -= VideoCaptureDeviceNewFrame;
-            VideoCaptureDevice.SignalToStop();
-            VideoCaptureDevice.WaitForStop();
-            VideoCaptureDevice = null;
-        }
-    }
-
-    private void VideoCaptureDeviceNewFrame(object sender, NewFrameEventArgs eventArgs)
-    {
-        Bitmap bitmap = (Bitmap)eventArgs.Frame.Clone();
-
-        App.Current.Dispatcher.Invoke(() =>
-        {
-            BitmapFrame = bitmap;
-        });
-
-        BitmapLuminanceSource source = new(bitmap);
-
-        if (!IsReady) return;
-
-        Result? result = _barcodeReader.Decode(source);
-        if (result != null && result.Text != ScannedCode)
-        {
-            if ((DateTime.Now - _lastScanTime).TotalSeconds < cooldown) //Cooldown
-            {
-                return;
-            }
-            ScannedCode = result.Text;
-        }
+        Dispose();
     }
 
     private async Task ProcessQRAsync(string value)
@@ -177,14 +167,14 @@ public partial class MainViewModel : ObservableObject
         try
         {
             StudentQRResponse qrResponse = await _qrService.GetStudentByQRCode(value);
-
+            
             if (qrResponse.Status == ReturnStatus.Failed || qrResponse.Student == null)
             {
                 _soundService.Play(_errorSound);
                 CurrentStudent = new();
                 CurrentPhotoPath = string.Empty;
 
-                await App.Current.Dispatcher.InvokeAsync(() =>
+                await _dispatcherService.InvokeAsync(() =>
                 {
                     _messageService.Show(qrResponse.Message, "Scan Failed", icon: MessageIcon.Error, autoHide: 4);
                 });
@@ -193,25 +183,34 @@ public partial class MainViewModel : ObservableObject
 
             _soundService.Play(_successSound);
             CurrentStudent = qrResponse.Student;
-            OnSuccessfulScan?.Invoke();
+            OnScanStatusChanged?.Invoke(new()
+            {
+                Status = ReturnStatus.Success
+            });
 
             try
             {
                 FileObject? photoPath = await _photoFetchService.GetStudentPhoto(CurrentStudent.Candidate.PhotoKey);
-                await App.Current.Dispatcher.InvokeAsync(() =>
+                await _dispatcherService.InvokeAsync(() =>
                 {
                     CurrentPhotoPath = photoPath?.FilePath ?? string.Empty;
-                    Debug.WriteLine($"Photo path set to: {CurrentPhotoPath}");
-                    Debug.WriteLine($"Photo exists: {File.Exists(CurrentPhotoPath)}");
+                    if (_debugMode)
+                    {
+                        Debug.WriteLine($"Photo path set to: {CurrentPhotoPath}");
+                        Debug.WriteLine($"Photo exists: {File.Exists(CurrentPhotoPath)}");
+                    }
                 });
             }
             catch (Exception photoEx)
             {
-                Debug.WriteLine($"Error fetching photo: {photoEx.GetType().Name}");
-                Debug.WriteLine($"Error message: {photoEx.Message}");
-                Debug.WriteLine($"Stack trace: {photoEx.StackTrace}");
-                Debug.WriteLine($"Inner exception: {photoEx.InnerException?.Message}");
-                await App.Current.Dispatcher.InvokeAsync(() =>
+                if (_debugMode)
+                {
+                    Debug.WriteLine($"Error fetching photo: {photoEx.GetType().Name}");
+                    Debug.WriteLine($"Error message: {photoEx.Message}");
+                    Debug.WriteLine($"Stack trace: {photoEx.StackTrace}");
+                    Debug.WriteLine($"Inner exception: {photoEx.InnerException?.Message}");
+                }
+                await _dispatcherService.InvokeAsync(() =>
                 {
                     CurrentPhotoPath = string.Empty;
                     _messageService.Show($"Unable to load student photo.\n{photoEx.Message}",
@@ -221,17 +220,21 @@ public partial class MainViewModel : ObservableObject
         }
         catch (Exception qrEx)
         {
-            Debug.WriteLine($"Error in QR scan: {qrEx.GetType().Name}");
-            Debug.WriteLine($"Error message: {qrEx.Message}");
-            Debug.WriteLine($"Stack trace: {qrEx.StackTrace}");
+            if (_debugMode)
+            {
+                Debug.WriteLine($"Error in QR scan: {qrEx.GetType().Name}");
+                Debug.WriteLine($"Error message: {qrEx.Message}");
+                Debug.WriteLine($"Stack trace: {qrEx.StackTrace}");
+            }
             _soundService.Play(_errorSound);
-            await App.Current.Dispatcher.InvokeAsync(() =>
+            await _dispatcherService.InvokeAsync(() =>
             {
                 _messageService.Show($"An error occurred while processing the QR code.\n{qrEx.Message}",
                                     "Scan Error", icon: MessageIcon.Error, autoHide: 4);
                 CurrentStudent = new();
                 CurrentPhotoPath = string.Empty;
             });
+            OnScanStatusChanged?.Invoke(new() { Status = ReturnStatus.Failed });
         }
         finally
         {
@@ -239,32 +242,91 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    partial void OnScannedCodeChanged(string value)
+    private void DecodeFrame(CameraFrame frame)
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return;
-        }
-        _ = ProcessQRAsync(value);
-        _lastScanTime = DateTime.Now;
-    }
-    partial void OnIsLiveChanged(bool value)
-    {
-        if (value == false)
-        {
-            if (VideoCaptureDevice != null && VideoCaptureDevice.IsRunning)
-            {
-                VideoCaptureDevice.NewFrame -= VideoCaptureDeviceNewFrame;
-                VideoCaptureDevice.SignalToStop();   // Signals the thread to stop
-                VideoCaptureDevice.WaitForStop();     // Waits for thread to finish
-                VideoCaptureDevice = null;
-                BitmapFrame = null;
-            }
-            return;
-        }
-        VideoCaptureDevice = new(FilterInfoCollection[SelectedDevice].MonikerString);
+        if (Interlocked.CompareExchange(ref _isDecoding, 1, 0) != 0) return;
 
-        VideoCaptureDevice.NewFrame += VideoCaptureDeviceNewFrame;
-        VideoCaptureDevice.Start();
+        try
+        {
+            string? value = _qRScannerService.Decode(frame);
+
+            if (string.IsNullOrWhiteSpace(value)) return;
+
+            HandleScan(value);
+            ScannedCode = value;
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _isDecoding, 0);
+        }
+    }
+
+    private async void HandleScan(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return;
+
+        if (_isProcessingScan) return;
+
+        if ((DateTime.Now - _lastScanTime).TotalSeconds <= _cooldown)
+            return;
+
+        if (value == _lastScannedCode)
+            return;
+
+        _isProcessingScan = true;
+        _lastScannedCode = value;
+
+        try
+        {
+            LoadingService.ShowLoading("កំពុងដំណើរការទិន្នន័យ...");
+
+            if (_debugMode)
+            {
+                await Task.Delay(1000);
+            }
+            else
+            {
+                await ProcessQRAsync(value);
+            }
+
+            LoadingService.ShowSuccess("Success!");
+            await Task.Delay(3500);
+            LoadingService.Hide();
+
+            _lastScanTime = DateTime.Now;
+        }
+        finally
+        {
+            _isProcessingScan = false;
+        }
+    }
+
+    async partial void OnIsLiveChanged(bool value)
+    {
+        IsCameraInitialized = false;
+        try
+        {
+            await Task.Run(async () =>
+            {
+                if (value == false)
+                {
+                    _cameraService.Stop();
+                    return;
+                }
+
+                _cameraService.Start(SelectedDevice);
+                Debug.WriteLine($"Selected Device name: {SelectedDevice.Name}");
+                Debug.WriteLine($"Selected Device moniker string: {SelectedDevice.MonikerString}");
+            });
+        }
+        finally
+        {
+            IsCameraInitialized = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        _cameraService.Stop();
     }
 }

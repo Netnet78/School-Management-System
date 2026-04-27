@@ -2,14 +2,8 @@ using School_Management.Core.Models;
 
 namespace School_Management.Core.Interfaces.Infrastructure
 {
-    public interface IStudentClassRepository
+    public interface IStudentClassRepository : IBaseRepository<StudentClass>
     {
-        Task<List<StudentClass>> GetAllAsync();
-        Task<StudentClass?> GetByIdAsync(int id);
-        Task<List<StudentClass>?> GetAllFromStudentIdAsync(int studentId);
-        Task AddAsync(StudentClass studentClass);
-        Task UpdateAsync(StudentClass studentClass);
-        Task DeleteAsync(StudentClass studentClass);
-        Task SaveAsync();
+        Task<IEnumerable<StudentClass>?> GetAllFromStudentIdAsync(int studentId);
     }
 }

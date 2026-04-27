@@ -16,7 +16,7 @@ namespace New_Student_Management
 
             vm.ExitAction += () =>
             {
-                Application.Current.Shutdown();
+                Application.Current.Shutdown(0);
             };
         }
     }

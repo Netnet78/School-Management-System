@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using School_Management.Core.Enums;
 using School_Management.Core.Interfaces.Application;
 using School_Management.Core.Interfaces.Presentation;
@@ -23,7 +24,8 @@ namespace Attendance_Scanner.ViewModels
         [ObservableProperty]
         private string username = string.Empty;
 
-        public async Task LoginAsync(SecureString securedPassword)
+        [RelayCommand]
+        public async Task LoginAsync(string securedPassword)
         {
             ReturnResponse<User> userResponse = await _userValidationService.ValidateUserAsync(Username, securedPassword);
 

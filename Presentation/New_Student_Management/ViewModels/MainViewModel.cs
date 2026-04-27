@@ -1,92 +1,75 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using School_Management.Core.Enums;
-using School_Management.Core.Helpers;
 using School_Management.Core.Interfaces.Application;
 using School_Management.Core.Interfaces.Presentation;
 using School_Management.Core.Models;
-using System.Windows;
 
 namespace New_Student_Management.ViewModels
 {
-    public partial class MainViewModel : ObservableObject
+    public partial class MainViewModel : ObservableObject, IViewModel
     {
         private readonly IUserSessionService _userSessionService;
         private readonly IMessageService _messageService;
-
-        // Cache ViewModels as fields
-        private readonly StudentViewModel _studentViewModel;
-        private readonly InsertStudentViewModel _insertStudentViewModel;
-        private readonly ReportViewModel _reportViewModel;
+        private readonly INavigationService _navigationService;
+        private readonly IDispatcherService _dispatcherService;
 
         [ObservableProperty]
-        private bool isLoading;
+        private bool _isLoading;
 
         [ObservableProperty]
-        private object? currentView;
+        private object? _currentView;
 
         [ObservableProperty]
-        private string username = "Guest";
+        private string _username = "Guest";
 
         public Action? ExitAction { get; set; }
 
         public MainViewModel(
             IMessageService messageService,
             IUserSessionService userSessionService,
-            StudentViewModel studentViewModel,
-            InsertStudentViewModel insertStudentViewModel,
-            ReportViewModel reportViewModel)
+            INavigationService navigationService,
+            IDispatcherService dispatcherService)
         {
             _userSessionService = userSessionService;
             _messageService = messageService;
+            _navigationService = navigationService;
+            _dispatcherService = dispatcherService;
 
-            // Assign injected ViewModels
-            _studentViewModel = studentViewModel;
-            _insertStudentViewModel = insertStudentViewModel;
-            _reportViewModel = reportViewModel;
-
-            // Set username from session
-            User? user = _userSessionService.CurrentUser;
-            Username = user == null
-                ? "Guest"
-                : user.Username;
-
-            CurrentView = null;
+            _userSessionService.OnUserSessionChanged += OnUserSessionChanged;
+            _navigationService.OnViewModelChanged += OnViewModelChanged;
 
             InitializeViewModelsAsync();
         }
 
-        private async void InitializeViewModelsAsync()
+        private void OnUserSessionChanged(User? obj)
         {
-            try
+            // Set username from session
+            User? user = obj;
+            Username = user == null
+                ? "Guest"
+                : user.Username;
+        }
+
+        private async void OnViewModelChanged(IViewModel? old, IViewModel @new)
+        {
+            if (old != @new)
             {
-                IsLoading = true;
-
-                if (_studentViewModel is IAsyncLoadable studentLoadable)
-                    await studentLoadable.LoadAsync();
-
-                if (_insertStudentViewModel is IAsyncLoadable insertLoadable)
-                    await insertLoadable.LoadAsync();
-
-                if (_reportViewModel is IAsyncLoadable reportLoadable)
-                    await reportLoadable.LoadAsync();
-
-                // Default page
-                CurrentView = _insertStudentViewModel;
-            }
-            catch (Exception ex)
-            {
-                _messageService.Show($"Failed to initialize views: {ex.Message}", "Error",
-                    MessageButton.OK, MessageIcon.Error);
-            }
-            finally
-            {
-                IsLoading = false;
+                await _dispatcherService.InvokeAsync(async () =>
+                {
+                    await SetView(@new);
+                });
             }
         }
 
+        private async void InitializeViewModelsAsync()
+        {
+            CurrentView = null;
+            await ShowTableView();
+        }
+
         [RelayCommand]
-        private void ExitApplication()
+        private async Task ExitApplication()
         {
             bool result = _messageService.Show(
                 "Are you sure you want to exit the application?",
@@ -100,26 +83,73 @@ namespace New_Student_Management.ViewModels
         }
 
         [RelayCommand]
-        private void ShowTableView()
+        private async Task ShowTableView()
         {
-            CurrentView = _studentViewModel;
+            await _navigationService.NavigateAsync<StudentViewModel>();
         }
 
         [RelayCommand]
-        private void ShowInsertView()
+        private async Task ShowInsertView()
         {
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-
-            CurrentView = _insertStudentViewModel;
-
-            sw.Stop();
-            System.Diagnostics.Debug.WriteLine($"Switch time: {sw.ElapsedMilliseconds} ms");
+            await _navigationService.NavigateAsync<InsertStudentViewModel>();
         }
 
         [RelayCommand]
-        private void ShowReportView()
+        private async Task ShowReportView()
         {
-            CurrentView = _reportViewModel;
+            await _navigationService.NavigateAsync<ReportViewModel>();
+        }
+
+        private async Task SetView<T>() where T : IViewModel
+        {
+            if (typeof(T) == CurrentView?.GetType()) return;
+
+            if (IsLoading) return;
+
+            IsLoading = true;
+            try
+            {
+                CurrentView = null;
+
+                await Task.Delay(1250);
+
+                CurrentView = _navigationService.CurrentViewModel;
+            }
+            catch (Exception ex)
+            {
+                _messageService.Show($"មិនអាចទៅរកផ្ទាំងមួយនេះបានទេ!: {ex.Message}", "អៃ... ចប់បណ្ដោយ....",
+                    MessageButton.OK, MessageIcon.Error);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        private async Task SetView(IViewModel viewModel)
+        {
+            if (viewModel.GetType() == CurrentView?.GetType()) return;
+
+            if (IsLoading) return;
+
+            IsLoading = true;
+            try
+            {
+                CurrentView = null;
+
+                await Task.Delay(1250);
+
+                CurrentView = _navigationService.CurrentViewModel;
+            }
+            catch (Exception ex)
+            {
+                _messageService.Show($"មិនអាចទៅរកផ្ទាំងមួយនេះបានទេ!: {ex.Message}", "អៃ... ចប់បណ្ដោយ....",
+                    MessageButton.OK, MessageIcon.Error);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
     }
 }

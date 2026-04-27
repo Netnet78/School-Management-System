@@ -40,7 +40,7 @@ namespace School_Management.Infrastructure.Services
         /// <param name="filePath"></param>
         /// <param name="folder"></param>
         /// <returns></returns>
-        public async Task<ReturnResponse> UploadFile(string filePath, string? folder = null)
+        public async Task<ReturnResponse> UploadFile(string filePath, string? folder = null, CancellationToken cancellationToken = default)
         {
             string fileName = Path.GetFileName(filePath);
             PutObjectRequest request = new()
@@ -52,7 +52,7 @@ namespace School_Management.Infrastructure.Services
 
             try
             {
-                await _s3Client.PutObjectAsync(request);
+                await _s3Client.PutObjectAsync(request, cancellationToken);
                 return new() { Status = ReturnStatus.Success };
             }
             catch (Exception ex)
@@ -67,7 +67,7 @@ namespace School_Management.Infrastructure.Services
         /// <param name="fileKey"></param>
         /// <param name="folder"></param>
         /// <returns></returns>
-        public async Task<ReturnResponse> DeleteFile(string fileKey, string? folder = null)
+        public async Task<ReturnResponse> DeleteFile(string fileKey, string? folder = null, CancellationToken cancellationToken = default)
         {
             DeleteObjectRequest request = new()
             {
@@ -76,7 +76,7 @@ namespace School_Management.Infrastructure.Services
             };
             try
             {
-                await _s3Client.DeleteObjectAsync(request);
+                await _s3Client.DeleteObjectAsync(request, cancellationToken);
                 return new() { Status = ReturnStatus.Success };
             }
             catch (Exception ex)
@@ -92,7 +92,7 @@ namespace School_Management.Infrastructure.Services
         /// <param name="savePath">Downloaded file will be placed inside the specified save path</param>
         /// <param name="folder">Folder that contains the file with the specified key</param>
         /// <returns></returns>
-        public async Task<ReturnResponse> DownloadFile(string fileKey, string savePath, string? folder = null)
+        public async Task<ReturnResponse> DownloadFile(string fileKey, string savePath, string? folder = null, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -111,7 +111,7 @@ namespace School_Management.Infrastructure.Services
                     Key = folder == null ? fileKey : $"{folder}/{fileKey}",
                 };
 
-                using GetObjectResponse response = await _s3Client.GetObjectAsync(request);
+                using GetObjectResponse response = await _s3Client.GetObjectAsync(request, cancellationToken);
                 await response.WriteResponseStreamToFileAsync(fullFilePath, false, default);
                 return new() { Status = ReturnStatus.Success };
             }

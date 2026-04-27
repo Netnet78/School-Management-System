@@ -13,7 +13,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/School_Management.Presentation.Shared;component/Themes.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <conv:StudentRowBrushConverter x:Key="StudentRowBrushConverter" />
+            <conv:DataRowBrushConverter x:Key="DataRowBrushConverter" />
             <conv:PhotoPathToImageSourceConverter x:Key="PhotoPathToImageSourceConverter" />
             <conv:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter" />
         </ResourceDictionary>
@@ -39,7 +39,7 @@
                     <Setter Property="BorderThickness" Value="0"/>
                     <Setter Property="Background">
                         <Setter.Value>
-                            <MultiBinding Converter="{StaticResource StudentRowBrushConverter}">
+                            <MultiBinding Converter="{StaticResource DataRowBrushConverter}">
                                 <Binding Path="PhotoPath" />
                                 <Binding Path="FirstName" />
                                 <Binding Path="LastName" />
@@ -118,7 +118,7 @@
                 <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ភេទ" Binding="{Binding Gender, Converter={StaticResource EnumToDescriptionConverter}}" Width="80" />
                 <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="កាលបរិច្ឆេទ​កំណើត" Binding="{Binding DateOfBirth}" Width="150" />
                 <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="អាយុ" Binding="{Binding Age, StringFormat=' {0} ឆ្នាំ'}" Width="80" />
-                <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ជំនាញ" Binding="{Binding Skill, Converter={StaticResource EnumToDescriptionConverter}}" Width="150" />
+                <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="ជំនាញ" Binding="{Binding Skill.KhmerName, Converter={StaticResource EnumToDescriptionConverter}}" Width="150" />
                 <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="សាសនា" Binding="{Binding Religion}" Width="120" />
                 <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="មណ្ឌលប្រឡង" Binding="{Binding ExamCenter}" Width="150" />
                 <DataGridTextColumn ElementStyle="{StaticResource StudentTextBlock}" Header="កាលបរិច្ឆេទប្រឡង" Binding="{Binding ExamDate}" Width="150" />

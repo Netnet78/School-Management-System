@@ -1,4 +1,4 @@
-﻿namespace School_Management.Core.Helpers
+﻿namespace School_Management.Core.Interfaces
 {
     public interface IAsyncLoadable
     {

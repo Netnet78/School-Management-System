@@ -37,6 +37,9 @@ namespace School_Management.Infrastructure.Data
                 .HasIndex(s => s.CandidateId)
                 .IsUnique();
             modelBuilder.Entity<Candidate>()
+                .Property(c => c.Id)
+                .ValueGeneratedOnAdd();
+            modelBuilder.Entity<Candidate>()
                 .HasOne(c => c.Student)
                 .WithOne(s => s.Candidate)
                 .HasForeignKey<Student>(s => s.CandidateId);

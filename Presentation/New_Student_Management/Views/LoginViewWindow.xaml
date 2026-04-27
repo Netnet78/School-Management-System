@@ -14,13 +14,13 @@
         Title="Login" Height="600" Width="850"
         AllowsTransparency="True"
         Background="Transparent"
-        ResizeMode="CanResize"
+        ResizeMode="NoResize"
         WindowStyle="None"
         WindowStartupLocation="CenterScreen">
 
-    <WindowChrome.WindowChrome>
+    <!--<WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="0" ResizeBorderThickness="5" />
-    </WindowChrome.WindowChrome>
+    </WindowChrome.WindowChrome>-->
 
     <Window.Resources>
         <!-- Accessible, larger typography for the login form -->
@@ -221,6 +221,7 @@
                                         Style="{StaticResource InputStyle}"
                                         HorizontalAlignment="Left"
                                         VerticalContentAlignment="Center" />
+                                    <TextBlock Visibility="Collapsed" x:Name="HiddenPasswordBox" />
                                 </StackPanel>
                             </StackPanel>
 
@@ -248,7 +249,7 @@
                                     Height="42"
                                     FontSize="16"
                                     Command="{Binding LoginCommand}"
-                                    CommandParameter="{Binding ElementName=PasswordBox, Path=SecurePassword}"
+                                    Click="LoginButtonClicked"
                                     IsDefault="True"
                                     Background="#FF1976D2"
                                     Foreground="White"

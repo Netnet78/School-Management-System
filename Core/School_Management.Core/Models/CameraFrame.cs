@@ -1,27 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace School_Management.Core.Models
+﻿namespace School_Management.Core.Models
 {
-    public class CameraFrame
+    public class CameraFrame : IDisposable
     {
-        public nint Data { get; set; } = default!;
+        public byte[] Data { get; set; } = [];
         public int Width { get; set; }
         public int Height { get; set; }
+
         public int Stride { get; set; }
-
-        public CameraFrame(CameraFrame data)
+        public void Dispose()
         {
-            Data = data.Data;
-            Width = data.Width;
-            Height = data.Height;
-            Stride = data.Stride;
-        }
-
-        public CameraFrame()
-        {
-
+            Data = [];
         }
     }
 }

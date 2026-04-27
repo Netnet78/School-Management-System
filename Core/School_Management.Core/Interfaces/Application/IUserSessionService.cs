@@ -4,6 +4,8 @@ namespace School_Management.Core.Interfaces.Application
 {
     public interface IUserSessionService
     {
+        public event Action<User?>? OnUserSessionChanged;
+        public event Action<User>? OnUserLoggedOut;
         public User? CurrentUser { get; }
         public bool IsLoggedIn => CurrentUser != null;
         public DateTime? LoggedInAt { get; }

@@ -9,7 +9,7 @@ namespace School_Management.Presentation.Shared.Services
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public FileObjectDialog ShowDialog(string title, bool multiSelect = false, string ? filterLabel = null, params string[]? filters)
+        public FileDialogObject ShowDialog(string title, bool multiSelect = false, string ? filterLabel = null, params string[]? filters)
         {
             filters = filters?.Select(f => "*." + f).ToArray();
             string filterNames = string.Join(";", filters ?? []);

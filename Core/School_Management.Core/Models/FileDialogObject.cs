@@ -1,17 +1,17 @@
 ﻿namespace School_Management.Core.Models
 {
-    public class FileObjectDialog
+    public class FileDialogObject
     {
         public FileObject[] Files { get; set; }
         public FileObject? File { get; set; }
 
-        public FileObjectDialog(FileObject[] files)
+        public FileDialogObject(FileObject[] files)
         {
             Files = files;
             File = Files[0];
         }
 
-        public FileObjectDialog(FileObject? file)
+        public FileDialogObject(FileObject? file)
         {
             Files = file == null ?[] : [file];
             File = file;

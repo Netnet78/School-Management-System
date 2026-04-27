@@ -16,7 +16,7 @@ namespace School_Management.Application.Services
             _s3Service = s3Service;
         }
 
-        public async Task<FileObject?> GetStudentPhoto(string photoKey)
+        public async Task<FileObject?> GetStudentPhoto(string photoKey, FileLocationOptions location = FileLocationOptions.LocalAndOnline, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(photoKey))
             {
@@ -33,12 +33,13 @@ namespace School_Management.Application.Services
             Directory.CreateDirectory(config.StudentPhotoFolderPath);
             string path = Path.Combine(config.StudentPhotoFolderPath, photoKey);
 
-            if (!File.Exists(path))
+            if (!File.Exists(path) && location != FileLocationOptions.LocalOnly)
             {
                 ReturnResponse returnResponse = await _s3Service.DownloadFile(
                     photoKey,
                     config.StudentPhotoFolderPath,
-                    config.StudentPhotoFolderBucketPath
+                    config.StudentPhotoFolderBucketPath,
+                    cancellationToken
                 );
                 if (returnResponse.Status == ReturnStatus.Failed)
                 {
@@ -54,7 +55,7 @@ namespace School_Management.Application.Services
             return new(path);
         }
 
-        public async Task<FileObject?> GetEmployeePhoto(string photoKey)
+        public async Task<FileObject?> GetEmployeePhoto(string photoKey, FileLocationOptions location = FileLocationOptions.LocalAndOnline, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(photoKey))
             {
@@ -71,12 +72,13 @@ namespace School_Management.Application.Services
             Directory.CreateDirectory(config.EmployeePhotoFolderPath);
             string path = Path.Combine(config.EmployeePhotoFolderPath, photoKey);
 
-            if (!File.Exists(path))
+            if (!File.Exists(path) && location != FileLocationOptions.LocalOnly)
             {
                 ReturnResponse returnResponse = await _s3Service.DownloadFile(
                     photoKey,
                     config.EmployeePhotoFolderPath,
-                    config.EmployeePhotoFolderBucketPath
+                    config.EmployeePhotoFolderBucketPath,
+                    cancellationToken 
                 );
                 if (returnResponse.Status == ReturnStatus.Failed)
                 {

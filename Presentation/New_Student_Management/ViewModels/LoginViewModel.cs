@@ -1,12 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using School_Management.Core.Enums;
+using School_Management.Core.Helpers;
 using School_Management.Core.Interfaces.Application;
 using School_Management.Core.Interfaces.Presentation;
 using School_Management.Core.Models;
 using System.Diagnostics;
 using System.Security;
-using System.Windows;
 
 namespace New_Student_Management.ViewModels
 {
@@ -30,7 +30,7 @@ namespace New_Student_Management.ViewModels
 
         // Login logics
         [RelayCommand]
-        private async Task<bool> LoginAsync(SecureString password)
+        private async Task<bool> LoginAsync(string password)
         {
             try
             {
@@ -40,6 +40,9 @@ namespace New_Student_Management.ViewModels
 
                 if (response.Status == ReturnStatus.Failed) messageHeader = "ខុសព័ត៌មាន!";
                 else if (response.Status == ReturnStatus.Rejected) messageHeader = "ត្រជាក់ៗ! មួយៗ កុំលឿនពេក!";
+
+                Debug.WriteLine("Password: " + password);
+                Debug.WriteLine("Hashed Password: " + password.ToHashedPassword());
 
                 if (response.Value == null)
                 {

@@ -90,11 +90,11 @@ namespace School_Management.Application.Services
             }
         }
 
-        public async Task<ReturnResponse<List<Candidate>>> GetAllCandidatesAsync(int? lastId, int pageSize)
+        public async Task<ReturnResponse<IEnumerable<Candidate>>> GetAllAsync(int page, int pageSize)
         {
             try
             {
-                List<Candidate> candidates = await _candidateRepository.GetAllAsync(lastId, pageSize);
+                IEnumerable<Candidate> candidates = await _candidateRepository.GetCandidatesOnlyAsync(page, pageSize);
                 return new()
                 {
                     Status = ReturnStatus.Success,
@@ -111,11 +111,34 @@ namespace School_Management.Application.Services
             }
         }
 
-        public async Task<ReturnResponse<int>> GetAllCandidatesCountAsync()
+        public async Task<ReturnResponse<IEnumerable<Candidate>>> GetAllAsync(int page, int pageSize, StudentFilterOptions options)
         {
             try
             {
-                int count = await _candidateRepository.GetAllCountAsync();
+                options ??= new StudentFilterOptions();
+                IEnumerable<Candidate> candidates = await _candidateRepository.GetCandidatesOnlyPagedAsync(page, pageSize, options);
+                return new()
+                {
+                    Status = ReturnStatus.Success,
+                    Value = candidates,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new()
+                {
+                    Status = ReturnStatus.Failed,
+                    Message = $"There's an error when trying to retrieve the candidates data\n{ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ReturnResponse<int>> GetAllCountAsync(StudentFilterOptions options)
+        {
+            try
+            {
+                options ??= new StudentFilterOptions();
+                int count = await _candidateRepository.GetCandidatesOnlyCountAsync(options);
                 return new()
                 {
                     Status = ReturnStatus.Success,

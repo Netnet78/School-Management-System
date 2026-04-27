@@ -12,6 +12,11 @@ namespace School_Management.Presentation.Shared
             services.AddSingleton<IFileDialogService, FileDialogService>();
             services.AddSingleton<ISoundService, SoundService>();
             services.AddSingleton<ICameraService, CameraService>();
+            services.AddSingleton<IFrameProcessingService, FrameProcessingService>();
+            services.AddSingleton<IQRScannerService, QRScannerService>();
+            services.AddSingleton<IDispatcherService, DispatcherService>();
+            services.AddSingleton<INavigationService, NavigationService>();
+            services.AddSingleton<ILoadingService, LoadingService>();
 
             return services;
         }

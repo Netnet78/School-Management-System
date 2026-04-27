@@ -1,23 +1,25 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Win32;
 using School_Management.Core.Enums;
 using School_Management.Core.Helpers;
+using School_Management.Core.Interfaces;
 using School_Management.Core.Interfaces.Application;
 using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Interfaces.Presentation;
 using School_Management.Core.Models;
-using System.Media;
-using System.Windows;
 
 namespace New_Student_Management.ViewModels
 {
-    public partial class InsertStudentViewModel : ObservableObject
+    public partial class InsertStudentViewModel : ObservableObject, IAsyncLoadable, IViewModel
     {
         private readonly ICandidateRepository _repo;
+        private readonly ISkillRepository _skillRepository;
         private readonly IPhotoUploadService _photoUploadService;
         private readonly IMessageService _messageService;
-        private readonly SoundPlayer errorPlayer = new("Sources\\Audio\\sfx\\error-sound.wav");
+        private readonly ISoundService _soundService;
+        private readonly IFileDialogService _fileDialogService;
+        private readonly IDispatcherService _dispatcherService;
+        private readonly SoundObject _errorSound = new("Sources\\Audio\\sfx\\error-sound.wav");
 
         [ObservableProperty]
         private Candidate data;
@@ -27,6 +29,9 @@ namespace New_Student_Management.ViewModels
 
         [ObservableProperty]
         private FileObject? currentPhoto;
+
+        [ObservableProperty]
+        private IEnumerable<Skill> skillOptions = [];
 
         // Expose enum options as value & description
         public IEnumerable<object> GenderOptions
@@ -38,11 +43,22 @@ namespace New_Student_Management.ViewModels
             .Select(s => new { Value = s, Description = s.GetDescription() });
 
 
-        public InsertStudentViewModel(ICandidateRepository repo, IPhotoUploadService photoUploadService, IMessageService messageService)
+        public InsertStudentViewModel(
+            ICandidateRepository repo,
+            ISkillRepository skillRepository,
+            IPhotoUploadService photoUploadService,
+            IMessageService messageService,
+            ISoundService soundService,
+            IFileDialogService fileDialogService,
+            IDispatcherService dispatcherService)
         {
             _repo = repo;
+            _skillRepository = skillRepository;
             _photoUploadService = photoUploadService;
             _messageService = messageService;
+            _soundService = soundService;
+            _fileDialogService = fileDialogService;
+            _dispatcherService = dispatcherService;
 
             Data = new()
             {
@@ -52,13 +68,31 @@ namespace New_Student_Management.ViewModels
                 LatinLastName = string.Empty,
                 DateOfBirth = DateOnly.FromDateTime(DateTime.Now),
                 Gender = Gender.Male,
+                SkillId = 0,
             };
+        }
+
+        public async Task LoadAsync()
+        {
+            SkillOptions = await _skillRepository.GetAllAsync();
+
+            _soundService.Load(_errorSound);
+
+            if (Data.SkillId == 0)
+            {
+                Skill? firstSkill = SkillOptions.FirstOrDefault();
+                if (firstSkill != null)
+                {
+                    Data.SkillId = firstSkill.Id;
+                }
+            }
         }
 
         [RelayCommand]
         private async Task AddStudentAsync()
         {
             if (Data == null) return;
+
             try
             {
                 Data.LatinFirstName = Data.LatinFirstName.ToUpper();
@@ -68,25 +102,16 @@ namespace New_Student_Management.ViewModels
 
                 foreach (string value in requiredFields)
                 {
-                    if (value == null)
-                    {
-                        errorPlayer.Play();
-                        _messageService.Show("Please enter the student's name!", "Name error", MessageButton.OK, MessageIcon.Error);
-                        return;
-                    }
-
                     if (string.IsNullOrWhiteSpace(value))
                     {
-                        errorPlayer.Play();
-                        _messageService.Show("Please enter the student's name!", "Name error", MessageButton.OK, MessageIcon.Error);
+                        await TriggerError("Please enter the student's name!", "Name error");
                         return;
                     }
                 }
 
-                if (Data.Age < (DateTime.Now.Year - DateTime.Now.AddYears(-12).Year))
+                if (Data.Age < 12)
                 {
-                    errorPlayer.Play();
-                    _messageService.Show("Please make sure that you enter a valid date of birth!", "Birthday error", MessageButton.OK, MessageIcon.Error);
+                    await TriggerError("Please make sure that you enter a valid date of birth!", "Birthday error");
                     return;
                 }
 
@@ -95,10 +120,13 @@ namespace New_Student_Management.ViewModels
                 // Upload photo after add a new student
                 if (CurrentPhoto != null)
                 {
-                    await _photoUploadService.UploadStudentPhoto(CurrentPhoto.FullFileName);
+                    await _photoUploadService.UploadStudentPhoto(CurrentPhoto.FileKey);
                 }
 
-                _messageService.Show("Successfully added the candidate!", "Insert Success!", MessageButton.OK, MessageIcon.Information);
+                await _dispatcherService.InvokeAsync(() =>
+                {
+                    _messageService.Show("Successfully added the candidate!", "Insert Success!", MessageButton.OK, MessageIcon.Information);
+                });
 
                 DateOnly? previousExamDate = Data.ExamDate;
                 Data = new()
@@ -117,26 +145,33 @@ namespace New_Student_Management.ViewModels
             }
             catch (Exception ex)
             {
-                errorPlayer.Play();
-                _messageService.Show("There was an error when trying to add another student.", "ERROR", MessageButton.OK, MessageIcon.Error);
-                _messageService.Show(ex.Message);
+                _ = Task.Run(() => _soundService.Play(_errorSound));
+                await _dispatcherService.InvokeAsync(async () =>
+                {
+                    _messageService.Show("There was an error when trying to add another student.", "ERROR", MessageButton.OK, MessageIcon.Error);
+                    _messageService.Show(ex.Message);
+                });
             }
+        }
+
+        private async Task TriggerError(string error, string errorTitle)
+        {
+            _= Task.Run(() => _soundService.Play(_errorSound));
+            await _dispatcherService.InvokeAsync(() => _messageService.Show(error, errorTitle, MessageButton.OK, MessageIcon.Error));
         }
 
         [RelayCommand]
         private async Task UploadPhotoAsync()
         {
-            OpenFileDialog openFileDialog = new()
+            FileDialogObject fileDialog = _fileDialogService
+                .ShowDialog("Select a Photo", false,
+                "Image Files", "png", "jpg", "jpeg", "bmp", "gif");
+
+            if (fileDialog.File != null)
             {
-                Filter = "Image Files (*.png;*.jpg;*.jpeg;*.bmp;*.gif)|*.png;*.jpg;*.jpeg,*.bmp,*.gif",
-                Title = "Select a Photo",
-                Multiselect = false,
-            };
-            if (openFileDialog.ShowDialog() == true)
-            {
-                string selectedPath = openFileDialog.FileName;
+                string selectedPath = fileDialog.File.FileName;
                 FileObject uploadedFile = new(selectedPath);
-                Data.PhotoKey = uploadedFile.FullFileName;
+                Data.PhotoKey = uploadedFile.FileKey;
                 CurrentPhoto = uploadedFile;
             }
         }

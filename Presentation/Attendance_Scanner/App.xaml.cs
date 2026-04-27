@@ -67,6 +67,10 @@ namespace Attendance_Scanner
             services.AddSingleton<IMessageService, MessageService>();
             services.AddSingleton<ISoundService, SoundService>();
             services.AddSingleton<ICameraService, CameraService>();
+            services.AddSingleton<IFrameProcessingService, FrameProcessingService>();
+            services.AddSingleton<IQRScannerService, QRScannerService>();
+            services.AddSingleton<IDispatcherService, DispatcherService>();
+            services.AddSingleton<ILoadingService, LoadingService>();
 
             // Project services
             services.AddSingleton<IAttendanceQRService, AttendanceQRService>();

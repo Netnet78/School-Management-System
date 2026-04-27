@@ -27,5 +27,13 @@ namespace New_Student_Management.Views
         {
             Application.Current.Shutdown();
         }
+
+        private void LoginButtonClicked(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is LoginViewModel vm)
+            {
+                vm.LoginCommand.Execute(PasswordBox.Password);
+            }
+        }
     }
 }

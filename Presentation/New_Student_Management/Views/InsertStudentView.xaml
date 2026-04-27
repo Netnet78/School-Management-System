@@ -102,9 +102,9 @@
                             <StackPanel Width="360" Margin="30,0,0,0">
                                 <TextBlock FontWeight="Bold" Text="ជំនាញ"/>
                                 <ComboBox ItemsSource="{Binding SkillOptions}"
-                              DisplayMemberPath="Description"
-                              SelectedValuePath="Value"
-                              SelectedValue="{Binding Data.Skill}"/>
+                              DisplayMemberPath="KhmerName"
+                              SelectedValuePath="Id"
+                              SelectedValue="{Binding Data.SkillId}"/>
 
                                 <TextBlock FontWeight="Bold" Text="សាសនា"/>
                                 <TextBox Text="{Binding Data.Religion}"/>
@@ -120,17 +120,17 @@
                                 <TextBlock Text="រូបថតសិស្សានុសិស្ស" HorizontalAlignment="Center" Margin="0 0 0 20" FontWeight="Bold"/>
                                 <Image Width="220" Height="220"
                                    Stretch="Uniform"
-                                   Visibility="{Binding CurrentPhotoPath, Converter={StaticResource ValidPathToVisibility}, FallbackValue='Collapsed'}"
-                                   Source="{Binding CurrentPhotoPath, Converter={StaticResource PhotoPathToImageSourceConverter}}"/>
+                                   Visibility="{Binding CurrentPhoto.FilePath, Converter={StaticResource ValidPathToVisibility}, FallbackValue='Collapsed'}"
+                                   Source="{Binding CurrentPhoto.FilePath, Converter={StaticResource PhotoPathToImageSourceConverter}}"/>
 
                                 <Border Width="180" Height="220"
                                     BorderThickness="2"
                                     BorderBrush="{DynamicResource MaterialDesign.Brush.Secondary}"
-                                    Visibility="{Binding CurrentPhotoPath, Converter={StaticResource ValidPathToVisibilityReversed}}">
+                                    Visibility="{Binding CurrentPhoto.FilePath, Converter={StaticResource ValidPathToVisibilityReversed}}">
                                     <TextBlock Text="?"
-                                       FontSize="72"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
+                                        FontSize="72"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"/>
                                 </Border>
 
                                 <Button Command="{Binding UploadPhotoCommand}" Margin="0 20 0 0">

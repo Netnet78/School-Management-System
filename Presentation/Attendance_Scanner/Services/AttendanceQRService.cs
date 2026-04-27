@@ -74,7 +74,7 @@ namespace Attendance_Scanner.Services
                     };
                 }
 
-                List<Attendance> studentAttendances = await _attendanceRepository.GetAllFromStudentId(studentQR.Student.Id);
+                IEnumerable<Attendance> studentAttendances = await _attendanceRepository.GetAllFromStudentId(studentQR.Student.Id);
                 Attendance? latestAttendance = studentAttendances.OrderByDescending(sa => new DateTime(sa.AttendanceDate, sa.ScanTime)).FirstOrDefault();
 
                 if (latestAttendance != null && DateOnly.FromDateTime(DateTime.Now) == latestAttendance.AttendanceDate)
@@ -110,7 +110,7 @@ namespace Attendance_Scanner.Services
                     ScanTime = TimeOnly.FromTimeSpan(DateTime.Now.TimeOfDay),
                     MarkedByEmployeeId = null,
                     Status = attendanceStatus,
-                    OtherInfo = "This attendance was auto-marked by the system",
+                    OtherInfo = "This attendance was auto-marked by the Attendance Management System",
                 };
                 await _attendanceRepository.AddAsync(attendance);
 

@@ -1,49 +1,75 @@
 ﻿using ClosedXML.Excel;
+using KhmerCalendar;
 using Microsoft.Win32;
 using School_Management.Core.Enums;
 using School_Management.Core.Helpers;
 using School_Management.Core.Models;
 using System.Windows;
-using KhmerCalendar;
 
 namespace New_Student_Management.Reports
 {
     public class CandidateReport
     {
+        private const string BaseWorksheetName = "Computer";
+        private const int TitleRow = 6;
+        private const int StudyYearRow = 7;
+        private const int LunarDateRow = 12;
+        private const int GregorianDateRow = 13;
+        private const int ReportDateColumn = 7;
+        private const int SummaryFallbackRow = 11;
+        private const int SummaryTextColumn = 1;
+        private const int SummaryCountColumn = 2;
+
         private readonly DateTime _reportDate;
         private readonly int _studyYearStart;
         private readonly int _studyYearEnd;
-        private readonly List<Skill> _skills;
+        private readonly IEnumerable<Candidate> _candidates;
         public string TemplatePath { get; set; } = @".\Sources\Spreadsheets\candidate_list.xlsx";
         public string OutputPath { get; private set; } = @"";
         public string FileName { get; private set; } = @"";
-        public CandidateReport(DateTime? date, int? startYear, int? endYear, List<Skill> skills)
+        public CandidateReport(DateTime? date, int? startYear, int? endYear, IEnumerable<Candidate> candidates)
         {
             _reportDate = date ?? DateTime.Now;
             _studyYearStart = startYear ?? (DateTime.Now.Month >= 9 ? DateTime.Now.Year : DateTime.Now.Year - 1);
             _studyYearEnd = endYear ?? (DateTime.Now.Month >= 9 ? DateTime.Now.Year + 1 : DateTime.Now.Year);
-            _skills = skills;
+            _candidates = candidates ?? [];
         }
 
         public ReturnStatus GenerateReport()
         {
             XLWorkbook workbook = new(TemplatePath);
+            var skillGroups = _candidates
+                .Where(c => c.Skill != null && !string.IsNullOrWhiteSpace(c.Skill.Name))
+                .GroupBy(c => c.Skill!.Name);
 
-            List<Skill> studentsBySkill = _skills;
-
-            foreach (Skill skillGroup in studentsBySkill)
+            foreach (var skillGroup in skillGroups)
             {
-                string sheetName = skillGroup.Name;
-                List<Candidate> studentsInSkill = skillGroup.Students.ToList();
+                string sheetName = skillGroup.Key;
+                EnsureWorksheetExists(workbook, sheetName);
+            }
 
-                if (studentsInSkill.Count <= 0) continue;
+            foreach (var skillGroup in skillGroups)
+            {
+                Candidate[] candidates = skillGroup.ToArray();
 
-                EnsureWorksheetExists(workbook, sheetName); 
+                string sheetName = skillGroup.Key;
+                Skill studentSkill = candidates[0].Skill!;
 
-                for (int i = 0; i < studentsInSkill.Count; i++)
+                if (candidates.Length <= 0) continue;
+
+                IXLWorksheet worksheet = workbook.Worksheet(sheetName);
+
+                // Update title skill
+                UpdateTitleSkill(worksheet, studentSkill);
+                // Update study year
+                UpdateStudyYear(worksheet, _studyYearStart, _studyYearEnd);
+                // Update report date
+                UpdateReportDate(worksheet, _reportDate);
+
+                for (int i = 0; i < candidates.Length; i++)
                 {
                     int id = i + 1;
-                    InsertStudent(workbook, studentsInSkill[i], sheetName, id);
+                    InsertStudent(candidates.ElementAt(i), worksheet, id);
                 }
             }
 
@@ -74,10 +100,8 @@ namespace New_Student_Management.Reports
                 return ReturnStatus.Rejected;
             }
         }
-        private void InsertStudent(XLWorkbook workbook, Candidate student, string sheetName, int index)
+        private static void InsertStudent(Candidate student, IXLWorksheet ws, int index)
         {
-            var ws = workbook.Worksheet(sheetName);
-
             int summaryRow = FindSummaryRow(ws);
             if (summaryRow == -1)
                 throw new InvalidOperationException("Summary row not found.");
@@ -105,72 +129,52 @@ namespace New_Student_Management.Reports
             ws.Cell(newRow, 11).Value = student.FromSchool;
             ws.Cell(newRow, 12).Value = student.OtherInfo;
 
-            // Update study year
-            UpdateStudyYear(ws, _studyYearStart, _studyYearEnd);
             // Update summary row totals
             UpdateSummary(ws, summaryRow + 1, student);
-            // Update report date
-            UpdateReportDate(ws, _reportDate);
         }
-        private void EnsureWorksheetExists(XLWorkbook workbook, string sheetName)
+        private static void EnsureWorksheetExists(XLWorkbook workbook, string sheetName)
         {
             if (workbook.TryGetWorksheet(sheetName, out _))
             {
                 return;
             }
 
-            IXLWorksheet templateSheet = workbook.Worksheets.First();
-            IXLWorksheet newSheet = workbook.Worksheets.Add(sheetName);
-
-            foreach (IXLRow row in templateSheet.Rows())
-            {
-                IXLRow newRow = newSheet.Row(row.RowNumber());
-                newRow.Height = row.Height;
-
-                foreach (IXLCell cell in row.Cells())
-                {
-                    IXLCell newCell = newRow.Cell(cell.Address.ColumnNumber);
-                    newCell.Value = cell.Value;
-
-                    if (cell.HasFormula)
-                    {
-                        newCell.FormulaA1 = cell.FormulaA1;
-                    }
-                }
-            }
-
-            var templateColumns = templateSheet.Columns();
-            foreach (var templateColumn in templateColumns)
-            {
-                newSheet.Column(templateColumn.ColumnNumber()).Width = templateColumn.Width;
-            }
+            IXLWorksheet templateSheet = workbook.TryGetWorksheet(BaseWorksheetName, out IXLWorksheet? baseSheet)
+                ? baseSheet
+                : workbook.Worksheets.First();
+            templateSheet.CopyTo(sheetName);
         }
         private static int FindSummaryRow(IXLWorksheet ws)
         {
-            var namedRange = ws.DefinedName("SummaryCell");
-            if (namedRange == null) return -1;
-            return namedRange.Ranges.First().FirstCell().Address.RowNumber;
+            foreach (IXLRow row in ws.RowsUsed())
+            {
+                string? text = row.Cell(SummaryTextColumn).GetString();
+                if (!string.IsNullOrWhiteSpace(text) && text.Contains("បញ្ឈប់បញ្ជីត្រឹមឈ្មោះ"))
+                {
+                    return row.RowNumber();
+                }
+            }
+
+            return SummaryFallbackRow;
         }
         private static void UpdateSummary(IXLWorksheet ws, int summaryRow, Candidate student)
         {
-            var summaryCell = ws.Row(summaryRow).CellsUsed().FirstOrDefault() ?? ws.Cell(summaryRow, 1);
-
-            // Extract totals
-            var totalCell = ws.DefinedName("TotalStudents").Ranges.First().FirstCell();
-            var femaleCell = ws.DefinedName("TotalFemaleStudents").Ranges.First().FirstCell();
+            IXLCell summaryCell = ws.Cell(summaryRow, SummaryTextColumn);
+            IXLCell totalCell = ws.Cell(summaryRow + 1, SummaryCountColumn);
+            IXLCell femaleCell = ws.Cell(summaryRow + 2, SummaryCountColumn);
 
             int total = 0;
             int female = 0;
 
             try
             {
-                total = int.Parse(totalCell.Value.ToString());
-                female = int.Parse(femaleCell.Value.ToString());
+                total = int.Parse(totalCell.GetString());
+                female = int.Parse(femaleCell.GetString());
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show($"There was an error when trying to convert the values into integers\nTotal value = {total}\nFemale total value = {female}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                MessageBox.Show(ex.Message);
+                total = 0;
+                female = 0;
             }
 
             total++;
@@ -186,42 +190,23 @@ namespace New_Student_Management.Reports
         {
             string lunarReportDate = ToReportLunarDate(date);
             string gregorianReportDate = ToReportGregorianDate(date);
-            XLWorkbook workbook = ws.Workbook;
-            IXLDefinedName lunarDateRange = workbook.DefinedName("LunarReportDate")!;
-            if (lunarDateRange != null)
-            {
-                foreach (IXLRange cell in lunarDateRange.Ranges)
-                {
-                    cell.Value = lunarReportDate;
-                }
-            }
-            IXLDefinedName gregorianDateRange = workbook.DefinedName("GregorianReportDate")!;
-            if (gregorianDateRange != null)
-            {
-                foreach (IXLRange cell in gregorianDateRange.Ranges)
-                {
-                    cell.Value = gregorianReportDate;
-                }
-            }
+            ws.Cell(LunarDateRow, ReportDateColumn).Value = lunarReportDate;
+            ws.Cell(GregorianDateRow, ReportDateColumn).Value = gregorianReportDate;
         }
         private static void UpdateStudyYear(IXLWorksheet ws, int startYear, int endYear)
         {
-            XLWorkbook workbook = ws.Workbook;
-            IXLDefinedName studyYearRange = workbook.DefinedName("StudyYear")!;
-            if (studyYearRange != null)
-            {
-                foreach (IXLRange cell in studyYearRange.Ranges)
-                {
-                    cell.Value = $"ឆ្នាំសិក្សា {startYear}-{endYear}".UseKhmerNumbers();
-                }
-            }
+            ws.Cell(StudyYearRow, SummaryTextColumn).Value = $"ឆ្នាំសិក្សា {startYear}-{endYear}".UseKhmerNumbers();
+        }
+        private static void UpdateTitleSkill(IXLWorksheet ws, Skill skill)
+        {
+            ws.Cell(TitleRow, SummaryTextColumn).Value = $"បញ្ជីរាយនាមសិស្សចូលរៀនបច្ចេកទេស កម្រិត១ ផ្នែក{skill.KhmerName}";
         }
 
         private static string ToReportLunarDate(DateTime date)
         {
             string weekDay = ((int)date.DayOfWeek).UseKhmerDays();
             IKhmerLunarDate khmerLunar = date.ToKhmerLunarDate();
-            string day = khmerLunar.LunarDay;
+            string day = khmerLunar.LunarDay.UseKhmerNumbers();
             string month = khmerLunar.LunarMonth;
             string year = khmerLunar.LunarYear.UseKhmerNumbers();
             string zodiac = khmerLunar.ZodiacYear;

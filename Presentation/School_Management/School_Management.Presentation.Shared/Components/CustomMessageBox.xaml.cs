@@ -168,7 +168,6 @@ namespace School_Management.Presentation.Shared.Components
             {
                 WindowStartupLocation = WindowStartupLocation.CenterScreen
             };
-
             msg.ShowDialog();
             return msg.Result;
         }

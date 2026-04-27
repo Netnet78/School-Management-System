@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
 using School_Management.Infrastructure.Data;
+using System.Linq.Expressions;
 
 namespace School_Management.Infrastructure.Repositories
 {
@@ -15,7 +16,7 @@ namespace School_Management.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<List<Attendance>> GetAllAsync()
+        public async Task<IEnumerable<Attendance>> GetAllAsync()
         {
             return await _context.Attendances.ToListAsync();
         }
@@ -25,14 +26,14 @@ namespace School_Management.Infrastructure.Repositories
             return await _context.Attendances.FirstOrDefaultAsync(a => a.Id == id);
         }
 
-        public async Task<List<Attendance>> GetAllFromStudentId(int studentId)
+        public async Task<IEnumerable<Attendance>> GetAllFromStudentId(int studentId)
         {
             Student? student = await _context.Students.Include(s => s.Classes).FirstOrDefaultAsync(s => s.Id == studentId);
             List<Attendance>? attendances = student?.Classes.SelectMany(s => s.Attendances).ToList();
             return attendances ?? [];
         }
 
-        public async Task<List<Attendance>> GetAllFromStudentClassId(int studentClassId)
+        public async Task<IEnumerable<Attendance>> GetAllFromStudentClassId(int studentClassId)
         {
             StudentClass? studentClass = await _context.StudentClasses.FirstOrDefaultAsync(sc => sc.Id == studentClassId);
             List<Attendance>? attendances = studentClass?.Attendances.ToList();
@@ -77,6 +78,27 @@ namespace School_Management.Infrastructure.Repositories
         public async Task SaveAsync()
         {
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<Attendance>> FindAsync(Expression<Func<Attendance, bool>> predicate, int? page, int pageSize, Func<IQueryable<Attendance>, IOrderedQueryable<Attendance>>? orderBy = null, params Expression<Func<Attendance, object>>[] includes)
+        {
+            IQueryable<Attendance> query = _context.Attendances;
+
+            // Apply includes first
+            foreach (var include in includes)
+                query = query.Include(include);
+
+            // Apply filter
+            query = query.Where(predicate);
+
+            // Apply sorting
+            if (orderBy != null)
+                query = orderBy(query);
+
+            return await query
+                .Skip((pageSize * (page - 1)) ?? pageSize)
+                .Take(pageSize)
+                .ToListAsync();
         }
     }
 }

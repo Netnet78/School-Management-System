@@ -1,21 +1,13 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace School_Management.Core.Helpers
+﻿namespace School_Management.Core.Helpers
 {
     public static class PropertiesHelper
     {
-        public static Type Clone<Type>(this Type source)
+        public static T Clone<T>(this T source) where T : new()
         {
-            Type result = Activator.CreateInstance<Type>();
-            var props = typeof(Type).GetProperties();
-            foreach (var prop in props)
-            {
-                if (prop.CanRead && prop.CanWrite)
-                {
-                    prop.SetValue(result, prop.GetValue(source, null), null);
-                }
-            }
-            return result;
+            if (source == null) throw new ArgumentNullException("The source object cannot be null!");
+
+            T clone = FastCloner.FastCloner.DeepClone(source)!;
+            return clone;
         }
     }
 }

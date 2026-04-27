@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 
@@ -9,7 +10,7 @@ namespace School_Management.Presentation.Shared.XAMLConverters
     // BirthVillage, BirthCommune, BirthDistrict, BirthProvince,
     // FatherName, MotherName, FatherOccupation, MotherOccupation, Religion,
     // ExamCenter, ExamDate, ExamTable, ExamRoom, FromSchool
-    public sealed class StudentRowBrushConverter : IMultiValueConverter
+    public sealed class DataRowBrushConverter : IMultiValueConverter
     {
         private static readonly Brush TransparentBrush = Brushes.Transparent;
         private static readonly Brush WarningBrush = Brushes.Yellow;
@@ -20,17 +21,23 @@ namespace School_Management.Presentation.Shared.XAMLConverters
             if (values == null || values.Length == 0)
                 return TransparentBrush;
 
-            // PhotoPath is the first value
-            var photoPath = values[0] as string;
-            if (string.IsNullOrWhiteSpace(photoPath))
-            {
-                return CriticalBrush;
-            }
+            var rawPhoto = values[0];
 
-            // any other required string fields empty? (skip index 0)
+            if (rawPhoto == null || rawPhoto == DependencyProperty.UnsetValue)
+                return CriticalBrush;
+
+            var photoPath = rawPhoto.ToString();
+
+            if (string.IsNullOrWhiteSpace(photoPath))
+                return CriticalBrush;
+
+            // Check other fields
             foreach (var v in values.Skip(1))
             {
-                string? s = v == null ? "" : v.ToString();
+                if (v == null || v == DependencyProperty.UnsetValue)
+                    return WarningBrush;
+
+                var s = v.ToString();
                 if (string.IsNullOrWhiteSpace(s))
                     return WarningBrush;
             }

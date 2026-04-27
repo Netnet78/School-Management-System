@@ -1,23 +1,30 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Win32;
 using School_Management.Core.Enums;
 using School_Management.Core.Helpers;
+using School_Management.Core.Interfaces;
 using School_Management.Core.Interfaces.Application;
+using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Interfaces.Presentation;
 using School_Management.Core.Models;
-using School_Management.Presentation.Shared.Services;
+using System.IO;
 
 namespace New_Student_Management.ViewModels
 {
-    public partial class EditStudentViewModel : ObservableObject, IAsyncLoadable
+    public class EditStudentParams : INavigationParams
+    {
+        public Candidate? Candidate { get; set; }
+    }
+    public partial class EditStudentViewModel : ObservableObject, IViewModel, INavigationAware
     {
         private readonly ICandidateService _candidateService;
+        private readonly ISkillRepository _skillRepository;
         private readonly IPhotoFetchService _photoFetchService;
         private readonly IPhotoDeleteService _photoDeleteService;
         private readonly IPhotoUploadService _photoUploadService;
         private readonly IMessageService _messageService;
         private readonly IFileDialogService _fileDialogService;
+        private readonly INavigationService _navigationService;
 
         public Action<bool>? RequestClose { get; set; }
 
@@ -28,29 +35,52 @@ namespace New_Student_Management.ViewModels
         private Candidate _editedStudent;
 
         private Candidate _defaultStudent;
+        private string? _studentPhotoBackup;
 
         [ObservableProperty]
         private FileObject? currentPhoto;
 
+        [ObservableProperty]
+        private IEnumerable<Skill> skillOptions = [];
+
         public EditStudentViewModel(
-            Candidate studentToEdit,
             ICandidateService candidateService,
+            ISkillRepository skillRepository,
             IPhotoFetchService photoFetchService,
             IPhotoDeleteService photoDeleteService,
             IPhotoUploadService photoUploadService,
             IMessageService messageService,
-            IFileDialogService fileDialogService)
+            IFileDialogService fileDialogService,
+            INavigationService navigationService)
         {
             _candidateService = candidateService;
+            _skillRepository = skillRepository;
             _photoDeleteService = photoDeleteService;
             _photoFetchService = photoFetchService;
             _photoUploadService = photoUploadService;
             _messageService = messageService;
             _fileDialogService = fileDialogService;
+            _navigationService = navigationService;
 
-            _defaultStudent = studentToEdit.Clone();
-            EditedStudent = null!;
+            EditedStudent = CreateEmptyCandidate();
+            _defaultStudent = EditedStudent.Clone();
             CurrentPhoto = null;
+        }
+
+        private static Candidate CreateEmptyCandidate()
+        {
+            return new Candidate
+            {
+                FirstName = string.Empty,
+                LatinFirstName = string.Empty,
+                LastName = string.Empty,
+                LatinLastName = string.Empty,
+                DateOfBirth = DateOnly.FromDateTime(DateTime.Now),
+                Gender = Gender.Male,
+                SkillId = 0,
+                Skill = new Skill(),
+                PhotoKey = string.Empty,
+            };
         }
 
         [RelayCommand]
@@ -70,61 +100,82 @@ namespace New_Student_Management.ViewModels
         {
             try
             {
-                if (EditedStudent.Id == 0)
+                if (_studentPhotoBackup != null)
                 {
-                    await _candidateService.InsertCandidateAsync(EditedStudent);
+                    FileObject newPhoto = await _photoUploadService.UploadStudentPhoto(_studentPhotoBackup);
+
+                    // delete old photo AFTER success
+                    if (!string.IsNullOrEmpty(EditedStudent.PhotoKey))
+                    {
+                        await _photoDeleteService.DeleteStudentPhoto(EditedStudent.PhotoKey);
+                    }
+
+                    EditedStudent.PhotoKey = newPhoto.FileKey;
                 }
-                else
-                {
-                    EditedStudent.LatinFirstName = EditedStudent.LatinFirstName.ToUpper();
-                    EditedStudent.LatinLastName = EditedStudent.LatinLastName.ToUpper();
-                    await _candidateService.EditCandidateAsync(EditedStudent);
-                }
-                RequestClose?.Invoke(true);
+
+                await _candidateService.EditCandidateAsync(EditedStudent);
+
+                _studentPhotoBackup = null;
+
+                await GoToPreviousView();
             }
             catch (Exception ex)
             {
-                RequestClose?.Invoke(false);
+                // RequestClose?.Invoke(false);
                 _messageService.Show("មិនអាចរក្សាទុកទិន្នន័យសិស្សនេះបានទេ សូមត្រួតពិនិត្យទៅលើ​មូលហេតុខាងក្រោម៖", "មានកំហុសបច្ចេកទេស", MessageButton.OK, MessageIcon.Error);
                 _messageService.Show(ex.Message);
             }
         }
 
         [RelayCommand]
-        private void Cancel()
+        private async Task Cancel()
         {
+            MessageResult cancelConfirm = _messageService
+                .Show("តើអ្នកប្រាកដដែរឬទេថា នឹងមិនរក្សាទុកនូវអ្វីដែលបានផ្លាស់ប្ដូរនៃទិន្នន័យនេះ?",
+                "ឈប់សិន!", MessageButton.YesNo, MessageIcon.Question);
+
+            if (cancelConfirm != MessageResult.Yes)
+                return;
+
             EditedStudent = _defaultStudent.Clone();
-            CurrentPhoto = new(EditedStudent.PhotoKey);
-            CurrentStep = 0;
-            RequestClose?.Invoke(false);
+            CurrentPhoto = await _photoFetchService.GetStudentPhoto(_defaultStudent.PhotoKey);
+
+            _studentPhotoBackup = null;
+
+            await GoToPreviousView();
+        }
+
+        private async Task GoToPreviousView()
+        {
+            Type? prev = _navigationService.PreviousViewModel?.GetType();
+            await _navigationService.NavigateAsync(prev ?? typeof(StudentViewModel));
         }
 
         [RelayCommand]
         private async Task UploadPhotoAsync()
         {
-            if (CurrentPhoto != null)
+            FileDialogObject fileDialog = _fileDialogService.ShowDialog("Select a Photo", false, "Image Files", "png", "jpg", "jpeg", "bmp", "gif");
+
+            if (fileDialog.File == null)
             {
-                ReturnResponse deleteResponse = await _photoDeleteService.DeleteStudentPhoto(CurrentPhoto.FileKey);
-
-                if (deleteResponse.Status == ReturnStatus.Failed)
-                {
-                    _messageService.Show($"Failed to delete student photo for some reason...\n{deleteResponse.Message}");
-                    return;
-                }
+                return;
             }
+            _studentPhotoBackup = fileDialog.GetFilePath();
 
-            FileObjectDialog fileDialog = _fileDialogService.ShowDialog("Select a Photo", false, "Image Files", "png", "jpg", "jpeg", "bmp", "gif");
-
-            FileObject uploadedPath = await _photoUploadService.UploadStudentPhoto(fileDialog.GetFilePath());
-            EditedStudent.PhotoKey = uploadedPath.FileKey;
-            CurrentPhoto = new(uploadedPath.FilePath);
+            CurrentPhoto = new FileObject(_studentPhotoBackup);
         }
 
-        public async Task LoadAsync()
+        public async Task OnNavigatedToAsync(INavigationParams @params)
         {
-            // create an editable copy so we only persist on Save
-            EditedStudent = _defaultStudent.Clone();
-            CurrentPhoto = await _photoFetchService.GetStudentPhoto(EditedStudent.PhotoKey);
+            if (@params is EditStudentParams param && param.Candidate != null)
+            {
+                SkillOptions = await _skillRepository.GetAllAsync();
+
+                EditedStudent = param.Candidate.Clone();
+                _defaultStudent = EditedStudent.Clone();
+
+                CurrentPhoto = await _photoFetchService.GetStudentPhoto(param.Candidate.PhotoKey);
+            }
         }
 
         // Expose enum options as value & description

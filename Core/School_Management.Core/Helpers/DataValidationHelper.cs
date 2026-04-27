@@ -25,7 +25,7 @@ namespace School_Management.Core.Helpers
                     missing.Add(new() { PropertyName = prop.Name, ErrorMessage = $"{prop.Name} cannot be empty." });
             }
 
-            if (missing.Count >= 1)
+            if (missing.Count() >= 1)
             {
                 return new() { IsValid = false, MissingProperties = missing.ToArray() };
             }

@@ -10,8 +10,8 @@ namespace School_Management.Core.Models
         [Required]
         public string PasswordHash { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public DateTime LastLogin { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? LastLogin { get; set; }
         public int FailedLoginAttempts { get; set; } = 0;
         public DateTime? LockedOutEnd { get; set; }
         public int RoleId { get; set; }

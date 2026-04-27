@@ -1,4 +1,6 @@
 ﻿using Attendance_Scanner.ViewModels;
+using School_Management.Core.Enums;
+using School_Management.Core.Models;
 using School_Management.Presentation.Shared.Animations;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,19 +21,16 @@ namespace Attendance_Scanner
 
             DataContext = vm;
 
-            if (DeviceSelector.DisplayMemberPath.Length > 0)
-            {
-                DeviceSelector.SelectedIndex = 0;
-            }
+            vm.OnScanStatusChanged += Vm_OnQrScanned;
 
-            vm.OnSuccessfulScan += Vm_OnSuccessfulScan;
+            _indicatorTimer.Interval = TimeSpan.FromSeconds(1.5);
+            _indicatorTimer.Tick += Timer_Tick!;
+            _indicatorTimer.Start();
 
-            indicatorTimer.Interval = TimeSpan.FromSeconds(1.5);
-            indicatorTimer.Tick += Timer_Tick!;
-            indicatorTimer.Start();
+            //StartLoadingAnimation();
         }
 
-        private void Vm_OnSuccessfulScan()
+        private void Vm_OnQrScanned(ReturnResponse response)
         {
             double openingDuration = 0.3;
             double closingDuration = 0.3;
@@ -39,17 +38,20 @@ namespace Attendance_Scanner
 
             Dispatcher.BeginInvoke(() =>
             {
+                Storyboard storyboard = new();
+
                 bool mainContentColumnIsOpen = MainContentFirstGridDefinition.Width.Value > 0;
                 bool successMessageIsOpen = SuccessMessage.Opacity == 1;
 
-                DoubleAnimation successMessageOpenAnimation = new()
+                // Animations for the time when the scan is successful
+                DoubleAnimation messageOpenAnimation = new()
                 {
                     From = 0,
                     To = 1,
                     Duration = TimeSpan.FromSeconds(openingDuration)
                 };
 
-                DoubleAnimation successMessageCloseAnimation = new()
+                DoubleAnimation messageCloseAnimation = new()
                 {
                     From = 1,
                     To = 0,
@@ -80,22 +82,28 @@ namespace Attendance_Scanner
                     BeginTime = TimeSpan.FromSeconds(openingDuration + visibleTime)
                 };
 
-                Storyboard storyboard = new();
-
-                if (!successMessageIsOpen)
+                if (response.Status == ReturnStatus.Success)
                 {
-                    AddAnimationToStoryboard(storyboard, successMessageOpenAnimation, SuccessMessage, OpacityProperty);
-                    AddAnimationToStoryboard(storyboard, successMessageCloseAnimation, SuccessMessage, OpacityProperty);
-                }
+                    if (!successMessageIsOpen)
+                    {
+                        AddAnimationToStoryboard(storyboard, messageOpenAnimation, SuccessMessage, OpacityProperty);
+                        AddAnimationToStoryboard(storyboard, messageCloseAnimation, SuccessMessage, OpacityProperty);
+                        StopLoadingAnimation();
+                    }
 
-                if (mainContentColumnIsOpen)
+                    if (mainContentColumnIsOpen)
+                    {
+                        openingAnimation.BeginTime = TimeSpan.FromSeconds(closingDuration);
+                        AddAnimationToStoryboard(storyboard, immediateCloseAnimation, MainContentFirstGridDefinition, ColumnDefinition.WidthProperty);
+                    }
+
+                    AddAnimationToStoryboard(storyboard, openingAnimation, MainContentFirstGridDefinition, ColumnDefinition.WidthProperty);
+                    AddAnimationToStoryboard(storyboard, closingAnimation, MainContentFirstGridDefinition, ColumnDefinition.WidthProperty);
+                }
+                else if (response.Status == ReturnStatus.Pending)
                 {
-                    openingAnimation.BeginTime = TimeSpan.FromSeconds(closingDuration);
-                    AddAnimationToStoryboard(storyboard, immediateCloseAnimation, MainContentFirstGridDefinition, ColumnDefinition.WidthProperty);
+                    StartLoadingAnimation();
                 }
-
-                AddAnimationToStoryboard(storyboard, openingAnimation, MainContentFirstGridDefinition, ColumnDefinition.WidthProperty);
-                AddAnimationToStoryboard(storyboard, closingAnimation, MainContentFirstGridDefinition, ColumnDefinition.WidthProperty);
 
                 storyboard.Begin();
             });
@@ -110,7 +118,8 @@ namespace Attendance_Scanner
 
         // Indicator live button
         private bool isRed = true;
-        private readonly DispatcherTimer indicatorTimer = new();
+        private readonly DispatcherTimer _indicatorTimer = new();
+
         private void Timer_Tick(object sender, EventArgs e)
         {
             if (isRed)
@@ -124,12 +133,25 @@ namespace Attendance_Scanner
             isRed = !isRed;
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void StartLoadingAnimation()
+        {
+            // Loading service
+        }
+
+        private void StopLoadingAnimation()
+        {
+            
+        }
+
+        private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (DataContext is MainViewModel vm)
             {
                 vm.AppClosingCommand.Execute(null);
             }
+
+            _indicatorTimer.Stop();
+            _indicatorTimer.Tick -= Timer_Tick!;
         }
     }
 }

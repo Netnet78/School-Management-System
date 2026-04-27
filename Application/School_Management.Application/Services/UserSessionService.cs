@@ -8,6 +8,9 @@ namespace School_Management.Application.Services
     {
         private readonly IAuditLogRepository _auditLogRepository;
         private readonly IUserRepository _userRepository;
+
+        public event Action<User?>? OnUserSessionChanged;
+        public event Action<User>? OnUserLoggedOut;
         public User? CurrentUser { get; private set; }
         public DateTime? LoggedInAt { get; private set; }
 
@@ -21,45 +24,43 @@ namespace School_Management.Application.Services
         {
             if (CurrentUser == null) return;
 
+            DateTime logoutTime = DateTime.UtcNow;
+
             await _auditLogRepository.AddAsync(new()
             {
-                Action = $"User {CurrentUser.Username} has LOGGED OUT",
-                Timestamp = DateTime.Now,
+                Action = $"User {CurrentUser.Username} LOGGED OUT after {(logoutTime - LoggedInAt)?.TotalMinutes:F1} minutes",
+                Timestamp = logoutTime,
                 UserId = CurrentUser.Id
             });
 
-            CurrentUser = null;
-            LoggedInAt = null;
+            OnUserLoggedOut?.Invoke(CurrentUser);
+            OnUserSessionChanged?.Invoke(null);
         }
 
         public async Task SetSession(User user)
         {
-            CurrentUser = user;
-            LoggedInAt = DateTime.Now;
-
-            await _auditLogRepository.AddAsync(new()
-            {
-                Action = $"User {CurrentUser.Username} has LOGGED IN",
-                Timestamp = (DateTime)LoggedInAt,
-                UserId = CurrentUser.Id
-            });
+            await SetSession(user.Id);
         }
 
         public async Task SetSession(int userId)
         {
-            User? user = await _userRepository.GetUserAsync(userId);
+            User? user = await _userRepository.GetByIdAsync(userId);
 
             if (user != null)
             {
                 CurrentUser = user;
-                LoggedInAt = DateTime.Now;
+                LoggedInAt = DateTime.UtcNow;
+                CurrentUser.LastLogin = LoggedInAt;
 
                 await _auditLogRepository.AddAsync(new()
                 {
                     Action = $"User {CurrentUser.Username} has LOGGED IN",
-                    Timestamp = (DateTime)LoggedInAt,
+                    Timestamp = LoggedInAt.Value,
                     UserId = CurrentUser.Id
                 });
+
+                OnUserSessionChanged?.Invoke(user);
+                await _userRepository.UpdateAsync(CurrentUser);
             }
             else
             {

@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using School_Management.Core.Models;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -20,6 +21,31 @@ namespace School_Management.Presentation.Shared.Converters
 
                 Marshal.Copy(data.Scan0, buffer, 0, size);
                 return buffer;
+            }
+            finally
+            {
+                bitmap.UnlockBits(data);
+            }
+        }
+
+        public static CameraFrame ConvertToCameraFrame(this Bitmap bitmap)
+        {
+            Rectangle rect = new(0, 0, bitmap.Width, bitmap.Height);
+            BitmapData data = bitmap.LockBits(rect, ImageLockMode.ReadOnly, bitmap.PixelFormat);
+
+            try
+            {
+                int size = Math.Abs(data.Stride) * bitmap.Height;
+                byte[] buffer = new byte[size];
+
+                Marshal.Copy(data.Scan0, buffer, 0, size);
+                return new()
+                {
+                    Data = buffer,
+                    Height = data.Height,
+                    Width = data.Width,
+                    Stride = data.Stride,
+                };
             }
             finally
             {
