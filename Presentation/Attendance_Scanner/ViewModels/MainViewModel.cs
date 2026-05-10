@@ -168,7 +168,7 @@ public partial class MainViewModel : ObservableObject, IDisposable, IViewModel
         {
             StudentQRResponse qrResponse = await _qrService.GetStudentByQRCode(value);
             
-            if (qrResponse.Status == ReturnStatus.Failed || qrResponse.Student == null)
+            if (qrResponse.Status == Status.Failed || qrResponse.Student == null)
             {
                 _soundService.Play(_errorSound);
                 CurrentStudent = new();
@@ -185,12 +185,12 @@ public partial class MainViewModel : ObservableObject, IDisposable, IViewModel
             CurrentStudent = qrResponse.Student;
             OnScanStatusChanged?.Invoke(new()
             {
-                Status = ReturnStatus.Success
+                Status = Status.Success
             });
 
             try
             {
-                FileObject? photoPath = await _photoFetchService.GetStudentPhoto(CurrentStudent.Candidate.PhotoKey);
+                FileObject? photoPath = (await _photoFetchService.GetStudentPhoto(CurrentStudent.PhotoKey)).Value;
                 await _dispatcherService.InvokeAsync(() =>
                 {
                     CurrentPhotoPath = photoPath?.FilePath ?? string.Empty;
@@ -234,7 +234,7 @@ public partial class MainViewModel : ObservableObject, IDisposable, IViewModel
                 CurrentStudent = new();
                 CurrentPhotoPath = string.Empty;
             });
-            OnScanStatusChanged?.Invoke(new() { Status = ReturnStatus.Failed });
+            OnScanStatusChanged?.Invoke(new() { Status = Status.Failed });
         }
         finally
         {
@@ -242,7 +242,7 @@ public partial class MainViewModel : ObservableObject, IDisposable, IViewModel
         }
     }
 
-    private void DecodeFrame(CameraFrame frame)
+    private async void DecodeFrame(CameraFrame frame)
     {
         if (Interlocked.CompareExchange(ref _isDecoding, 1, 0) != 0) return;
 
@@ -252,7 +252,7 @@ public partial class MainViewModel : ObservableObject, IDisposable, IViewModel
 
             if (string.IsNullOrWhiteSpace(value)) return;
 
-            HandleScan(value);
+            await Task.Run(() => HandleScan(value));
             ScannedCode = value;
         }
         finally
@@ -278,7 +278,7 @@ public partial class MainViewModel : ObservableObject, IDisposable, IViewModel
 
         try
         {
-            LoadingService.ShowLoading("កំពុងដំណើរការទិន្នន័យ...");
+            LoadingService.ShowLoading("សូមប្អូនមេត្តារងចាំ...");
 
             if (_debugMode)
             {
@@ -286,10 +286,11 @@ public partial class MainViewModel : ObservableObject, IDisposable, IViewModel
             }
             else
             {
-                await ProcessQRAsync(value);
+                
             }
+            await ProcessQRAsync(value);
 
-            LoadingService.ShowSuccess("Success!");
+            LoadingService.ShowSuccess("វត្តមានរបស់ប្អូនត្រូវបានកត់ត្រាទុកជាការស្រេច! ​សូមប្អូនបន្តទៅរកថ្នាក់របស់ប្អូន");
             await Task.Delay(3500);
             LoadingService.Hide();
 

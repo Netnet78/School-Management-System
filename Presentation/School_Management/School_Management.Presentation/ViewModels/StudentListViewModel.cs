@@ -1,0 +1,255 @@
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using School_Management.Application.Policies;
+using School_Management.Core.Enums;
+using School_Management.Core.Interfaces;
+using School_Management.Core.Interfaces.Application;
+using School_Management.Core.Interfaces.Presentation;
+using School_Management.Core.Models;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+
+namespace School_Management.Presentation.ViewModels
+{
+    public partial class StudentListViewModel : ObservableObject, IViewModel, IAsyncLoadable
+    {
+        private readonly IStudentService _studentService;
+        private readonly IUserSessionService _userSessionService;
+        private readonly IAuthorizationService _authorizationService;
+        private readonly IMessageService _messageService;
+        private readonly User _currentUser;
+
+        private const int DefaultPageSize = 10;
+
+        private CancellationTokenSource? _cts;
+
+        public StudentListViewModel(
+            IStudentService studentService,
+            IUserSessionService userSessionService,
+            IAuthorizationService authorizationService,
+            IMessageService messageService)
+        {
+            _studentService = studentService;
+            _userSessionService = userSessionService;
+            _authorizationService = authorizationService;
+            _messageService = messageService;
+
+            if (_userSessionService.CurrentUser == null)
+            {
+                _messageService.Show("Current user session hasn't been set!");
+                throw new Exception("Current user session hasn't been set!");
+            }
+            _currentUser = _userSessionService.CurrentUser;
+
+            Filters = new()
+            {
+                IsActive = true,
+                IncludeInActive = false,
+            };
+            Students = new();
+
+            Filters.PropertyChanged += OnFiltersUpdated;
+        }
+
+        [ObservableProperty]
+        private StudentFilterModel _filters;
+
+        [ObservableProperty]
+        private ObservableCollection<Student> _students;
+
+        [ObservableProperty]
+        private bool _isLoading;
+
+        [ObservableProperty]
+        private int _currentPage = 1;
+
+        [ObservableProperty]
+        private int _maxPage = 1;
+
+        [ObservableProperty]
+        private int _totalCount;
+
+        [ObservableProperty]
+        private int _currentPageTotalCount;
+
+        [ObservableProperty]
+        private string _pageCount = string.Empty;
+
+        [ObservableProperty]
+        private bool _canViewStudents;
+
+        [ObservableProperty]
+        private bool _canInsertStudents;
+
+        [ObservableProperty]
+        private bool _canEditStudents;
+
+        [ObservableProperty]
+        private bool _canDeleteStudents;
+
+        [ObservableProperty]
+        private bool _isAdmin;
+
+        [RelayCommand]
+        private async Task LoadStudents()
+        {
+            IsLoading = true;
+
+            try
+            {
+                if (_currentUser.IsAdmin())
+                {
+                    Filters.IncludeInActive = true;
+                }
+
+                var response = await _studentService.GetStudentsAsync(CurrentPage, DefaultPageSize, Filters.ToFilterOptions());
+
+                if (response.Status == Status.Success && response.Value != null)
+                {
+                    Students.Clear();
+                    foreach (var student in response.Value)
+                    {
+                        Students.Add(student);
+                    }
+
+                    var countResponse = await _studentService.GetStudentsCount(1, int.MaxValue, Filters.ToFilterOptions());
+
+                    if (countResponse.Status == Status.Success)
+                    {
+                        TotalCount = countResponse.Value;
+                    }
+
+                    var currentPageCountResponse = await _studentService.GetStudentsCount(CurrentPage, DefaultPageSize, Filters.ToFilterOptions());
+
+                    if (countResponse.Status == Status.Success)
+                    {
+                        CurrentPageTotalCount = currentPageCountResponse.Value;
+                    }
+
+                    double pages = Math.Ceiling((double)TotalCount / DefaultPageSize);
+                    MaxPage = (int)pages;
+                    PageCount = $"ទំព័រទី {CurrentPage} នៃ {pages:F0}";
+                }
+                else
+                {
+                    _messageService.Show(response.Message ?? "Failed to load students");
+                }
+            }
+            catch (Exception ex)
+            {
+                _messageService.Show($"An error occurred while loading students: {ex.Message}");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        [RelayCommand]
+        private async Task CheckPermissions()
+        {
+            try
+            {
+                CanViewStudents = await _authorizationService.AuthorizeAsync(null, PermissionType.ViewStudents);
+                CanInsertStudents = await _authorizationService.AuthorizeAsync(null, PermissionType.InsertStudents);
+                CanEditStudents = await _authorizationService.AuthorizeAsync(null, PermissionType.EditStudents);
+                CanDeleteStudents = await _authorizationService.AuthorizeAsync(null, PermissionType.DeleteStudents);
+            }
+            catch (Exception ex)
+            {
+                _messageService.Show($"An error occurred while checking permissions: {ex.Message}");
+            }
+        }
+
+        [RelayCommand]
+        private async Task NextPage()
+        {
+            if (CurrentPage < MaxPage)
+            {
+                CurrentPage++;
+            }
+        }
+
+        [RelayCommand]
+        private async Task PreviousPage()
+        {
+            if (CurrentPage > 1)
+            {
+                CurrentPage--;
+            }
+        }
+
+        async partial void OnCurrentPageChanged(int oldValue, int newValue)
+        {
+            if (IsLoading) return;
+
+            if (newValue > MaxPage)
+            {
+                CurrentPage = oldValue;
+                return;
+            }
+
+            if (newValue < 1)
+            {
+                CurrentPage = oldValue;
+                return;
+            }
+
+            _cts?.Cancel();
+            _cts = new CancellationTokenSource();
+            CancellationToken token = _cts.Token;
+
+            try
+            {
+                await Task.Delay(1000, token);
+                await LoadStudentsCommand.ExecuteAsync(null);
+            }
+            catch (TaskCanceledException) { }
+        }
+
+        [RelayCommand]
+        private async Task ResetFilters()
+        {
+            Filters = new();
+            await RefreshOnFilterCommand.ExecuteAsync(null);
+        }
+
+        [RelayCommand]
+        private async Task RefreshOnFilterAsync()
+        {
+            CurrentPage = 1;
+            await LoadStudentsCommand.ExecuteAsync(null);
+        }
+
+        private async void OnFiltersUpdated(object? sender, PropertyChangedEventArgs e)
+        {
+            _cts?.Cancel();
+            _cts = new CancellationTokenSource();
+            CancellationToken token = _cts.Token;
+
+            try
+            {
+                await Task.Delay(300, token);
+                await RefreshOnFilterCommand.ExecuteAsync(null);
+            }
+            catch (TaskCanceledException)
+            {
+            }
+        }
+
+        public async Task LoadAsync()
+        {
+            IsAdmin = _currentUser.IsAdmin();
+
+            await CheckPermissionsCommand.ExecuteAsync(null);
+
+            if (!CanViewStudents)
+            {
+                _messageService.Show("You do not have permission to view students");
+                return;
+            }
+
+            await LoadStudentsCommand.ExecuteAsync(null);
+        }
+    }
+}

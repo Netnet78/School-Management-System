@@ -36,6 +36,7 @@
   <ItemGroup>
     <None Remove="Sources\Audio\sfx\error-sound.mp3" />
     <None Remove="Sources\Audio\sfx\error-sound.wav" />
+    <None Remove="Sources\Images\Computer_Students.jpg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -70,6 +71,7 @@
     <Resource Include="Sources\Fonts\noto-sans-khmer.ttf">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Sources\Images\Computer_Students.jpg" />
     <Resource Include="Sources\Images\dbslogo_filled.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
@@ -79,16 +81,15 @@
     <Compile Update="Components\StudentDataGrid.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\LoginViewWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
     <Page Update="Themes.xaml">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="ViewModels\" />
   </ItemGroup>
 
 </Project>

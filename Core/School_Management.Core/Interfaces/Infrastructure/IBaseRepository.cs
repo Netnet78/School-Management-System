@@ -10,7 +10,11 @@ public interface IBaseRepository<MT>
     Task AddAsync(MT data);
     Task UpdateAsync(MT data);
     Task DeleteAsync(MT data);
-
+    Task<int> CountAsync(Expression<Func<MT, bool>>? predicate = null,
+        int? page = null,
+        int? pageSize = null,
+        Func<IQueryable<MT>, IOrderedQueryable<MT>>? orderBy = null,
+        params Expression<Func<MT, object?>>[]? includes);
     async Task DeleteAsync(int id)
     {
         var data = await GetByIdAsync(id);
@@ -20,9 +24,9 @@ public interface IBaseRepository<MT>
 
     public Task SaveAsync();
 
-    Task<IEnumerable<MT>> FindAsync(Expression<Func<MT, bool>> predicate,
-        int? page,
-        int pageSize,
+    Task<IEnumerable<MT>> FindAsync(Expression<Func<MT, bool>>? predicate = null,
+        int? page = null,
+        int? pageSize = null,
         Func<IQueryable<MT>, IOrderedQueryable<MT>>? orderBy = null,
-        params Expression<Func<MT, object>>[] includes);
+        params Expression<Func<MT, object?>>[]? includes);
 }

@@ -1,7 +1,9 @@
-﻿using School_Management.Core.Enums;
+﻿using School_Management.Core.Attributes;
+using School_Management.Core.Enums;
 
 namespace School_Management.Core.Models
 {
+    [AuditIgnoreType(AuditOperation.Insert | AuditOperation.Update)]
     public class Attendance
     {
         public int Id { get; set; }

@@ -7,7 +7,7 @@
     /// This enum is typically used as a standardized response indicator
     /// for service methods, validation results, or business operations.
     /// </remarks>
-    public enum ReturnStatus
+    public enum Status
     {
         /// <summary>
         /// The operation completed successfully without any issues.
@@ -29,5 +29,11 @@
         /// or business logic.
         /// </summary>
         Rejected,
+        
+        /// <summary>
+        /// The operation doesn't return anything. Simply put, the resource that the operation is trying
+        /// to find doesn't exist.
+        /// </summary>
+        NotFound
     }
 }

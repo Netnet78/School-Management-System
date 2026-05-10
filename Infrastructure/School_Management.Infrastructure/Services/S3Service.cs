@@ -42,6 +42,15 @@ namespace School_Management.Infrastructure.Services
         /// <returns></returns>
         public async Task<ReturnResponse> UploadFile(string filePath, string? folder = null, CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+            {
+                return new()
+                {
+                    Status = Status.Failed,
+                    Message = "File does not exist."
+                };
+            }
+
             string fileName = Path.GetFileName(filePath);
             PutObjectRequest request = new()
             {
@@ -53,12 +62,21 @@ namespace School_Management.Infrastructure.Services
             try
             {
                 await _s3Client.PutObjectAsync(request, cancellationToken);
-                return new() { Status = ReturnStatus.Success };
+                return new() { Status = Status.Success };
+            }
+            catch (AmazonS3Exception ex)
+            {
+                return new()
+                {
+                    Status = Status.Failed,
+                    Message = $"S3 error: {ex.Message}"
+                };
             }
             catch (Exception ex)
             {
-                return new() { Status = ReturnStatus.Failed, Message = $"There's an error when trying to upload the file!\n{ex.Message}" };
+                return new() { Status = Status.Failed, Message = $"There's an error when trying to upload the file!\n{ex.Message}" };
             }
+
         }
 
         /// <summary>
@@ -77,11 +95,11 @@ namespace School_Management.Infrastructure.Services
             try
             {
                 await _s3Client.DeleteObjectAsync(request, cancellationToken);
-                return new() { Status = ReturnStatus.Success };
+                return new() { Status = Status.Success };
             }
             catch (Exception ex)
             {
-                return new() { Status = ReturnStatus.Failed, Message = $"There's an error when trying to delete the file!\n{ex.Message}" };
+                return new() { Status = Status.Failed, Message = $"There's an error when trying to delete the file!\n{ex.Message}" };
             }
         }
 
@@ -98,7 +116,7 @@ namespace School_Management.Infrastructure.Services
             {
                 if (string.IsNullOrWhiteSpace(fileKey) || string.IsNullOrWhiteSpace(savePath))
                 {
-                    return new() { Status = ReturnStatus.Failed, Message = "File key or save path cannot be empty." };
+                    return new() { Status = Status.Failed, Message = "File key or save path cannot be empty." };
                 }
 
                 Directory.CreateDirectory(savePath);
@@ -113,15 +131,23 @@ namespace School_Management.Infrastructure.Services
 
                 using GetObjectResponse response = await _s3Client.GetObjectAsync(request, cancellationToken);
                 await response.WriteResponseStreamToFileAsync(fullFilePath, false, default);
-                return new() { Status = ReturnStatus.Success };
+                return new() { Status = Status.Success };
             }
             catch (UnauthorizedAccessException ex)
             {
-                return new() { Status = ReturnStatus.Failed, Message = $"Access denied when downloading file. Check folder permissions.\n{ex.Message}" };
+                return new() { Status = Status.Failed, Message = $"Access denied when downloading file. Check folder permissions.\n{ex.Message}" };
+            }
+            catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return new()
+                {
+                    Status = Status.Failed,
+                    Message = "File not found in the bucket!"
+                };
             }
             catch (Exception ex)
             {
-                return new() { Status = ReturnStatus.Failed, Message = $"There's an error when trying to download the file\n{ex.Message}" };
+                return new() { Status = Status.Failed, Message = $"There's an error when trying to download the file\n{ex.Message}" };
             }
         }
     }

@@ -19,6 +19,9 @@
             <DataTemplate DataType="{x:Type vm:StudentViewModel}">
                 <views:StudentTableView />
             </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:MainFormViewModel}">
+                <views:MainFormView />
+            </DataTemplate>
             <DataTemplate DataType="{x:Type vm:InsertStudentViewModel}">
                 <views:InsertStudentView />
             </DataTemplate>

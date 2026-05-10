@@ -4,6 +4,11 @@ namespace School_Management.Core.Helpers
 {
     public static class TimeHelper
     {
+        /// <summary>
+        /// Convert the UTC timezone into Cambodia timezone (UTC+7)
+        /// </summary>
+        /// <param name="dateTime"></param>
+        /// <returns></returns>
         public static DateTime ToLocalTimeZone(this DateTime dateTime)
         {
             string tzId = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
@@ -14,6 +19,12 @@ namespace School_Management.Core.Helpers
             DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(dateTime, tz);
 
             return localTime;
+        }
+
+        public static DateTime ToUtcTimeZone(this DateTime dateTime)
+        {
+            DateTime utcTime = TimeZoneInfo.ConvertTimeToUtc(dateTime);
+            return utcTime;
         }
     }
 }

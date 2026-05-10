@@ -2,7 +2,9 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:School_Management.Presentation"
-             StartupUri="MainWindow.xaml">
+             xmlns:components="clr-namespace:School_Management.Presentation.Shared.Components;assembly=School_Management.Presentation.Shared"
+             xmlns:vm="clr-namespace:School_Management.Presentation.ViewModels"
+             xmlns:views="clr-namespace:School_Management.Presentation.Views">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -11,6 +13,25 @@
                 Source="/School_Management.Presentation.Shared;component/Themes.xaml" />
 
             </ResourceDictionary.MergedDictionaries>
+
+            <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
+                <views:DashboardView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:StudentListViewModel}">
+                <views:StudentListView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:ClassViewModel}">
+                <views:ClassView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:AttendanceViewModel}">
+                <views:AttendanceView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:ReportViewModel}">
+                <views:ReportView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:EmployeeViewModel}">
+                <views:EmployeeView />
+            </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

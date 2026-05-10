@@ -12,7 +12,6 @@ namespace New_Student_Management.ViewModels
         private readonly IUserSessionService _userSessionService;
         private readonly IMessageService _messageService;
         private readonly INavigationService _navigationService;
-        private readonly IDispatcherService _dispatcherService;
 
         [ObservableProperty]
         private bool _isLoading;
@@ -28,13 +27,11 @@ namespace New_Student_Management.ViewModels
         public MainViewModel(
             IMessageService messageService,
             IUserSessionService userSessionService,
-            INavigationService navigationService,
-            IDispatcherService dispatcherService)
+            INavigationService navigationService)
         {
             _userSessionService = userSessionService;
             _messageService = messageService;
             _navigationService = navigationService;
-            _dispatcherService = dispatcherService;
 
             _userSessionService.OnUserSessionChanged += OnUserSessionChanged;
             _navigationService.OnViewModelChanged += OnViewModelChanged;
@@ -42,7 +39,7 @@ namespace New_Student_Management.ViewModels
             InitializeViewModelsAsync();
         }
 
-        private void OnUserSessionChanged(User? obj)
+        private async void OnUserSessionChanged(User? obj)
         {
             // Set username from session
             User? user = obj;
@@ -55,17 +52,14 @@ namespace New_Student_Management.ViewModels
         {
             if (old != @new)
             {
-                await _dispatcherService.InvokeAsync(async () =>
-                {
-                    await SetView(@new);
-                });
+                await SetView(@new);
             }
         }
 
         private async void InitializeViewModelsAsync()
         {
             CurrentView = null;
-            await ShowTableView();
+            await ShowMainFormView();
         }
 
         [RelayCommand]
@@ -83,72 +77,87 @@ namespace New_Student_Management.ViewModels
         }
 
         [RelayCommand]
-        private async Task ShowTableView()
+        private async Task ShowMainFormView()
         {
-            await _navigationService.NavigateAsync<StudentViewModel>();
-        }
-
-        [RelayCommand]
-        private async Task ShowInsertView()
-        {
-            await _navigationService.NavigateAsync<InsertStudentViewModel>();
-        }
-
-        [RelayCommand]
-        private async Task ShowReportView()
-        {
-            await _navigationService.NavigateAsync<ReportViewModel>();
-        }
-
-        private async Task SetView<T>() where T : IViewModel
-        {
-            if (typeof(T) == CurrentView?.GetType()) return;
-
             if (IsLoading) return;
 
             IsLoading = true;
             try
             {
-                CurrentView = null;
-
                 await Task.Delay(1250);
-
-                CurrentView = _navigationService.CurrentViewModel;
-            }
-            catch (Exception ex)
-            {
-                _messageService.Show($"មិនអាចទៅរកផ្ទាំងមួយនេះបានទេ!: {ex.Message}", "អៃ... ចប់បណ្ដោយ....",
-                    MessageButton.OK, MessageIcon.Error);
+                await _navigationService.NavigateAsync<MainFormViewModel>();
             }
             finally
             {
                 IsLoading = false;
             }
+        }
+
+        [RelayCommand]
+        private async Task ShowTableView()
+        {
+            if (IsLoading) return;
+
+            IsLoading = true;
+            try
+            {
+                await Task.Delay(1250);
+                await _navigationService.NavigateAsync<StudentViewModel>();
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        [RelayCommand]
+        private async Task ShowInsertView()
+        {
+            if (IsLoading) return;
+
+            IsLoading = true;
+            try 
+            {
+                await Task.Delay(1250);
+                await _navigationService.NavigateAsync<InsertStudentViewModel>();
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+            
+        }
+
+        [RelayCommand]
+        private async Task ShowReportView()
+        {
+            if (IsLoading) return;
+
+            IsLoading = true;
+            try
+            {
+                await Task.Delay(1250);
+                await _navigationService.NavigateAsync<ReportViewModel>();
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+            
         }
 
         private async Task SetView(IViewModel viewModel)
         {
             if (viewModel.GetType() == CurrentView?.GetType()) return;
 
-            if (IsLoading) return;
-
-            IsLoading = true;
             try
             {
-                CurrentView = null;
-
-                await Task.Delay(1250);
-
-                CurrentView = _navigationService.CurrentViewModel;
+                CurrentView = viewModel;
             }
             catch (Exception ex)
             {
                 _messageService.Show($"មិនអាចទៅរកផ្ទាំងមួយនេះបានទេ!: {ex.Message}", "អៃ... ចប់បណ្ដោយ....",
                     MessageButton.OK, MessageIcon.Error);
-            }
-            finally
-            {
-                IsLoading = false;
             }
         }
     }

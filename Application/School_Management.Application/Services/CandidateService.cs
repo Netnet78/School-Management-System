@@ -27,7 +27,7 @@ namespace School_Management.Application.Services
                     return new()
                     {
                         Message = $"សិស្សឈ្មោះ៖ \"{candidate.FullName}\" ត្រូវបានលុបជាការស្រេច!",
-                        Status = ReturnStatus.Success
+                        Status = Status.Success
                     };
                 }
                 else
@@ -35,7 +35,7 @@ namespace School_Management.Application.Services
                     return new()
                     {
                         Message = $"មិនអាចរកឃើញសិស្សដែលមាន ID: \"{candidateId}\" នោះទេ!",
-                        Status = ReturnStatus.Rejected
+                        Status = Status.Rejected
                     };
                 }
             }
@@ -44,12 +44,12 @@ namespace School_Management.Application.Services
                 return new()
                 {
                     Message = $"ប្រព័ន្ធបានចាប់កំហុសបច្ចេកទេសមួយនៅពេលដែលកំពុងព្យាយាមលុប\nError: {ex}",
-                    Status = ReturnStatus.Failed
+                    Status = Status.Failed
                 };
             }
         }
 
-        public async Task<ReturnResponse> EditCandidateAsync(Candidate candidate)
+        public async Task<ReturnResponse> UpdateCandidateAsync(Candidate candidate)
         {
             ValidationResponse response = candidate.HasAllRequiredData();
             if (response.IsValid)
@@ -65,12 +65,12 @@ namespace School_Management.Application.Services
                 }
                 catch (Exception ex)
                 {
-                    return new() { Status = ReturnStatus.Failed, Message = $"There's an error when trying to update the student:\n{ex.Message}" };
+                    return new() { Status = Status.Failed, Message = $"There's an error when trying to update the student:\n{ex.Message}" };
                 }
 
                 return new()
                 {
-                    Status = ReturnStatus.Success,
+                    Status = Status.Success,
                     Message = $"Successfully updated the candidate named \"{candidate.FullName}\""
                 };
             }
@@ -84,7 +84,7 @@ namespace School_Management.Application.Services
                 }
                 return new()
                 {
-                    Status = ReturnStatus.Rejected,
+                    Status = Status.Rejected,
                     Message = message,
                 };
             }
@@ -97,7 +97,7 @@ namespace School_Management.Application.Services
                 IEnumerable<Candidate> candidates = await _candidateRepository.GetCandidatesOnlyAsync(page, pageSize);
                 return new()
                 {
-                    Status = ReturnStatus.Success,
+                    Status = Status.Success,
                     Value = candidates,
                 };
             }
@@ -105,7 +105,7 @@ namespace School_Management.Application.Services
             {
                 return new()
                 {
-                    Status = ReturnStatus.Failed,
+                    Status = Status.Failed,
                     Message = $"There's an error when trying to retrieve the candidates data\n{ex.Message}"
                 };
             }
@@ -119,7 +119,7 @@ namespace School_Management.Application.Services
                 IEnumerable<Candidate> candidates = await _candidateRepository.GetCandidatesOnlyPagedAsync(page, pageSize, options);
                 return new()
                 {
-                    Status = ReturnStatus.Success,
+                    Status = Status.Success,
                     Value = candidates,
                 };
             }
@@ -127,7 +127,7 @@ namespace School_Management.Application.Services
             {
                 return new()
                 {
-                    Status = ReturnStatus.Failed,
+                    Status = Status.Failed,
                     Message = $"There's an error when trying to retrieve the candidates data\n{ex.Message}"
                 };
             }
@@ -141,7 +141,7 @@ namespace School_Management.Application.Services
                 int count = await _candidateRepository.GetCandidatesOnlyCountAsync(options);
                 return new()
                 {
-                    Status = ReturnStatus.Success,
+                    Status = Status.Success,
                     Value = count,
                 };
             }
@@ -149,7 +149,7 @@ namespace School_Management.Application.Services
             {
                 return new()
                 {
-                    Status = ReturnStatus.Failed,
+                    Status = Status.Failed,
                     Message = $"There's something wrong when trying to get the candidates count\n{ex.Message}",
                 };
             }
@@ -174,14 +174,14 @@ namespace School_Management.Application.Services
                 {
                     return new()
                     {
-                        Status = ReturnStatus.Failed,
+                        Status = Status.Failed,
                         Message = $"There's an error when trying to insert the student:\n{ex.Message}"
                     };
                 }
 
                 return new()
                 {
-                    Status = ReturnStatus.Success,
+                    Status = Status.Success,
                     Message = $"Successfully updated the candidate named \"{candidate.FullName}\""
                 };
             }
@@ -195,7 +195,7 @@ namespace School_Management.Application.Services
                 }
                 return new()
                 {
-                    Status = ReturnStatus.Rejected,
+                    Status = Status.Rejected,
                     Message = message,
                 };
             }

@@ -13,7 +13,6 @@ namespace School_Management.Presentation.Shared.Components
         private Storyboard? _contentFadeIn;
         private Storyboard? _contentFadeOut;
         private bool _isInitialized = false;
-        private bool _isAnimating = false;
 
         public bool IsLoading
         {
@@ -54,11 +53,11 @@ namespace School_Management.Presentation.Shared.Components
                 return;
             }
 
-            //await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-            //{
-            //    Storyboard fadeOut = control._contentFadeOut.Clone();
-            //    fadeOut.Begin(control.ContentContainer, HandoffBehavior.SnapshotAndReplace);
-            //});
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                Storyboard fadeOut = control._contentFadeOut.Clone();
+                fadeOut.Begin(control.ContentContainer, HandoffBehavior.SnapshotAndReplace);
+            });
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 Storyboard fadeIn = control._contentFadeIn.Clone();
@@ -78,18 +77,5 @@ namespace School_Management.Presentation.Shared.Components
             };
         }
 
-        private async void OnTransitionCompleted(object sender, RoutedEventArgs e)
-        {
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                Storyboard? fadeOut = _contentFadeOut?.Clone();
-                fadeOut?.Begin(ContentContainer, HandoffBehavior.SnapshotAndReplace);
-            });
-            //await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-            //{
-            //    Storyboard? fadeIn = _contentFadeIn?.Clone();
-            //    fadeIn?.Begin(ContentContainer, HandoffBehavior.SnapshotAndReplace);
-            //});
-        }
     }
 }

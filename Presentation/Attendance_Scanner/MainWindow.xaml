@@ -191,30 +191,6 @@
                                             <ScaleTransform ScaleX="-1" />
                                         </Image.RenderTransform>
                                     </Image>
-                                    <Border x:Name="SuccessMessage"
-                                        Opacity="0"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        Padding="20 10 20 20"
-                                        CornerRadius="10"
-                                        Background="White">
-                                        <Border.Effect>
-                                            <DropShadowEffect RenderingBias="Quality" BlurRadius="10" ShadowDepth="10" Opacity="0.25"/>
-                                        </Border.Effect>
-                                        <StackPanel Orientation="Vertical">
-                                            <materialDesigns:PackIcon
-                                                Kind="CheckCircle"
-                                                Foreground="Green"
-                                                Width="128"
-                                                Height="128"
-                                                HorizontalAlignment="Center" />
-                                            <TextBlock
-                                                Text="ស្កេនបានដោយ​ជោគជ័យ! សូមអរគុណ!"
-                                                FontSize="24"
-                                                Margin="0 20 0 0"
-                                                Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
-                                        </StackPanel>
-                                    </Border>
 
                                     <components:LoadingDialog DataContext="{Binding LoadingService}"
                                             LoadingText="{Binding Message}"

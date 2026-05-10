@@ -1,4 +1,5 @@
 ﻿using School_Management.Core.Enums;
+using School_Management.Core.Helpers;
 using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
 
@@ -27,8 +28,10 @@ namespace Attendance_Scanner.Services
         {
             try
             {
-                //bool disableTimeCheck = true;
-                TimeSpan scanTime = DateTime.Now.TimeOfDay;
+                DateTime utcNow = DateTime.UtcNow;
+                DateTime cambodiaNow = utcNow.ToLocalTimeZone();
+
+                TimeSpan scanTime = cambodiaNow.TimeOfDay;
                 TimeSpan startTime = new(5, 0, 0);
                 TimeSpan endTime = new(17, 0, 0);
 
@@ -36,7 +39,7 @@ namespace Attendance_Scanner.Services
                 {
                     return new()
                     {
-                        Status = ReturnStatus.Failed,
+                        Status = Status.Failed,
                         Message = "ប្អូនមិនអាចស្កេនវត្តមាននៅពេលវេលាម៉ោងនេះទេ! សូមព្យាយាមនៅពេលក្រោយ!",
                         Student = null
                     };
@@ -46,7 +49,7 @@ namespace Attendance_Scanner.Services
                 {
                     return new()
                     {
-                        Status = ReturnStatus.Failed,
+                        Status = Status.Failed,
                         Message = "QR Code cannot be null or empty!",
                         Student = null
                     };
@@ -58,7 +61,7 @@ namespace Attendance_Scanner.Services
                 {
                     return new()
                     {
-                        Status = ReturnStatus.Failed,
+                        Status = Status.Failed,
                         Message = "គ្មាន​ទិន្នន័យសិស្សនៃ QR Code មួយនេះទេ! សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ!",
                         Student = null
                     };
@@ -68,7 +71,7 @@ namespace Attendance_Scanner.Services
                 {
                     return new()
                     {
-                        Status = ReturnStatus.Failed,
+                        Status = Status.Failed,
                         Message = "ទិន្នន័យ QR នៃកាតមួយនេះត្រូវបានបិទ! ប្រសិនបើប្អូនគិតថា វាជាកំហុសបច្ចេកទេស, សូមប្អូនជូនដំណឹងទៅកាន់លោកគ្រូអ្នកគ្រូភ្លាមៗ!",
                         Student = null
                     };
@@ -77,11 +80,11 @@ namespace Attendance_Scanner.Services
                 IEnumerable<Attendance> studentAttendances = await _attendanceRepository.GetAllFromStudentId(studentQR.Student.Id);
                 Attendance? latestAttendance = studentAttendances.OrderByDescending(sa => new DateTime(sa.AttendanceDate, sa.ScanTime)).FirstOrDefault();
 
-                if (latestAttendance != null && DateOnly.FromDateTime(DateTime.Now) == latestAttendance.AttendanceDate)
+                if (latestAttendance != null && DateOnly.FromDateTime(cambodiaNow) == latestAttendance.AttendanceDate)
                 {
                     return new()
                     {
-                        Status = ReturnStatus.Failed,
+                        Status = Status.Failed,
                         Message = "ប្អូនមិនអាចស្កេនលើសពីពីរដងក្នុងមួយថ្ងៃបានទេ!",
                         Student = null
                     };
@@ -106,8 +109,8 @@ namespace Attendance_Scanner.Services
                 Attendance attendance = new()
                 {
                     StudentClassId = latestStudentClass.Id,
-                    AttendanceDate = DateOnly.FromDateTime(DateTime.Now),
-                    ScanTime = TimeOnly.FromTimeSpan(DateTime.Now.TimeOfDay),
+                    AttendanceDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                    ScanTime = TimeOnly.FromTimeSpan(DateTime.UtcNow.TimeOfDay),
                     MarkedByEmployeeId = null,
                     Status = attendanceStatus,
                     OtherInfo = "This attendance was auto-marked by the Attendance Management System",
@@ -116,7 +119,7 @@ namespace Attendance_Scanner.Services
 
                 return new()
                 {
-                    Status = ReturnStatus.Success,
+                    Status = Status.Success,
                     Message = string.Empty,
                     Student = studentQR.Student
                 };
@@ -125,7 +128,7 @@ namespace Attendance_Scanner.Services
             {
                 return new()
                 {
-                    Status = ReturnStatus.Failed,
+                    Status = Status.Failed,
                     Message = $"An unexpected error occurred while processing the QR code.\n{ex.Message}",
                     Student = null
                 };

@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using School_Management.Presentation.ViewModels;
+using System.Windows;
 
 namespace School_Management.Presentation
 {
@@ -10,6 +11,24 @@ namespace School_Management.Presentation
         public MainWindow()
         {
             InitializeComponent();
+
+            if (DataContext is MainViewModel vm)
+            {
+                vm.OnExit += OnAppClosed;
+            }
+        }
+
+        private void OnAppClosed()
+        {
+            System.Windows.Application.Current.Shutdown();
+        }
+
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                await vm.LoadAsync();
+            }
         }
     }
 }

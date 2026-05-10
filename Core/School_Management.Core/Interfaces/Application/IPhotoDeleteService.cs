@@ -4,7 +4,7 @@ namespace School_Management.Core.Interfaces.Application
 {
     public interface IPhotoDeleteService
     {
-        Task<ReturnResponse> DeleteStudentPhoto(string photoKey);
+        Task<ReturnResponse> DeleteStudentPhoto(Candidate student);
         Task<ReturnResponse> DeleteEmployeePhoto(string photoKey);
     }
 }

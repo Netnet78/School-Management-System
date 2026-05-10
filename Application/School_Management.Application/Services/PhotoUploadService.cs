@@ -9,14 +9,19 @@ namespace School_Management.Application.Services
     {
         private readonly ISettingsService _settings;
         private readonly IS3Service _s3Service;
+        private readonly IStudentPhotoRepository _studentPhotoRepository;
 
-        public PhotoUploadService(ISettingsService settings, IS3Service s3Service)
+        public PhotoUploadService(
+            ISettingsService settings,
+            IS3Service s3Service,
+            IStudentPhotoRepository studentPhotoRepository)
         {
             _settings = settings;
             _s3Service = s3Service;
+            _studentPhotoRepository = studentPhotoRepository;
         }
 
-        public async Task<FileObject> UploadStudentPhoto(string path)
+        public async Task<FileObject> UploadStudentPhoto(string path, Candidate student)
         {
             Settings config = _settings.GetAllSettings();
 
@@ -33,11 +38,34 @@ namespace School_Management.Application.Services
             string destination = Path.Combine(photoDirectory, fileName);
 
             File.Copy(path, destination, true);
+
+            StudentPhoto studentPhoto = new()
+            {
+                Student = student,
+                FileStatus = FileStatus.PendingUpload,
+                Key = fileName,
+                LastAttempt = DateTime.UtcNow,
+                LocalPath = destination
+            };
+
             ReturnResponse returnResponse = await _s3Service.UploadFile(destination, config.StudentPhotoFolderBucketPath);
 
-            if (returnResponse.Status == ReturnStatus.Failed)
+            if (returnResponse.Status == Status.Success)
             {
-                throw new Exception(returnResponse.Message);
+                studentPhoto.FileStatus = FileStatus.Uploaded;
+            }
+            else
+            {
+                studentPhoto.FileStatus = FileStatus.LocalOnly;
+            }
+
+            if (student.Photo != null)
+            {
+                await _studentPhotoRepository.UpdateAsync(studentPhoto);
+            }
+            else
+            {
+                await _studentPhotoRepository.AddAsync(studentPhoto);
             }
 
             return new FileObject(destination);
@@ -61,7 +89,7 @@ namespace School_Management.Application.Services
 
             File.Copy(path, destination, true);
             ReturnResponse returnResponse = await _s3Service.UploadFile(destination, config.EmployeePhotoFolderBucketPath);
-            if (returnResponse.Status == ReturnStatus.Failed)
+            if (returnResponse.Status == Status.Failed)
             {
                 throw new Exception(returnResponse.Message);
             }

@@ -79,7 +79,7 @@ namespace New_Student_Management.ViewModels
                 Gender = Gender.Male,
                 SkillId = 0,
                 Skill = new Skill(),
-                PhotoKey = string.Empty,
+                Photo = new StudentPhoto()
             };
         }
 
@@ -102,18 +102,22 @@ namespace New_Student_Management.ViewModels
             {
                 if (_studentPhotoBackup != null)
                 {
-                    FileObject newPhoto = await _photoUploadService.UploadStudentPhoto(_studentPhotoBackup);
+                    FileObject newPhoto = await _photoUploadService.UploadStudentPhoto(_studentPhotoBackup, EditedStudent);
 
                     // delete old photo AFTER success
-                    if (!string.IsNullOrEmpty(EditedStudent.PhotoKey))
+                    if (!string.IsNullOrEmpty(EditedStudent.PhotoKey) &&
+                        EditedStudent.Photo != null &&
+                        !string.IsNullOrEmpty(EditedStudent.Photo.Key)
+                    )
                     {
-                        await _photoDeleteService.DeleteStudentPhoto(EditedStudent.PhotoKey);
+                        await _photoDeleteService.DeleteStudentPhoto(EditedStudent);
                     }
 
-                    EditedStudent.PhotoKey = newPhoto.FileKey;
+
+                    EditedStudent.Photo!.Key = newPhoto.FileKey;
                 }
 
-                await _candidateService.EditCandidateAsync(EditedStudent);
+                await _candidateService.UpdateCandidateAsync(EditedStudent);
 
                 _studentPhotoBackup = null;
 
@@ -138,7 +142,7 @@ namespace New_Student_Management.ViewModels
                 return;
 
             EditedStudent = _defaultStudent.Clone();
-            CurrentPhoto = await _photoFetchService.GetStudentPhoto(_defaultStudent.PhotoKey);
+            CurrentPhoto = (await _photoFetchService.GetStudentPhoto(_defaultStudent.PhotoKey)).Value;
 
             _studentPhotoBackup = null;
 
@@ -174,7 +178,7 @@ namespace New_Student_Management.ViewModels
                 EditedStudent = param.Candidate.Clone();
                 _defaultStudent = EditedStudent.Clone();
 
-                CurrentPhoto = await _photoFetchService.GetStudentPhoto(param.Candidate.PhotoKey);
+                CurrentPhoto = (await _photoFetchService.GetStudentPhoto(param.Candidate.PhotoKey)).Value;
             }
         }
 

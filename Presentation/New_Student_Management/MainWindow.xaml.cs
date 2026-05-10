@@ -1,4 +1,3 @@
-﻿using New_Student_Management.ViewModels;
 using System.Windows;
 
 namespace New_Student_Management
@@ -8,16 +7,9 @@ namespace New_Student_Management
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow(MainViewModel vm)
+        public MainWindow()
         {
             InitializeComponent();
-
-            DataContext = vm;
-
-            vm.ExitAction += () =>
-            {
-                Application.Current.Shutdown(0);
-            };
         }
     }
 }

@@ -5,7 +5,7 @@ namespace School_Management.Core.Models
 {
     public class ReturnResponse
     {
-        required public ReturnStatus Status { get; set; }
+        required public Status Status { get; set; }
         public string Message { get; set; } = string.Empty;
     }
 

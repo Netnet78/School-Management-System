@@ -90,8 +90,8 @@ namespace Attendance_Scanner.Services.UnitTests
             var latestClass = new StudentClass
             {
                 Id = 77,
-                StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1)),
-                EndDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(1)),
+                StartDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-1)),
+                EndDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1)),
                 StudentId = student.Id
             };
 
@@ -129,7 +129,7 @@ namespace Attendance_Scanner.Services.UnitTests
             mockAttendanceRepo.Verify(r => r.AddAsync(It.IsAny<Attendance>()), Times.Once);
             Assert.NotNull(capturedAttendance);
             Assert.Equal(latestClass.Id, capturedAttendance!.StudentClassId);
-            Assert.Equal(DateOnly.FromDateTime(DateTime.Now), capturedAttendance.AttendanceDate);
+            Assert.Equal(DateOnly.FromDateTime(DateTime.UtcNow), capturedAttendance.AttendanceDate);
             Assert.False(string.IsNullOrEmpty(capturedAttendance.OtherInfo));
         }
 
@@ -202,7 +202,7 @@ namespace Attendance_Scanner.Services.UnitTests
             var todayAttendance = new Attendance
             {
                 Id = 10,
-                AttendanceDate = DateOnly.FromDateTime(DateTime.Now),
+                AttendanceDate = DateOnly.FromDateTime(DateTime.UtcNow),
                 ScanTime = TimeOnly.FromTimeSpan(new TimeSpan(8, 0, 0)),
                 StudentClassId = 1,
                 Status = AttendanceStatus.Present
@@ -245,7 +245,7 @@ namespace Attendance_Scanner.Services.UnitTests
             var olderAttendance = new Attendance
             {
                 Id = 1,
-                AttendanceDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-1)),
+                AttendanceDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)),
                 ScanTime = TimeOnly.FromTimeSpan(new TimeSpan(9, 0, 0)),
                 StudentClassId = 5,
                 Status = AttendanceStatus.Present
@@ -254,8 +254,8 @@ namespace Attendance_Scanner.Services.UnitTests
             var latestClass = new StudentClass
             {
                 Id = 55,
-                StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1)),
-                EndDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(1)),
+                StartDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-1)),
+                EndDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1)),
                 StudentId = student.Id
             };
 
@@ -290,7 +290,7 @@ namespace Attendance_Scanner.Services.UnitTests
             mockAtr.Verify(r => r.AddAsync(It.IsAny<Attendance>()), Times.Once);
             Assert.NotNull(capturedAttendance);
             Assert.Equal(latestClass.Id, capturedAttendance!.StudentClassId);
-            Assert.Equal(DateOnly.FromDateTime(DateTime.Now), capturedAttendance.AttendanceDate);
+            Assert.Equal(DateOnly.FromDateTime(DateTime.UtcNow), capturedAttendance.AttendanceDate);
             Assert.False(string.IsNullOrEmpty(capturedAttendance.OtherInfo));
         }
 

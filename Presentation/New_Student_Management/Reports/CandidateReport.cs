@@ -35,7 +35,7 @@ namespace New_Student_Management.Reports
             _candidates = candidates ?? [];
         }
 
-        public ReturnStatus GenerateReport()
+        public Status GenerateReport()
         {
             XLWorkbook workbook = new(TemplatePath);
             var skillGroups = _candidates
@@ -87,17 +87,17 @@ namespace New_Student_Management.Reports
                 try
                 {
                     workbook.SaveAs(saveFileDialog.FileName);
-                    return ReturnStatus.Success;
+                    return Status.Success;
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Report failed to generate\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return ReturnStatus.Failed;
+                    return Status.Failed;
                 }
             }
             else
             {
-                return ReturnStatus.Rejected;
+                return Status.Rejected;
             }
         }
         private static void InsertStudent(Candidate student, IXLWorksheet ws, int index)

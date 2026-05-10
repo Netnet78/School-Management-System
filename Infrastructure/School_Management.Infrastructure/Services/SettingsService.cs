@@ -35,7 +35,10 @@ namespace School_Management.Infrastructure.Services
         private void CheckPhotoPathConfig()
         {
             Settings previous = GetAllSettings();
-            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string baseDirectory = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "School_Management"
+                );
 
             bool isChanged = false;
 

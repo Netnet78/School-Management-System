@@ -140,7 +140,7 @@ namespace New_Student_Management.ViewModels
                 IsLoadingPhoto = true;
                 if (!string.IsNullOrWhiteSpace(value.PhotoKey))
                 {
-                    SelectedStudentPhoto = await _photoFetchService.GetStudentPhoto(value.PhotoKey);
+                    SelectedStudentPhoto = (await _photoFetchService.GetStudentPhoto(value.PhotoKey)).Value;
                     ValidPhotoPath = File.Exists(SelectedStudentPhoto?.FilePath);
                 }
                 else
@@ -172,10 +172,10 @@ namespace New_Student_Management.ViewModels
         [ObservableProperty]
         private StudentDataStateFilterOptions _dataStateFilter = StudentDataStateFilterOptions.All;
 
-        partial void OnDataStateFilterChanged(StudentDataStateFilterOptions value)
+        async partial void OnDataStateFilterChanged(StudentDataStateFilterOptions value)
         {
             // Only refresh the view; preserve SelectedStudent if it still matches the filter
-            RefreshStudentsViewAsync();
+            await RefreshStudentsViewAsync();
         }
 
         // ទិន្នន័យសម្រាប់ Combo box ​ច្រោះទិន្នន័យតាម​ស្ថានភាពទិន្នន័យ
@@ -209,7 +209,7 @@ namespace New_Student_Management.ViewModels
         async partial void OnCurrentSearchFieldChanged(StudentField value)
         {
             CurrentPage = 1;
-            RefreshStudentsViewAsync();
+            await RefreshStudentsViewAsync();
         }
 
         // Fields ដែលត្រូវបានរំលងក្នុងការ Filter/Search
@@ -305,7 +305,7 @@ namespace New_Student_Management.ViewModels
             {
                 StudentFilterOptions filterOptions = BuildStudentFilterOptions();
                 ReturnResponse<int> countResponse = await _candidateService.GetAllCountAsync(filterOptions);
-                if (countResponse.Status == ReturnStatus.Failed)
+                if (countResponse.Status == Status.Failed)
                 {
                     await _dispatcherService.InvokeAsync(() =>
                     {
@@ -316,7 +316,7 @@ namespace New_Student_Management.ViewModels
 
                 ReturnResponse<IEnumerable<Candidate>> studentsResponse = await _candidateService.GetAllAsync(CurrentPage, _studentsPerPage, filterOptions);
                 IEnumerable<Candidate>? students = studentsResponse.Value;
-                if (studentsResponse.Status == ReturnStatus.Failed || students == null)
+                if (studentsResponse.Status == Status.Failed || students == null)
                 {
                     await _dispatcherService.InvokeAsync(() =>
                     {
@@ -341,12 +341,12 @@ namespace New_Student_Management.ViewModels
         {
             return new StudentFilterOptions
             {
-                Gender = SelectedGender.ToString(),
+                Gender = SelectedGender,
                 Search = StudentSearch,
                 SearchField = CurrentSearchField,
                 DataState = DataStateFilter,
-                FromDate = FromDate,
-                ToDate = ToDate,
+                FromDate = FromDate == null ? FromDate : FromDate.Value.ToUniversalTime(),
+                ToDate = ToDate == null ? ToDate : ToDate.Value.ToUniversalTime(),
                 SortBy = SortBy,
                 OrderBy = OrderType
             };
@@ -383,7 +383,7 @@ namespace New_Student_Management.ViewModels
 
             ReturnResponse deleteResponse = await _candidateService.DeleteCandidateAsync(student.Id);
 
-            if (deleteResponse.Status == ReturnStatus.Failed || deleteResponse.Status == ReturnStatus.Rejected)
+            if (deleteResponse.Status == Status.Failed || deleteResponse.Status == Status.Rejected)
             {
                 await _dispatcherService.InvokeAsync(() =>
                 {
@@ -394,9 +394,9 @@ namespace New_Student_Management.ViewModels
 
             if (!string.IsNullOrWhiteSpace(student.PhotoKey))
             {
-                ReturnResponse deletePhotoResponse = await _photoDeleteService.DeleteStudentPhoto(student.PhotoKey);
+                ReturnResponse deletePhotoResponse = await _photoDeleteService.DeleteStudentPhoto(student);
 
-                if (deletePhotoResponse.Status == ReturnStatus.Failed || deletePhotoResponse.Status == ReturnStatus.Rejected)
+                if (deletePhotoResponse.Status == Status.Failed || deletePhotoResponse.Status == Status.Rejected)
                 {
                     await _dispatcherService.InvokeAsync(() =>
                     {

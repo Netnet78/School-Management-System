@@ -17,7 +17,7 @@ namespace School_Management.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.5")
+                .HasAnnotation("ProductVersion", "10.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -84,6 +84,22 @@ namespace School_Management.Infrastructure.Migrations
 
                     b.Property<string>("Action")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomDescription")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EntityName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("NewValues")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OldValues")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("Timestamp")
@@ -158,6 +174,12 @@ namespace School_Management.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("text")
+                        .HasComputedColumnSql("\"LastName\" || ' ' || \"FirstName\"", true);
+
                     b.Property<string>("Gender")
                         .IsRequired()
                         .HasColumnType("text");
@@ -169,6 +191,12 @@ namespace School_Management.Infrastructure.Migrations
                     b.Property<string>("LatinFirstName")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("LatinFullName")
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("text")
+                        .HasComputedColumnSql("\"LatinLastName\" || ' ' || \"LatinFirstName\"", true);
 
                     b.Property<string>("LatinLastName")
                         .IsRequired()
@@ -187,10 +215,6 @@ namespace School_Management.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PhotoKey")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -346,11 +370,11 @@ namespace School_Management.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("MaritalStatus")
+                    b.Property<string>("LatinFullName")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("PhotoKey")
+                    b.Property<string>("MaritalStatus")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -368,17 +392,33 @@ namespace School_Management.Infrastructure.Migrations
                     b.Property<decimal>("Tax")
                         .HasColumnType("numeric");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DepartmentId");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
                     b.ToTable("Employees");
+                });
+
+            modelBuilder.Entity("School_Management.Core.Models.EmployeePhoto", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FileStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Key")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("LastAttempt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LocalPath")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EmployeePhotos");
                 });
 
             modelBuilder.Entity("School_Management.Core.Models.Exam", b =>
@@ -432,6 +472,10 @@ namespace School_Management.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("KhmerName")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -579,9 +623,8 @@ namespace School_Management.Infrastructure.Migrations
                     b.Property<DateOnly?>("EnrollDate")
                         .HasColumnType("date");
 
-                    b.Property<string>("OtherInfo")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 
@@ -605,6 +648,9 @@ namespace School_Management.Infrastructure.Migrations
                     b.Property<DateOnly>("EndDate")
                         .HasColumnType("date");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<DateOnly>("StartDate")
                         .HasColumnType("date");
 
@@ -620,13 +666,32 @@ namespace School_Management.Infrastructure.Migrations
                     b.ToTable("StudentClasses");
                 });
 
+            modelBuilder.Entity("School_Management.Core.Models.StudentPhoto", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FileStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Key")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("LastAttempt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LocalPath")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StudentPhotos");
+                });
+
             modelBuilder.Entity("School_Management.Core.Models.StudentQR", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("GeneratedAt")
                         .HasColumnType("timestamp with time zone");
@@ -638,12 +703,7 @@ namespace School_Management.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("StudentId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("StudentId");
 
                     b.ToTable("StudentQRs");
                 });
@@ -658,6 +718,10 @@ namespace School_Management.Infrastructure.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("KhmerName")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -678,6 +742,9 @@ namespace School_Management.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("EmployeeId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("FailedLoginAttempts")
                         .HasColumnType("integer");
@@ -703,6 +770,9 @@ namespace School_Management.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId")
+                        .IsUnique();
 
                     b.HasIndex("RoleId");
 
@@ -789,7 +859,7 @@ namespace School_Management.Infrastructure.Migrations
             modelBuilder.Entity("School_Management.Core.Models.ClassSubject", b =>
                 {
                     b.HasOne("School_Management.Core.Models.Class", "Class")
-                        .WithMany("ClassSubjects")
+                        .WithMany("Subjects")
                         .HasForeignKey("ClassId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -819,13 +889,18 @@ namespace School_Management.Infrastructure.Migrations
                         .WithMany("Employees")
                         .HasForeignKey("DepartmentId");
 
-                    b.HasOne("School_Management.Core.Models.User", "User")
-                        .WithMany("Employees")
-                        .HasForeignKey("UserId");
-
                     b.Navigation("Department");
+                });
 
-                    b.Navigation("User");
+            modelBuilder.Entity("School_Management.Core.Models.EmployeePhoto", b =>
+                {
+                    b.HasOne("School_Management.Core.Models.Employee", "Employee")
+                        .WithOne("Photo")
+                        .HasForeignKey("School_Management.Core.Models.EmployeePhoto", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("School_Management.Core.Models.Generation", b =>
@@ -891,7 +966,7 @@ namespace School_Management.Infrastructure.Migrations
             modelBuilder.Entity("School_Management.Core.Models.StudentClass", b =>
                 {
                     b.HasOne("School_Management.Core.Models.Class", "Class")
-                        .WithMany("StudentClasses")
+                        .WithMany("Students")
                         .HasForeignKey("ClassId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -907,11 +982,22 @@ namespace School_Management.Infrastructure.Migrations
                     b.Navigation("Student");
                 });
 
+            modelBuilder.Entity("School_Management.Core.Models.StudentPhoto", b =>
+                {
+                    b.HasOne("School_Management.Core.Models.Candidate", "Student")
+                        .WithOne("Photo")
+                        .HasForeignKey("School_Management.Core.Models.StudentPhoto", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("School_Management.Core.Models.StudentQR", b =>
                 {
                     b.HasOne("School_Management.Core.Models.Student", "Student")
-                        .WithMany("StudentQRs")
-                        .HasForeignKey("StudentId")
+                        .WithOne("StudentQR")
+                        .HasForeignKey("School_Management.Core.Models.StudentQR", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -920,25 +1006,33 @@ namespace School_Management.Infrastructure.Migrations
 
             modelBuilder.Entity("School_Management.Core.Models.User", b =>
                 {
+                    b.HasOne("School_Management.Core.Models.Employee", "Employee")
+                        .WithOne("User")
+                        .HasForeignKey("School_Management.Core.Models.User", "EmployeeId");
+
                     b.HasOne("School_Management.Core.Models.Role", "Role")
                         .WithMany("Users")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Employee");
+
                     b.Navigation("Role");
                 });
 
             modelBuilder.Entity("School_Management.Core.Models.Candidate", b =>
                 {
+                    b.Navigation("Photo");
+
                     b.Navigation("Student");
                 });
 
             modelBuilder.Entity("School_Management.Core.Models.Class", b =>
                 {
-                    b.Navigation("ClassSubjects");
+                    b.Navigation("Students");
 
-                    b.Navigation("StudentClasses");
+                    b.Navigation("Subjects");
                 });
 
             modelBuilder.Entity("School_Management.Core.Models.ClassSubject", b =>
@@ -960,6 +1054,10 @@ namespace School_Management.Infrastructure.Migrations
                     b.Navigation("Classes");
 
                     b.Navigation("MarkedAttendances");
+
+                    b.Navigation("Photo");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("School_Management.Core.Models.Exam", b =>
@@ -988,7 +1086,7 @@ namespace School_Management.Infrastructure.Migrations
 
                     b.Navigation("Notifications");
 
-                    b.Navigation("StudentQRs");
+                    b.Navigation("StudentQR");
                 });
 
             modelBuilder.Entity("School_Management.Core.Models.StudentClass", b =>
@@ -1006,8 +1104,6 @@ namespace School_Management.Infrastructure.Migrations
             modelBuilder.Entity("School_Management.Core.Models.User", b =>
                 {
                     b.Navigation("AuditLogs");
-
-                    b.Navigation("Employees");
                 });
 #pragma warning restore 612, 618
         }

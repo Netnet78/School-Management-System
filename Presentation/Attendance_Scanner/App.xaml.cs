@@ -3,15 +3,15 @@ using Attendance_Scanner.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using School_Management.Application.Services;
+using School_Management.Application;
+using School_Management.Application.Workers;
 using School_Management.Core.Helpers;
-using School_Management.Core.Interfaces.Application;
-using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Interfaces.Presentation;
+using School_Management.Infrastructure;
 using School_Management.Infrastructure.Data;
-using School_Management.Infrastructure.Repositories;
-using School_Management.Infrastructure.Services;
 using School_Management.Presentation.Shared.Services;
+using School_Management.Presentation.Shared.ViewModels;
+using School_Management.Presentation.Shared.Views;
 using System.IO;
 using System.Windows;
 
@@ -47,21 +47,10 @@ namespace Attendance_Scanner
             });
 
             // Infrastructure repositories
-            services.AddSingleton<IAuditLogRepository, AuditLogRepository>();
-            services.AddSingleton<IUserRepository, UserRepository>();
-            services.AddSingleton<IAttendanceRepository, AttendanceRepository>();
-            services.AddSingleton<IStudentRepository, StudentRepository>();
-            services.AddSingleton<IStudentClassRepository, StudentClassRepository>();
-            services.AddSingleton<IStudentQRRepository, StudentQRRepository>();
+            services.AddInfrastructure();
 
             // Application services
-            services.AddSingleton<IUserValidationService, UserValidationService>();
-            services.AddSingleton<IUserSessionService, UserSessionService>();
-            services.AddSingleton<IPhotoFetchService, PhotoFetchService>();
-
-            // Infrastructure services
-            services.AddSingleton<ISettingsService, SettingsService>();
-            services.AddSingleton<IS3Service, S3Service>();
+            services.AddApplication();
 
             // Presentation services
             services.AddSingleton<IMessageService, MessageService>();
@@ -77,14 +66,16 @@ namespace Attendance_Scanner
 
             // Project view models
             services.AddSingleton<MainViewModel>();
+            services.AddSingleton<LoginViewModel>();
 
             // Project views
             services.AddTransient<MainWindow>();
+            services.AddTransient<LoginViewWindow>();
 
             ServiceProvider = services.BuildServiceProvider();
         }
 
-        protected override void OnStartup(StartupEventArgs e)
+        protected async override void OnStartup(StartupEventArgs e)
         {
             if (ServiceProvider == null)
             {
@@ -94,8 +85,35 @@ namespace Attendance_Scanner
             }
 
             var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-            mainWindow.Show();
+            mainWindow.Closed += OnMainWindowClosed;
+
+            var loginWindow = ServiceProvider.GetRequiredService<LoginViewWindow>();
+
+            var fileSyncWorker = ServiceProvider.GetRequiredService<FileSyncBackgroundWorker>();
+
+
+            bool? loginResult = loginWindow.ShowDialog();
+
+            if (loginResult == true)
+            {
+                mainWindow.Show();
+                await fileSyncWorker.Start();
+            }
+            else
+            {
+                await fileSyncWorker.Stop();
+                Shutdown();
+                return;
+            }
+
+
             base.OnStartup(e);
+        }
+
+        private async void OnMainWindowClosed(object? sender, EventArgs e)
+        {
+            var fileSyncWorker = ServiceProvider!.GetRequiredService<FileSyncBackgroundWorker>();
+            await fileSyncWorker.Stop();
         }
     }
 

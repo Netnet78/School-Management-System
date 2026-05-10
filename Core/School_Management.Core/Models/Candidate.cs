@@ -28,10 +28,10 @@ namespace School_Management.Core.Models
         public string LatinLastName { get; set; } = null!;
 
         [Description("ឈ្មោះពេញ")]
-        public string FullName => $"{LastName} {FirstName}";
+        public string FullName { get; private set; } = null!;
 
         [Description("ឈ្មោះពេញ (ឡាតាំង)")]
-        public string LatinFullName => $"{LatinLastName} {LatinFirstName}";
+        public string LatinFullName { get; private set; } = null!;
 
         [Required(AllowEmptyStrings = false, ErrorMessage = "ភេទ​មិន​អាច​គ្មាន​ទិន្នន័យ​បានទេ")]
         [Description("ភេទ")]
@@ -103,9 +103,10 @@ namespace School_Management.Core.Models
 
         [Description("សាសនា")]
         public string Religion { get; set; } = string.Empty;
+        public StudentPhoto? Photo { get; set; }
 
         [Description("រូបភាព")]
-        public string PhotoKey { get; set; } = string.Empty;
+        public string PhotoKey => Photo == null ? string.Empty : Photo.Key ?? string.Empty ;
 
         [Description("លេខទូរស័ព្ទ")]
         public string PhoneNumber { get; set; } = string.Empty;

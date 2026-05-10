@@ -27,7 +27,7 @@
             </DoubleAnimationUsingKeyFrames>
         </Storyboard>
     </UserControl.Resources>
-    
+
     <Grid>
         <mah:TransitioningContentControl x:Name="ContentContainer"
                                        VirtualizingPanel.VirtualizationMode="Recycling"
@@ -40,7 +40,7 @@
                                        Opacity="1"
                                        Visibility="Visible"
                                        Transition="Normal"
-                                       TransitionCompleted="OnTransitionCompleted"
+                                       Background="{DynamicResource MaterialDesign.Brush.Primary}"
                                        Content="{Binding CurrentView, RelativeSource={RelativeSource AncestorType=UserControl}}">
         </mah:TransitioningContentControl>
 

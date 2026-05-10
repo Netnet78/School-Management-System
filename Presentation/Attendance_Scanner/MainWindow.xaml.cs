@@ -41,7 +41,6 @@ namespace Attendance_Scanner
                 Storyboard storyboard = new();
 
                 bool mainContentColumnIsOpen = MainContentFirstGridDefinition.Width.Value > 0;
-                bool successMessageIsOpen = SuccessMessage.Opacity == 1;
 
                 // Animations for the time when the scan is successful
                 DoubleAnimation messageOpenAnimation = new()
@@ -82,14 +81,8 @@ namespace Attendance_Scanner
                     BeginTime = TimeSpan.FromSeconds(openingDuration + visibleTime)
                 };
 
-                if (response.Status == ReturnStatus.Success)
+                if (response.Status == Status.Success)
                 {
-                    if (!successMessageIsOpen)
-                    {
-                        AddAnimationToStoryboard(storyboard, messageOpenAnimation, SuccessMessage, OpacityProperty);
-                        AddAnimationToStoryboard(storyboard, messageCloseAnimation, SuccessMessage, OpacityProperty);
-                        StopLoadingAnimation();
-                    }
 
                     if (mainContentColumnIsOpen)
                     {
@@ -100,7 +93,7 @@ namespace Attendance_Scanner
                     AddAnimationToStoryboard(storyboard, openingAnimation, MainContentFirstGridDefinition, ColumnDefinition.WidthProperty);
                     AddAnimationToStoryboard(storyboard, closingAnimation, MainContentFirstGridDefinition, ColumnDefinition.WidthProperty);
                 }
-                else if (response.Status == ReturnStatus.Pending)
+                else if (response.Status == Status.Pending)
                 {
                     StartLoadingAnimation();
                 }

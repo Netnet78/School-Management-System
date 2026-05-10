@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using School_Management.Core.Attributes;
+using System.ComponentModel.DataAnnotations;
 
 namespace School_Management.Core.Models
 {
@@ -8,6 +9,7 @@ namespace School_Management.Core.Models
         [Required]
         public string Username { get; set; } = string.Empty;
         [Required]
+        [AuditMask]
         public string PasswordHash { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -16,7 +18,8 @@ namespace School_Management.Core.Models
         public DateTime? LockedOutEnd { get; set; }
         public int RoleId { get; set; }
         public Role Role { get; set; } = null!;
+        public int? EmployeeId { get; set; }
+        public Employee? Employee { get; set; }
         public ICollection<AuditLog> AuditLogs { get; set; } = [];
-        public ICollection<Employee> Employees { get; set; } = [];
     }
 }

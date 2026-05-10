@@ -1,4 +1,6 @@
-﻿using School_Management.Core.Interfaces.Application;
+﻿using OpenCvSharp;
+using School_Management.Core.Enums;
+using School_Management.Core.Interfaces.Application;
 using School_Management.Core.Interfaces.Infrastructure;
 using School_Management.Core.Models;
 
@@ -8,11 +10,15 @@ namespace School_Management.Application.Services
     {
         private readonly ISettingsService settingsService;
         private readonly IS3Service s3Service;
+        private readonly IStudentPhotoRepository studentPhotoRepository;
 
-        public PhotoDeleteService(ISettingsService settingsService, IS3Service s3Service)
+        public PhotoDeleteService(ISettingsService settingsService,
+                                  IS3Service s3Service,
+                                  IStudentPhotoRepository studentPhotoRepository)
         {
             this.settingsService = settingsService;
             this.s3Service = s3Service;
+            this.studentPhotoRepository = studentPhotoRepository;
         }
 
         /// <summary>
@@ -20,11 +26,22 @@ namespace School_Management.Application.Services
         /// </summary>
         /// <remarks>The method checks if the photo exists in the 'photo/students' directory within the
         /// application's base directory before attempting to delete it.</remarks>
-        /// <param name="path">The path of the student photo to be deleted. This must be a valid file path pointing to an existing photo.</param>
+        /// <param name="student"></param>
         /// <returns>The path of the deleted student photo.</returns>
         /// <exception cref="ArgumentException">Thrown if the specified path does not point to an existing photo.</exception>
-        public async Task<ReturnResponse> DeleteStudentPhoto(string photoKey)
+        public async Task<ReturnResponse> DeleteStudentPhoto(Candidate student)
         {
+            string photoKey = student.PhotoKey;
+
+            if (string.IsNullOrWhiteSpace(photoKey))
+            {
+                return new()
+                {
+                    Status = Status.Rejected,
+                    Message = "សិស្សគ្មានទិន្នន័យរួបភាពដែលត្រូវលុបទេ"
+                };
+            }
+
             Settings config = settingsService.GetAllSettings();
             string photoDirectory = Path.Combine(config.StudentPhotoFolderPath);
             string destination = Path.Combine(photoDirectory, photoKey);
@@ -32,7 +49,27 @@ namespace School_Management.Application.Services
             {
                 File.Delete(destination);
             }
+
+            StudentPhoto studentPhoto = new()
+            {
+                Student = student,
+                FileStatus = FileStatus.PendingDelete,
+                Key = student.PhotoKey,
+                LastAttempt = DateTime.UtcNow,
+                LocalPath = destination
+            };
+
             ReturnResponse response = await s3Service.DeleteFile(photoKey, config.StudentPhotoFolderBucketPath);
+
+            if (response.Status == Status.Success && student.Photo != null)
+            {
+                await studentPhotoRepository.DeleteAsync(student.Photo);
+            }
+            else
+            {
+                studentPhoto.FileStatus = FileStatus.PendingDelete;
+                await studentPhotoRepository.UpdateAsync(studentPhoto);
+            }
 
             return new()
             {

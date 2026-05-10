@@ -16,82 +16,107 @@ namespace School_Management.Application.Services
             _s3Service = s3Service;
         }
 
-        public async Task<FileObject?> GetStudentPhoto(string photoKey, FileLocationOptions location = FileLocationOptions.LocalAndOnline, CancellationToken cancellationToken = default)
+        public async Task<ReturnResponse<FileObject>> GetStudentPhoto(string photoKey, FileLocationOptions location = FileLocationOptions.LocalAndOnline, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(photoKey))
             {
-                return null;
+                return new()
+                {
+                    Status = Status.Rejected,
+                    Message = "ទិន្នន័យសម្ងាត់នៃរូបភាពសិស្សមិនអាចទទេបានទេ!"
+                };
             }
 
             Settings config = _settings.GetAllSettings();
 
             if (string.IsNullOrWhiteSpace(config.StudentPhotoFolderPath))
             {
-                return null;
-            }
-
-            Directory.CreateDirectory(config.StudentPhotoFolderPath);
-            string path = Path.Combine(config.StudentPhotoFolderPath, photoKey);
-
-            if (!File.Exists(path) && location != FileLocationOptions.LocalOnly)
-            {
-                ReturnResponse returnResponse = await _s3Service.DownloadFile(
-                    photoKey,
-                    config.StudentPhotoFolderPath,
-                    config.StudentPhotoFolderBucketPath,
-                    cancellationToken
-                );
-                if (returnResponse.Status == ReturnStatus.Failed)
+                return new()
                 {
-                    return null;
-                }
+                    Status = Status.Rejected,
+                    Message = "ទីតាំងទៅរកបណ្ដុំនៃរូបថតសិស្សមិនអាចទទេបានទេ! សូមធ្វើការកំណត់ទីតាំងទៅរករូបថតសិស្ស ដើម្បីដោះស្រាយបញ្ហានេះ។",
+                };
             }
 
-            if (!File.Exists(path))
-            {
-                return null;
-            }
-
-            return new(path);
+            return await GetPhoto(
+                photoKey,
+                config.StudentPhotoFolderPath,
+                config.StudentPhotoFolderBucketPath,
+                location,
+                cancellationToken
+            );
         }
 
-        public async Task<FileObject?> GetEmployeePhoto(string photoKey, FileLocationOptions location = FileLocationOptions.LocalAndOnline, CancellationToken cancellationToken = default)
+        public async Task<ReturnResponse<FileObject>> GetEmployeePhoto(
+            string photoKey,
+            FileLocationOptions location = FileLocationOptions.LocalAndOnline,
+            CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(photoKey))
             {
-                return null;
+                return new()
+                {
+                    Status = Status.Rejected,
+                    Message = "ទិន្នន័យសម្ងាត់នៃរូបភាពបុគ្គលិកមិនអាចទទេបានទេ!"
+                };
             }
 
             Settings config = _settings.GetAllSettings();
 
             if (string.IsNullOrWhiteSpace(config.EmployeePhotoFolderPath))
             {
-                return null;
+                return new()
+                {
+                    Status = Status.Rejected,
+                    Message = "ទីតាំងទៅរកបណ្ដុំនៃរូបថតបុគ្គលិកមិនអាចទទេបានទេ!"
+                };
             }
 
-            Directory.CreateDirectory(config.EmployeePhotoFolderPath);
-            string path = Path.Combine(config.EmployeePhotoFolderPath, photoKey);
+            return await GetPhoto(
+                photoKey,
+                config.EmployeePhotoFolderPath,
+                config.EmployeePhotoFolderBucketPath,
+                location,
+                cancellationToken);
+        }
+
+        private async Task<ReturnResponse<FileObject>> GetPhoto(string photoKey, string saveFolderPath, string bucketPath, FileLocationOptions location, CancellationToken token)
+        {
+            Directory.CreateDirectory(saveFolderPath);
+
+            string path = Path.Combine(saveFolderPath, photoKey);
 
             if (!File.Exists(path) && location != FileLocationOptions.LocalOnly)
             {
                 ReturnResponse returnResponse = await _s3Service.DownloadFile(
                     photoKey,
-                    config.EmployeePhotoFolderPath,
-                    config.EmployeePhotoFolderBucketPath,
-                    cancellationToken 
+                    saveFolderPath,
+                    bucketPath,
+                    token
                 );
-                if (returnResponse.Status == ReturnStatus.Failed)
+
+                return new()
                 {
-                    return null;
-                }
+                    Message = returnResponse.Message,
+                    Status = returnResponse.Status,
+                    Value = new(path)
+                };
             }
 
             if (!File.Exists(path))
             {
-                return null;
+                return new()
+                {
+                    Status = Status.Failed,
+                    Message = "មិនអាចរកឃើញឯកសាររូបភាពបុគ្គលិកបានទេ!"
+                };
             }
 
-            return new(path);
+            return new()
+            {
+                Status = Status.Success,
+                Value = new(path)
+            };
         }
     }
 }

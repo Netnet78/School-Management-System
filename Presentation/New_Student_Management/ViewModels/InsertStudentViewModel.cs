@@ -12,7 +12,7 @@ namespace New_Student_Management.ViewModels
 {
     public partial class InsertStudentViewModel : ObservableObject, IAsyncLoadable, IViewModel
     {
-        private readonly ICandidateRepository _repo;
+        private readonly ICandidateRepository _candidateRepository;
         private readonly ISkillRepository _skillRepository;
         private readonly IPhotoUploadService _photoUploadService;
         private readonly IMessageService _messageService;
@@ -52,7 +52,7 @@ namespace New_Student_Management.ViewModels
             IFileDialogService fileDialogService,
             IDispatcherService dispatcherService)
         {
-            _repo = repo;
+            _candidateRepository = repo;
             _skillRepository = skillRepository;
             _photoUploadService = photoUploadService;
             _messageService = messageService;
@@ -69,6 +69,7 @@ namespace New_Student_Management.ViewModels
                 DateOfBirth = DateOnly.FromDateTime(DateTime.Now),
                 Gender = Gender.Male,
                 SkillId = 0,
+                Photo = null,
             };
         }
 
@@ -115,12 +116,12 @@ namespace New_Student_Management.ViewModels
                     return;
                 }
 
-                await _repo.AddAsync(Data);
+                await _candidateRepository.AddAsync(Data);
 
                 // Upload photo after add a new student
                 if (CurrentPhoto != null)
                 {
-                    await _photoUploadService.UploadStudentPhoto(CurrentPhoto.FileKey);
+                    await _photoUploadService.UploadStudentPhoto(CurrentPhoto.FileKey, Data);
                 }
 
                 await _dispatcherService.InvokeAsync(() =>
@@ -138,7 +139,7 @@ namespace New_Student_Management.ViewModels
                     DateOfBirth = DateOnly.FromDateTime(DateTime.Now),
                     Gender = Gender.Male,
                     ExamDate = previousExamDate,
-                    PhotoKey = string.Empty,
+                    Photo = null
                 };
                 CurrentPhoto = null;
                 CurrentStep = 0;
@@ -171,7 +172,19 @@ namespace New_Student_Management.ViewModels
             {
                 string selectedPath = fileDialog.File.FileName;
                 FileObject uploadedFile = new(selectedPath);
-                Data.PhotoKey = uploadedFile.FileKey;
+                
+                if (Data.Photo != null)
+                {
+                    Data.Photo.Key = uploadedFile.FileKey;
+                }
+                else
+                {
+                    Data.Photo = new()
+                    {
+                        Key = uploadedFile.FileKey
+                    };
+                }
+
                 CurrentPhoto = uploadedFile;
             }
         }

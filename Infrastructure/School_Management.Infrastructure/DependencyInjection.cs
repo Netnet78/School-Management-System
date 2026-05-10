@@ -16,10 +16,6 @@ namespace School_Management.Infrastructure
             // Register DbContext as singleton for WPF
             services.AddDbContext<SchoolDbContext>(options =>
             {
-                IConfigurationRoot configuration = new ConfigurationBuilder()
-                    .SetBasePath(AppContext.BaseDirectory)
-                    .Build();
-
                 string connectionString = Env.Get("DB_CONNECTION");
 
                 // Use Npgsql with connection pooling for better performance
@@ -27,33 +23,36 @@ namespace School_Management.Infrastructure
                 {
                     npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 3);
                 });
-            });
+            }, ServiceLifetime.Scoped);
 
             // Register Repositories
-            services.AddSingleton<IAttendanceRepository, AttendanceRepository>();
-            services.AddSingleton<IAuditLogRepository, AuditLogRepository>();
-            services.AddSingleton<ICandidateRepository, CandidateRepository>();
-            services.AddSingleton<IClassRepository, ClassRepository>();
-            services.AddSingleton<IClassSubjectRepository, ClassSubjectRepository>();
-            services.AddSingleton<IDepartmentRepository, DepartmentRepository>();
-            services.AddSingleton<IEmployeeRepository, EmployeeRepository>();
-            services.AddSingleton<IExamRepository, ExamRepository>();
-            services.AddSingleton<IGenerationRepository, GenerationRepository>();
-            services.AddSingleton<IGradeRepository, GradeRepository>();
-            services.AddSingleton<INotificationRepository, NotificationRepository>();
-            services.AddSingleton<IPermissionRepository, PermissionRepository>();
-            services.AddSingleton<IRoleRepository, RoleRepository>();
-            services.AddSingleton<IScoreRepository, ScoreRepository>();
-            services.AddSingleton<ISkillRepository, SkillRepository>();
-            services.AddSingleton<IStudentClassRepository, StudentClassRepository>();
-            services.AddSingleton<IStudentQRRepository, StudentQRRepository>();
-            services.AddSingleton<IStudentRepository, StudentRepository>();
-            services.AddSingleton<ISubjectRepository, SubjectRepository>();
-            services.AddSingleton<IUserRepository, UserRepository>();
+            services.AddScoped<IAttendanceRepository, AttendanceRepository>();
+            services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+            services.AddScoped<ICandidateRepository, CandidateRepository>();
+            services.AddScoped<IClassRepository, ClassRepository>();
+            services.AddScoped<IClassSubjectRepository, ClassSubjectRepository>();
+            services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+            services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            services.AddScoped<IExamRepository, ExamRepository>();
+            services.AddScoped<IGenerationRepository, GenerationRepository>();
+            services.AddScoped<IGradeRepository, GradeRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<IPermissionRepository, PermissionRepository>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IScoreRepository, ScoreRepository>();
+            services.AddScoped<ISkillRepository, SkillRepository>();
+            services.AddScoped<IStudentClassRepository, StudentClassRepository>();
+            services.AddScoped<IStudentQRRepository, StudentQRRepository>();
+            services.AddScoped<IStudentRepository, StudentRepository>();
+            services.AddScoped<ISubjectRepository, SubjectRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IStudentPhotoRepository, StudentPhotoRepository>();
+            services.AddScoped<IEmployeePhotoRepository, EmployeePhotoRepository>();
 
             // Register Infrastructure Services
-            services.AddSingleton<ISettingsService, SettingsService>();
-            services.AddSingleton<IS3Service, S3Service>();
+            services.AddScoped<ISettingsService, SettingsService>();
+            services.AddScoped<IS3Service, S3Service>();
+            services.AddScoped<IPhotoSyncService, PhotoSyncService>();
 
             return services;
         }

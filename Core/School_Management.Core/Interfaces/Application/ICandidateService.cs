@@ -9,6 +9,6 @@ namespace School_Management.Core.Interfaces.Application
         Task<ReturnResponse<int>> GetAllCountAsync(StudentFilterOptions options);
         Task<ReturnResponse> InsertCandidateAsync(Candidate candidate);
         Task<ReturnResponse> DeleteCandidateAsync(int candidateId);
-        Task<ReturnResponse> EditCandidateAsync(Candidate candidate);
+        Task<ReturnResponse> UpdateCandidateAsync(Candidate candidate);
     }
 }

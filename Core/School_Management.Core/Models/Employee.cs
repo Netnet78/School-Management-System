@@ -3,11 +3,11 @@ using School_Management.Core.Enums;
 
 namespace School_Management.Core.Models
 {
-    [Index(nameof(UserId), IsUnique = true)]
     public class Employee
     {
         public int Id { get; set; }
         public string FullName { get; set; } = string.Empty;
+        public string LatinFullName { get; set; } = string.Empty;
         public string Position { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
         public DateOnly HiredDate { get; set; }
@@ -17,12 +17,12 @@ namespace School_Management.Core.Models
         public string ContactNumber { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
         public MaritalStatus MaritalStatus { get; set; }
-        public string PhotoKey { get; set; } = string.Empty;
+        public string PhotoKey => Photo?.Key ?? string.Empty;
 
-        public int? UserId { get; set; }
         public int? DepartmentId { get; set; }
         public User? User { get; set; }
         public Department? Department { get; set; }
+        public EmployeePhoto? Photo { get; set; }
 
         public ICollection<Class> Classes { get; set; } = [];
         public ICollection<ClassSubject> ClassSubjects { get; set; } = [];
@@ -35,6 +35,6 @@ namespace School_Management.Core.Models
         public decimal Deduction { get; set; }
         public decimal Tax { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

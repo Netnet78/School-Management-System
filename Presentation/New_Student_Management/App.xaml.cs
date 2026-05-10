@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using New_Student_Management.ViewModels;
 using New_Student_Management.Views;
 using School_Management.Application;
+using School_Management.Application.Workers;
 using School_Management.Infrastructure;
 using School_Management.Presentation.Shared;
 using System.Windows;
@@ -27,6 +28,7 @@ namespace New_Student_Management
 
                     // Register ViewModels
                     services.AddSingleton<MainViewModel>();
+                    services.AddSingleton<MainFormViewModel>();
                     services.AddSingleton<StudentViewModel>();
                     services.AddTransient<EditStudentViewModel>();
                     services.AddSingleton<InsertStudentViewModel>();
@@ -36,6 +38,7 @@ namespace New_Student_Management
                     // Register Views
                     services.AddTransient<MainWindow>();
                     services.AddTransient<LoginViewWindow>();
+                    services.AddTransient<MainFormView>();
                     services.AddTransient<StudentTableView>();
                     services.AddTransient<EditStudentView>();
                     services.AddTransient<InsertStudentView>();
@@ -68,15 +71,22 @@ namespace New_Student_Management
 
             // create a fresh login window
             MainWindow mainWindow = serviceProvider.GetRequiredService<MainWindow>();
+            MainViewModel mainViewModel = serviceProvider.GetRequiredService<MainViewModel>();
+            mainWindow.DataContext = mainViewModel;
+            FileSyncBackgroundWorker fileSyncWorker = serviceProvider.GetRequiredService<FileSyncBackgroundWorker>();
+            mainViewModel.ExitAction += OnShutdown;
+
             var loginWindow = serviceProvider.GetRequiredService<LoginViewWindow>();
             bool? loginResult = loginWindow.ShowDialog();
 
             if (loginResult == true)
             {
                 mainWindow.Show();
+                await fileSyncWorker.Start();
             }
             else
             {
+                await fileSyncWorker.Stop();
                 await AppHost.StopAsync();
                 AppHost.Dispose();
                 Shutdown();
@@ -86,6 +96,18 @@ namespace New_Student_Management
             base.OnStartup(e);
         }
 
+        private async void OnShutdown()
+        {
+            if (AppHost == null) throw new Exception("App host is null for some reason");
+
+            FileSyncBackgroundWorker fileSyncWorker = AppHost.Services.GetRequiredService<FileSyncBackgroundWorker>();
+
+            await fileSyncWorker.Stop();
+            await AppHost.StopAsync();
+            AppHost.Dispose();
+            Shutdown();
+            return;
+        }
     }
 
 }

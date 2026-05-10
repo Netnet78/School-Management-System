@@ -9,8 +9,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LiveChartsCore" Version="2.0.1" />
-    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.1" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.2" />
+    <PackageReference Include="MaterialDesignColors" Version="5.3.1" />
+    <PackageReference Include="MaterialDesignThemes" Version="5.3.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Application\School_Management.Application\School_Management.Application.csproj" />
+    <ProjectReference Include="..\..\..\Core\School_Management.Core\School_Management.Core.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure\School_Management.Infrastructure\School_Management.Infrastructure.csproj" />
+    <ProjectReference Include="..\School_Management.Presentation.Shared\School_Management.Presentation.Shared.csproj" />
   </ItemGroup>
 
 </Project>

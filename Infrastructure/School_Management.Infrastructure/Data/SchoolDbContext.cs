@@ -13,6 +13,7 @@ namespace School_Management.Infrastructure.Data
         public DbSet<StudentQR> StudentQRs { get; set; }
         public DbSet<StudentClass> StudentClasses { get; set; }
         public DbSet<Student> Students { get; set; }
+        public DbSet<StudentPhoto> StudentPhotos { get; set; }
         public DbSet<Score> Scores { get; set; }
         public DbSet<Skill> Skills { get; set; }
         public DbSet<Role> Roles { get; set; }
@@ -25,6 +26,7 @@ namespace School_Management.Infrastructure.Data
         public DbSet<Department> Departments { get; set; }
         public DbSet<ClassSubject> ClassSubjects { get; set; }
         public DbSet<Class> Classes { get; set; }
+        public DbSet<EmployeePhoto> EmployeePhotos { get; set; }
 
         public SchoolDbContext(DbContextOptions options) : base(options)
         {
@@ -34,8 +36,29 @@ namespace School_Management.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Student>()
+                .HasOne(s => s.StudentQR)
+                .WithOne(q => q.Student)
+                .HasForeignKey<StudentQR>(q => q.Id);
+
+            modelBuilder.Entity<Employee>()
+                .HasOne(e => e.Photo)
+                .WithOne(p => p.Employee)
+                .HasForeignKey<EmployeePhoto>(p => p.Id);
+
+            modelBuilder.Entity<Candidate>()
+                .HasOne(c => c.Photo)
+                .WithOne(p => p.Student)
+                .HasForeignKey<StudentPhoto>(p => p.Id);
+
+            modelBuilder.Entity<Student>()
                 .HasIndex(s => s.CandidateId)
                 .IsUnique();
+            modelBuilder.Entity<Candidate>()
+                .Property(c => c.FullName)
+                .HasComputedColumnSql("\"LastName\" || ' ' || \"FirstName\"", true);
+            modelBuilder.Entity<Candidate>()
+                .Property(c => c.LatinFullName)
+                .HasComputedColumnSql("\"LatinLastName\" || ' ' || \"LatinFirstName\"", true);
             modelBuilder.Entity<Candidate>()
                 .Property(c => c.Id)
                 .ValueGeneratedOnAdd();
@@ -55,6 +78,13 @@ namespace School_Management.Infrastructure.Data
                 .Property(e => e.StayType)
                 .HasConversion<string>();
 
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.EmployeeId)
+                .IsUnique();
+            modelBuilder.Entity<Employee>()
+                .HasOne(e => e.User)
+                .WithOne(u => u.Employee)
+                .HasForeignKey<User>(u => u.EmployeeId);
             modelBuilder.Entity<Employee>()
                 .Property(e => e.Gender)
                 .HasConversion<string>();

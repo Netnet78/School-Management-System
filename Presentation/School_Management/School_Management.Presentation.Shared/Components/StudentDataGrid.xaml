@@ -37,7 +37,7 @@
                 <Style TargetType="DataGridRow" x:Key="StudentRowStyle">
                     <Setter Property="Height" Value="40" />
                     <Setter Property="BorderThickness" Value="0"/>
-                    <Setter Property="Background">
+                    <!--<Setter Property="Background">
                         <Setter.Value>
                             <MultiBinding Converter="{StaticResource DataRowBrushConverter}">
                                 <Binding Path="PhotoPath" />
@@ -64,7 +64,7 @@
                                 <Binding Path="SiblingsCount" />
                             </MultiBinding>
                         </Setter.Value>
-                    </Setter>
+                    </Setter>-->
                     <Setter Property="ToolTip" Value="{Binding PhotoPath, StringFormat=Photo: {0}}" />
                 </Style>
 

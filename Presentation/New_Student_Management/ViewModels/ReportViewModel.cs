@@ -1,8 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using KhmerCalendar;
 using New_Student_Management.Reports;
 using School_Management.Core.Enums;
 using School_Management.Core.Helpers;
+using School_Management.Core.Interfaces;
+using School_Management.Core.Interfaces.Application;
+using School_Management.Core.Interfaces.Infrastructure;
+using School_Management.Core.Interfaces.Presentation;
 using School_Management.Core.Models;
 using School_Management.Presentation.Shared.Helpers;
 using System.ComponentModel;
@@ -10,11 +15,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Data;
-using KhmerCalendar;
-using School_Management.Core.Interfaces.Infrastructure;
-using School_Management.Core.Interfaces.Presentation;
-using School_Management.Core.Interfaces;
-using School_Management.Core.Interfaces.Application;
 
 namespace New_Student_Management.ViewModels
 {
@@ -46,20 +46,26 @@ namespace New_Student_Management.ViewModels
         private Candidate? _selectedStudent;
 
         [ObservableProperty]
-        private DateTime _reportDate = DateTime.Now;
+        private DateTime _reportDate = DateTime.UtcNow;
 
         [ObservableProperty]
-        private DateTime? createdAtStart = new DateTime(DateTime.Now.Year, 1, 1);
+        private DateTime? _createdAtStart =
+            new DateTime(DateTime.UtcNow.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         [ObservableProperty]
-        private DateTime? createdAtEnd = new DateTime(DateTime.Now.Year + 1, 12, 
-            DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month));
+        private DateTime? _createdAtEnd = new DateTime(DateTime.UtcNow.Year + 1, 3, 
+            DateTime.DaysInMonth(DateTime.UtcNow.Year, DateTime.UtcNow.Month), 0, 0, 0, DateTimeKind.Utc);
 
         [ObservableProperty]
         private string _studyYear = string.Empty;
 
         [ObservableProperty]
-        private bool hideStudents = true; // Property for hiding students that don't have enough information
+        private bool _hideStudents = true; // Property for hiding students that don't have enough information
+
+        [ObservableProperty]
+        private OrderType _orderBy = OrderType.Descending;
+        public IEnumerable<OrderType> OrderTypeOptions { get; } =
+            Enum.GetValues<OrderType>();
 
         public ICollectionView AllStudentsView { get; private set; }
 
@@ -97,7 +103,9 @@ namespace New_Student_Management.ViewModels
         [RelayCommand]
         private async Task GenerateDepartmentReportAsync()
         {
-            List<Candidate> students = GetCurrentFilteredStudents();
+            List<Candidate> students = AllStudentsView
+                .Cast<Candidate>()
+                .ToList();
 
             if (students.Count == 0)
             {
@@ -113,7 +121,7 @@ namespace New_Student_Management.ViewModels
 
             ReturnResponse response = await Task.Run(() => departmentReport.GenerateReport());
 
-            if (response.Status == ReturnStatus.Success)
+            if (response.Status == Status.Success)
             {
                 MessageResult result = _messageService.Show("Report generated successfully!\n Do you wish to see the files?", "Success", MessageButton.YesNo, MessageIcon.Information);
                 if (result.Equals(MessageResult.Yes))
@@ -126,7 +134,9 @@ namespace New_Student_Management.ViewModels
         [RelayCommand]
         private async Task GenerateCandidateReportAsync()
         {
-            List<Candidate> students = GetCurrentFilteredStudents();
+            List<Candidate> students = AllStudentsView
+                .Cast<Candidate>()
+                .ToList();
 
             if (students.Count == 0)
             {
@@ -140,9 +150,9 @@ namespace New_Student_Management.ViewModels
 
             CandidateReport candidateReport = new(ReportDate, int.Parse(StudyYear.Split('-')[0]), int.Parse(StudyYear.Split('-')[1]), students);
 
-            ReturnStatus status = await Task.Run(() => candidateReport.GenerateReport());
+            Status status = await Task.Run(() => candidateReport.GenerateReport());
 
-            if (status == ReturnStatus.Success)
+            if (status == Status.Success)
             {
                 MessageResult result = _messageService.Show("Report generated successfully!\n Do you wish to see the files?", "Success", MessageButton.YesNo, MessageIcon.Information);
                 if (result.Equals(MessageResult.Yes))
@@ -157,6 +167,7 @@ namespace New_Student_Management.ViewModels
         {
             CreatedAtStart = null;
             CreatedAtEnd = null;
+            OrderBy = OrderType.Descending;
         }
 
         [RelayCommand]
@@ -194,19 +205,19 @@ namespace New_Student_Management.ViewModels
             }
         }
 
-        private List<Candidate> GetCurrentFilteredStudents()
-        {
-            ICollectionView? activeView = null;
+        //private List<Candidate> GetCurrentFilteredStudents()
+        //{
+        //    ICollectionView? activeView = null;
 
-            if (StudentTabs != null && CurrentTabIndex >= 0 && CurrentTabIndex < StudentTabs.Count())
-            {
-                activeView = StudentTabs.ElementAt(CurrentTabIndex).Data;
-            }
+        //    if (StudentTabs != null && CurrentTabIndex >= 0 && CurrentTabIndex < StudentTabs.Count())
+        //    {
+        //        activeView = StudentTabs.ElementAt(CurrentTabIndex).Data;
+        //    }
 
-            activeView ??= AllStudentsView;
+        //    activeView ??= AllStudentsView;
 
-            return activeView?.Cast<Candidate>().ToList() ?? [];
-        }
+        //    return activeView?.Cast<Candidate>().ToList() ?? [];
+        //}
 
         private void UpdateCurrentTabStats(int value)
         {
@@ -263,7 +274,9 @@ namespace New_Student_Management.ViewModels
         [RelayCommand]
         public async Task LoadStudentsAsync()
         {
-            IEnumerable<Candidate> students = await _studentRepository.GetCandidatesOnlyPagedAsync(1, 100);
+            StudentFilterOptions options = BuildStudentFilterOptions();
+
+            IEnumerable<Candidate> students = await _studentRepository.GetCandidatesOnlyPagedAsync(1, 100, options);
 
             // Move heavy grouping to background thread, but NOT CollectionViewSource creation
             var groupedData = students
@@ -316,6 +329,16 @@ namespace New_Student_Management.ViewModels
             // Set filter on main view
             AllStudentsView.Refresh();
             OnCurrentTabIndexChanged(CurrentTabIndex);
+        }
+
+        private StudentFilterOptions BuildStudentFilterOptions()
+        {
+            return new StudentFilterOptions
+            {
+                FromDate = CreatedAtStart,
+                ToDate = CreatedAtEnd,
+                OrderBy = OrderBy,
+            };
         }
 
         public async Task LoadAsync()

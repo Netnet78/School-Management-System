@@ -31,7 +31,7 @@ namespace School_Management.Application.Services
                 string time = lockedOutEnd.TimeOfDay <= new TimeSpan(12, 0, 0) ? "ព្រឹក" : "ល្ងាច";
                 return new()
                 {
-                    Status = ReturnStatus.Rejected,
+                    Status = Status.Rejected,
                     Message = $"ការចូលប្រើប្រាស់របស់អ្នក ត្រូវបានបិទ/ផ្អាកជាមុនសិន!\nម៉ោងដែលត្រូវបើកវិញ៖ ម៉ោង {lockedOutEnd.Hour}, {lockedOutEnd.Minute} នាទី {time} \nរយៈពេល៖ {(user.LockedOutEnd.Value - DateTime.UtcNow).TotalMinutes} នាទី",
                 };
             }
@@ -44,7 +44,7 @@ namespace School_Management.Application.Services
                 await _repo.UpdateAsync(user);
                 return new()
                 {
-                    Status = ReturnStatus.Success,
+                    Status = Status.Success,
                     Value = user,
                 };
             }
@@ -63,7 +63,7 @@ namespace School_Management.Application.Services
 
             return new()
             {
-                Status = ReturnStatus.Failed,
+                Status = Status.Failed,
                 Message = "ព័ត៌មាន Username ឬ Password មិនត្រឹមត្រូវទេ សូមព្យាយាមម្ដងទៀត!",
             };
         }

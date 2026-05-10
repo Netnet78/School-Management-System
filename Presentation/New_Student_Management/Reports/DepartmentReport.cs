@@ -32,25 +32,27 @@ namespace New_Student_Management.Reports
 
         public async Task<ReturnResponse> GenerateReport()
         {
-            IEnumerable<IGrouping<Skill, Candidate>> skillGroups = _candidates
+            IEnumerable<IGrouping<int, Candidate>> skillGroups = _candidates
                 .Where(c => c.Skill != null && !string.IsNullOrWhiteSpace(c.Skill.Name))
-                .GroupBy(c => c.Skill);
+                .GroupBy(c => c.Skill.Id);
 
             XLWorkbook workbook = new(TemplatePath);
 
             foreach (var skillGroup in skillGroups)
             {
-                string sheetName = skillGroup.Key.Name;
+                var skill = skillGroup.First().Skill!;
+                string sheetName = skill.Name;
+
                 EnsureWorksheetExists(workbook, sheetName);
             }
 
-            foreach (IGrouping<Skill, Candidate> studentsInSkill in skillGroups)
+            foreach (IGrouping<int, Candidate> studentsInSkill in skillGroups)
             {
                 Candidate[] candidates = studentsInSkill.ToArray();
 
                 if (candidates.Length == 0) continue;
 
-                Skill skill = studentsInSkill.Key;
+                var skill = studentsInSkill.First().Skill!;
 
                 string skillName = skill.Name;
 
@@ -80,17 +82,17 @@ namespace New_Student_Management.Reports
                 try
                 {
                     workbook.SaveAs(saveFileDialog.FileName);
-                    return new() { Status= ReturnStatus.Success };
+                    return new() { Status= Status.Success };
                 }
                 catch (Exception ex)
                 {
                     string message = $"Report failed to generate\n{ex.Message}";
-                    return new() { Status = ReturnStatus.Failed, Message = message };
+                    return new() { Status = Status.Failed, Message = message };
                 }
             }
             else
             {
-                return new() { Status = ReturnStatus.Rejected };
+                return new() { Status = Status.Rejected };
             }
         }
 
@@ -173,7 +175,7 @@ namespace New_Student_Management.Reports
             // Stay type
             ws.Cell(newStartRow, 17).SetValue(student.StayType.GetDescription());
 
-            FileObject? photo = await _photoFetchService.GetStudentPhoto(student.PhotoKey);
+            FileObject? photo = (await _photoFetchService.GetStudentPhoto(student.PhotoKey)).Value;
 
             // Picture (1.25" x 0.93")
             if (photo != null)

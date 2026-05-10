@@ -56,7 +56,7 @@ namespace School_Management.Tests
                 .Setup(r => r.GetUserAsync("admin"))
                 .ReturnsAsync(user);
             ReturnResponse<User> result = await _userValidationService.ValidateUserAsync(username, wrongPassword);
-            Assert.Equal(ReturnStatus.Failed, result.Status);
+            Assert.Equal(Status.Failed, result.Status);
         }
 
         [Fact]
@@ -79,7 +79,7 @@ namespace School_Management.Tests
             for (int i = 0; i <= 6; i++)
             {
                 ReturnResponse<User> result = await _userValidationService.ValidateUserAsync(username, "123");
-                if (result.Status == ReturnStatus.Rejected)
+                if (result.Status == Status.Rejected)
                 {
                     isRejected = true;
                     break;

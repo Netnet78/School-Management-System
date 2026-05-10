@@ -28,7 +28,7 @@ namespace School_Management.Application.Services
 
             await _auditLogRepository.AddAsync(new()
             {
-                Action = $"User {CurrentUser.Username} LOGGED OUT after {(logoutTime - LoggedInAt)?.TotalMinutes:F1} minutes",
+                CustomDescription = $"User {CurrentUser.Username} LOGGED OUT after {(logoutTime - LoggedInAt)?.TotalMinutes:F1} minutes",
                 Timestamp = logoutTime,
                 UserId = CurrentUser.Id
             });
@@ -54,7 +54,7 @@ namespace School_Management.Application.Services
 
                 await _auditLogRepository.AddAsync(new()
                 {
-                    Action = $"User {CurrentUser.Username} has LOGGED IN",
+                    CustomDescription = $"User {CurrentUser.Username} has LOGGED IN",
                     Timestamp = LoggedInAt.Value,
                     UserId = CurrentUser.Id
                 });
