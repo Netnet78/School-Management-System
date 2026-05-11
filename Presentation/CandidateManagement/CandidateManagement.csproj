@@ -1,0 +1,93 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UserSecretsId>08b41a90-f04f-4607-ae4a-c6897de17c00</UserSecretsId>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Photos\**" />
+    <EmbeddedResource Remove="Photos\**" />
+    <None Remove="Photos\**" />
+    <Page Remove="Photos\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Noto\NotoSans-Bold.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Noto\NotoSans-BoldItalic.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Noto\NotoSans-Italic.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Noto\NotoSans-Regular.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\Roboto-Black.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\Roboto-BlackItalic.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\Roboto-Bold.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\Roboto-BoldItalic.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\Roboto-Italic.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\Roboto-Light.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\Roboto-LightItalic.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\Roboto-Medium.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\Roboto-MediumItalic.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\Roboto-Regular.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\Roboto-Thin.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\Roboto-ThinItalic.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\RobotoCondensed-Bold.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\RobotoCondensed-BoldItalic.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\RobotoCondensed-Italic.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\RobotoCondensed-Light.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\RobotoCondensed-LightItalic.ttf" />
+    <Content Remove="C:\Users\USER\.nuget\packages\materialdesignthemes\5.3.0\contentFiles\any\net8.0-windows7.0\Resources\Roboto\RobotoCondensed-Regular.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Sources\Fonts\noto-sans-khmer.ttf" />
+    <None Remove="Sources\Images\Computer_Students.jpg" />
+    <None Remove="Sources\Images\dbslogo_filled.png" />
+    <None Remove="Sources\Spreadsheets\candidate_list.xlsx" />
+    <None Remove="Sources\Spreadsheets\department_data.xlsm" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="KhmerCalendar" Version="1.0.0" />
+    <PackageReference Include="LiveChartsCore" Version="2.0.2" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.2" />
+    <PackageReference Include="MaterialDesignColors" Version="5.3.2" />
+    <PackageReference Include="MaterialDesignThemes" Version="5.3.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.7">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.7" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Sources\Fonts\noto-sans-khmer.ttf" />
+    <Resource Include="Sources\Images\Computer_Students.jpg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Sources\Images\dbslogo_filled.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Content Include="Sources\Spreadsheets\candidate_list.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Sources\Spreadsheets\department_data.xlsm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Application\SchoolManagement.Application\SchoolManagement.Application.csproj" />
+    <ProjectReference Include="..\..\Core\SchoolManagement.Core\SchoolManagement.Core.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\SchoolManagement.Infrastructure\SchoolManagement.Infrastructure.csproj" />
+    <ProjectReference Include="..\Shared\SchoolManagement.Presentation.Shared\SchoolManagement.Presentation.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/Git/">
+    <File Path=".gitignore" />
+  </Folder>
+  <Folder Name="/Presentation/">
+    <Project Path="Presentation/AttendanceScanner/AttendanceScanner.csproj" />
+    <Project Path="Presentation/CandidateManagement/CandidateManagement.csproj" />
+    <Project Path="Presentation/SchoolManagement/SchoolManagement.Presentation.csproj" />
+    <Project Path="Presentation/Shared/SchoolManagement.Presentation.Shared/SchoolManagement.Presentation.Shared.csproj" />
+  </Folder>
+  <Project Path="Application/SchoolManagement.Application/SchoolManagement.Application.csproj" />
+  <Project Path="Core/SchoolManagement.Core/SchoolManagement.Core.csproj" />
+  <Project Path="Infrastructure/SchoolManagement.Infrastructure/SchoolManagement.Infrastructure.csproj" />
+  <Project Path="Tests/SchoolManagement.Tests/SchoolManagement.Tests.csproj" />
+  <Project Path="Tests/TestConsole/TestConsole/TestConsole.csproj" />
+</Solution>

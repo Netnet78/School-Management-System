@@ -1,0 +1,103 @@
+﻿<UserControl x:Class="SchoolManagement.Presentation.Shared.Components.TitleBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SchoolManagement.Presentation.Shared.Components"
+             xmlns:materialDesigns="http://materialdesigninxaml.net/winfx/xaml/themes"
+             x:Name="Root"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <Style x:Key="TitleButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Height="40" MouseLeftButtonDown="TitlebarPanel_MouseLeftButtonDown" x:Name="TitlbarParent"
+                    Grid.ColumnSpan="2" Background="{DynamicResource MaterialDesign.Brush.Primary}" BorderThickness="0 0 0 2"
+            BorderBrush="White">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal" Grid.Column="0">
+                <Ellipse Height="20" Width="20" Margin="10 0 0 0"
+                         Fill="#FFFF4040" ContentElement.MouseDown="CloseButton_MouseDown"
+                         Cursor="Hand">
+                    <Ellipse.Effect>
+                        <DropShadowEffect RenderingBias="Quality" ShadowDepth="1" BlurRadius="1" />
+                    </Ellipse.Effect>
+                </Ellipse>
+                <Ellipse Height="20" Width="20" Margin="10 0 0 0" 
+                         Fill="#FFFFC23D" ContentElement.MouseDown="MinimizeButton_MouseDown"
+                         Cursor="Hand">
+                    <Ellipse.Effect>
+                        <DropShadowEffect RenderingBias="Quality" ShadowDepth="1" BlurRadius="1" />
+                    </Ellipse.Effect>
+                </Ellipse>
+                <Ellipse Height="20" Width="20" Margin="10 0 0 0"
+                         Fill="#FF39E639" ContentElement.MouseDown="MaximizeButton_MouseDown"
+                         Cursor="Hand">
+                    <Ellipse.Effect>
+                        <DropShadowEffect RenderingBias="Quality" ShadowDepth="1" BlurRadius="1" />
+                    </Ellipse.Effect>
+                </Ellipse>
+
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" HorizontalAlignment="Center" 
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                <Image Margin="5" VerticalAlignment="Center">
+                    <Image.Effect>
+                        <DropShadowEffect BlurRadius="1" ShadowDepth="2"/>
+                    </Image.Effect>
+                    <Image.Source>
+                        <BitmapImage DecodePixelWidth="32" UriSource="/SchoolManagement.Presentation.Shared;component/Sources/Images/dbslogo_filled.png"/>
+                    </Image.Source>
+                </Image>
+
+                <TextBlock VerticalAlignment="Center" Margin="3" Foreground="White"
+                           FontFamily="{StaticResource NotoSansKhmer}" FontSize="16" FontWeight="Normal"
+                           Text="{Binding Title, ElementName=Root, FallbackValue='សាលាដុនបូស្កូ សាខាប៉ោយប៉ែត'}"
+                           Name="WindowTitle">
+                </TextBlock>
+            </StackPanel>
+
+            <!--Close, Maximize and Minimize buttons-->
+            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="2"
+                            Orientation="Horizontal" x:Name="TitlebarButtons">
+                <Button x:Name="MinimizeButton" Click="MinimizeButton_MouseDown" Margin="5 0 10 0"
+        Background="Transparent" BorderThickness="0" Cursor="Hand" Style="{StaticResource TitleButton}">
+                    <materialDesigns:PackIcon Kind="Minimize" Width="24" Height="24" 
+                             Margin="0" Foreground="White" Background="{DynamicResource MaterialDesign.Brush.Primary}"/>
+                </Button>
+
+                <Button x:Name="MaximizeButton" Click="MaximizeButton_MouseDown" Margin="5 0 10 0" 
+        Background="Transparent" BorderThickness="0" Cursor="Hand" Style="{StaticResource TitleButton}">
+                    <materialDesigns:PackIcon Kind="Maximize" Width="24" Height="24" 
+                             Margin="0" Foreground="White" Background="{DynamicResource MaterialDesign.Brush.Primary}"/>
+                </Button>
+
+                <Button x:Name="CloseButton" Click="CloseButton_MouseDown" Margin="5 0 10 0" 
+        Background="Transparent" BorderThickness="0" Cursor="Hand" Style="{StaticResource TitleButton}">
+                    <materialDesigns:PackIcon Kind="Close" Width="24" Height="24" 
+                             Margin="0" Foreground="White" Background="{DynamicResource MaterialDesign.Brush.Primary}"/>
+                </Button>
+
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

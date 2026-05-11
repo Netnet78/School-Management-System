@@ -1,8 +1,6 @@
-﻿using BCrypt.Net;
-using Microsoft.EntityFrameworkCore;
-using School_Management.Core.Enums;
-using School_Management.Core.Models;
-using School_Management.Infrastructure.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using SchoolManagement.Core.Models;
+using SchoolManagement.Infrastructure.Data;
 
 internal class Program
 {

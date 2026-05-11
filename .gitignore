@@ -426,4 +426,4 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
-/Infrastructure/School_Management.Infrastructure/.env
+/Infrastructure/SchoolManagement.Infrastructure/.env
