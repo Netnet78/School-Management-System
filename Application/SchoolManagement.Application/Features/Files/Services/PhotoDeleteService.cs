@@ -1,11 +1,4 @@
-﻿using OpenCvSharp;
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Models;
-
-namespace SchoolManagement.Application.Services
+namespace SchoolManagement.Application.Features.Files.Services
 {
     public class PhotoDeleteService : IPhotoDeleteService
     {
@@ -39,7 +32,7 @@ namespace SchoolManagement.Application.Services
                 return new()
                 {
                     Status = Status.Rejected,
-                    Message = "សិស្សគ្មានទិន្នន័យរួបភាពដែលត្រូវលុបទេ"
+                    Message = "?????????????????????????????????????"
                 };
             }
 
@@ -98,3 +91,5 @@ namespace SchoolManagement.Application.Services
         }
     }
 }
+
+

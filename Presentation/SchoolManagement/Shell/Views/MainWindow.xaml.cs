@@ -1,7 +1,7 @@
-﻿using SchoolManagement.Presentation.ViewModels;
+using SchoolManagement.Presentation.Shell.ViewModels;
 using System.Windows;
 
-namespace SchoolManagement.Presentation
+namespace SchoolManagement.Presentation.Shell.Views
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

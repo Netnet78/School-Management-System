@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using SchoolManagement.Core.Enums;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace SchoolManagement.Presentation.Shared.Observables
 {

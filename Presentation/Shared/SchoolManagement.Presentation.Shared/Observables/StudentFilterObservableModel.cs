@@ -1,193 +1,178 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Models;
+using CommunityToolkit.Mvvm.ComponentModel;
 
-public class StudentFilterObservableModel : ObservableObject
+namespace SchoolManagement.Presentation.Shared.Observables
 {
-    private string? search;
-    private StudentField? searchField;
-    private StudentDataStateFilterOptions dataState = StudentDataStateFilterOptions.All;
-    private bool? isActive;
-    private bool includeInActive;
-    private Gender? gender;
-    private DateTime? fromDate;
-    private DateTime? toDate;
-    private string? sortBy;
-    private StudentStayType? stayType;
-    private OrderType orderBy = OrderType.Descending;
-
-    public StudentFilterOptions ToFilterOptions()
+    public partial class StudentFilterObservableModel : ObservableObject
     {
-        return new()
+        private string? search;
+        private StudentField? searchField;
+        private StudentDataStateFilterOptions dataState = StudentDataStateFilterOptions.All;
+        private bool? isActive;
+        private Gender? gender;
+        private DateTime? fromDate;
+        private DateTime? toDate;
+        private string? sortBy;
+        private StudentStayType? stayType;
+        private OrderType orderBy = OrderType.Descending;
+
+        public StudentFilterOptions ToFilterOptions()
         {
-            Search = Search,
-            DataState = DataState,
-            FromDate = FromDate,
-            ToDate = ToDate,
-            Gender = Gender, 
-            IsActive = IsActive,
-            IncludeInActive = IncludeInActive,
-            OrderBy = OrderBy,
-            SearchField = SearchField,
-            SortBy = SortBy,
-            StayType = StayType
-        };
-    }
-
-    public void Reset()
-    {
-        Search = null;
-        DataState = StudentDataStateFilterOptions.All;
-        FromDate = null;
-        ToDate = null;
-        Gender = null; 
-        IsActive = null;
-        OrderBy = OrderType.Descending;
-        SearchField = null;
-        SortBy = null;
-        StayType = null;
-        IncludeInActive = false;
-    }
-
-    public string? Search
-    {
-        get => search;
-        set
-        {
-            if (search != value)
+            return new()
             {
-                search = value;
-                OnPropertyChanged(nameof(Search));
+                Search = Search,
+                DataState = DataState,
+                FromDate = FromDate,
+                ToDate = ToDate,
+                Gender = Gender,
+                IsActive = IsActive,
+                OrderBy = OrderBy,
+                SearchField = SearchField,
+                SortBy = SortBy,
+                StayType = StayType
+            };
+        }
+
+        public void Reset()
+        {
+            Search = null;
+            DataState = StudentDataStateFilterOptions.All;
+            FromDate = null;
+            ToDate = null;
+            Gender = null;
+            IsActive = null;
+            OrderBy = OrderType.Descending;
+            SearchField = null;
+            SortBy = null;
+            StayType = null;
+        }
+
+        public string? Search
+        {
+            get => search;
+            set
+            {
+                if (search != value)
+                {
+                    search = value;
+                    OnPropertyChanged(nameof(Search));
+                }
             }
         }
-    }
 
-    public StudentField? SearchField
-    {
-        get => searchField;
-        set
+        public StudentField? SearchField
         {
-            if (searchField != value)
+            get => searchField;
+            set
             {
-                searchField = value;
-                OnPropertyChanged(nameof(SearchField));
+                if (searchField != value)
+                {
+                    searchField = value;
+                    OnPropertyChanged(nameof(SearchField));
+                }
             }
         }
-    }
 
-    public StudentDataStateFilterOptions DataState
-    {
-        get => dataState;
-        set
+        public StudentDataStateFilterOptions DataState
         {
-            if (dataState != value)
+            get => dataState;
+            set
             {
-                dataState = value;
-                OnPropertyChanged(nameof(DataState));
+                if (dataState != value)
+                {
+                    dataState = value;
+                    OnPropertyChanged(nameof(DataState));
+                }
             }
         }
-    }
 
-    public bool? IsActive
-    {
-        get => isActive;
-        set
+        public bool? IsActive
         {
-            if (isActive != value)
+            get => isActive;
+            set
             {
-                isActive = value;
-                OnPropertyChanged(nameof(IsActive));
+                if (isActive != value)
+                {
+                    isActive = value;
+                    OnPropertyChanged(nameof(IsActive));
+                }
             }
         }
-    }
 
-    public bool IncludeInActive
-    {
-        get => includeInActive;
-        set
+        public Gender? Gender
         {
-            if (includeInActive != value)
+            get => gender;
+            set
             {
-                includeInActive = value;
-                OnPropertyChanged(nameof(IncludeInActive));
+                if (gender != value)
+                {
+                    gender = value;
+                    OnPropertyChanged(nameof(Gender));
+                }
             }
         }
-    }
 
-    public Gender? Gender
-    {
-        get => gender;
-        set
+        public DateTime? FromDate
         {
-            if (gender != value)
+            get => fromDate;
+            set
             {
-                gender = value;
-                OnPropertyChanged(nameof(Gender));
+                if (fromDate != value && value < ToDate)
+                {
+                    fromDate = value;
+                    OnPropertyChanged(nameof(FromDate));
+                }
             }
         }
-    }
 
-    public DateTime? FromDate
-    {
-        get => fromDate;
-        set
+        public DateTime? ToDate
         {
-            if (fromDate != value && value < ToDate)
+            get => toDate;
+            set
             {
-                fromDate = value;
-                OnPropertyChanged(nameof(FromDate));
+                if (toDate != value && value > FromDate)
+                {
+                    toDate = value;
+                    OnPropertyChanged(nameof(ToDate));
+                }
             }
         }
-    }
 
-    public DateTime? ToDate
-    {
-        get => toDate;
-        set
+        public string? SortBy
         {
-            if (toDate != value && value > FromDate)
+            get => sortBy;
+            set
             {
-                toDate = value;
-                OnPropertyChanged(nameof(ToDate));
+                if (sortBy != value)
+                {
+                    sortBy = value;
+                    OnPropertyChanged(nameof(SortBy));
+                }
             }
         }
-    }
 
-    public string? SortBy
-    {
-        get => sortBy;
-        set
+        public StudentStayType? StayType
         {
-            if (sortBy != value)
+            get => stayType;
+            set
             {
-                sortBy = value;
-                OnPropertyChanged(nameof(SortBy));
+                if (stayType != value)
+                {
+                    stayType = value;
+                    OnPropertyChanged(nameof(StayType));
+                }
             }
         }
-    }
 
-    public StudentStayType? StayType
-    {
-        get => stayType;
-        set
+        public OrderType OrderBy
         {
-            if (stayType != value)
+            get => orderBy;
+            set
             {
-                stayType = value;
-                OnPropertyChanged(nameof(StayType));
-            }
-        }
-    }
-
-    public OrderType OrderBy
-    {
-        get => orderBy;
-        set
-        {
-            if (orderBy != value)
-            {
-                orderBy = value;
-                OnPropertyChanged(nameof(OrderBy));
+                if (orderBy != value)
+                {
+                    orderBy = value;
+                    OnPropertyChanged(nameof(OrderBy));
+                }
             }
         }
     }

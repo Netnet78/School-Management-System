@@ -1,6 +1,11 @@
-﻿namespace SchoolManagement.Core.Models
+﻿using SchoolManagement.Core.Features.Employees.Models;
+using SchoolManagement.Core.Features.Grades.Models;
+using SchoolManagement.Core.Features.Subjects.Models;
+using SchoolManagement.Core.Shared.Contracts;
+
+namespace SchoolManagement.Core.Features.Classes.Models
 {
-    public class ClassSubject
+    public class ClassSubject : IEntity
     {
         public int Id { get; set; }
         public int ClassId { get; set; }

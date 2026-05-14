@@ -1,11 +1,11 @@
-﻿<Window x:Class="SchoolManagement.Presentation.Shared.Views.LoginViewWindow"
+<Window x:Class="SchoolManagement.Presentation.Shared.Features.Authentication.Views.LoginViewWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SchoolManagement.Presentation.Shared.Views"
+        xmlns:local="clr-namespace:SchoolManagement.Presentation.Shared.Features.Authentication.Views"
         xmlns:helpers="clr-namespace:SchoolManagement.Presentation.Shared.Helpers"
-        xmlns:viewmodels="clr-namespace:SchoolManagement.Presentation.Shared.ViewModels"
+        xmlns:viewmodels="clr-namespace:SchoolManagement.Presentation.Shared.Features.Authentication.ViewModels"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:components="clr-namespace:SchoolManagement.Presentation.Shared.Components"
         d:DataContext="{d:DesignInstance Type=viewmodels:LoginViewModel}"
@@ -187,13 +187,13 @@
 
                             <!-- Title -->
                             <TextBlock Grid.Row="0"
-                               Text="សួស្ដីពីដុនបូស្កូប៉ោយប៉ែត!"
+                               Text="?????????????????????????!"
                                TextWrapping="Wrap"
                                TextAlignment="Center"
                                Style="{StaticResource TitleTextStyle}" />
 
                             <TextBlock Grid.Row="1"
-                               Text="សូមធ្វើការបំពេញព័ត៌មានខាងក្រោមឱ្យបានត្រឹមត្រូវ"
+                               Text="??????????????????????????????????????????????"
                                FontSize="14"
                                HorizontalAlignment="Center"
                                Margin="0 0 0 14" />
@@ -265,7 +265,7 @@
 
                             <!-- Small footnote / version -->
                             <TextBlock Grid.Row="4"
-                               Text="ប្រសិនបើមានបញ្ហាចូលគណនី សូមទាក់ទងទៅកាន់អ្នកគ្រប់គ្រង"
+                               Text="??????????????????????? ????????????????????????????"
                                FontSize="12"
                                Foreground="#FF666666"
                                HorizontalAlignment="Center"

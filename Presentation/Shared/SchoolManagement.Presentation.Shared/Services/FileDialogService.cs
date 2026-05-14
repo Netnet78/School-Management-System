@@ -1,6 +1,4 @@
 ﻿using Microsoft.Win32;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
 
 namespace SchoolManagement.Presentation.Shared.Services
 {

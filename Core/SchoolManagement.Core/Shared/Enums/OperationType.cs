@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SchoolManagement.Core.Enums
+﻿namespace SchoolManagement.Core.Shared.Enums
 {
     /// <summary>
     /// Specifies the type of operation to perform.

@@ -1,7 +1,6 @@
-﻿using SchoolManagement.Presentation.Shared.ViewModels;
 using System.Windows;
 
-namespace SchoolManagement.Presentation.Shared.Views
+namespace SchoolManagement.Presentation.Shared.Features.Authentication.Views
 {
     /// <summary>
     /// Interaction logic for LoginViewWindow.xaml
@@ -37,3 +36,4 @@ namespace SchoolManagement.Presentation.Shared.Views
         }
     }
 }
+

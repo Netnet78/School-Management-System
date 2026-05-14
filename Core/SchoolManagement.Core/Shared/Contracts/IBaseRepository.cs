@@ -1,6 +1,7 @@
+using SchoolManagement.Core.Shared.Models;
 using System.Linq.Expressions;
 
-namespace SchoolManagement.Core.Infrastructure.Interfaces;
+namespace SchoolManagement.Core.Shared.Contracts;
 
 public interface IBaseRepository<MT>
 {
@@ -9,7 +10,14 @@ public interface IBaseRepository<MT>
     Task AddAsync(MT data);
     Task UpdateAsync(MT data);
     Task DeleteAsync(MT data);
-    Task<int> CountAsync(Expression<Func<MT, bool>>? predicate = null,
+    Task<int> CountAsync(
+        IEnumerable<FilterCondition<MT>>? filters = null,
+        int? page = null,
+        int? pageSize = null,
+        Func<IQueryable<MT>, IOrderedQueryable<MT>>? orderBy = null,
+        params Expression<Func<MT, object?>>[]? includes);
+    Task<int> CountAsync(
+        Expression<Func<MT, bool>>? predicate = null,
         int? page = null,
         int? pageSize = null,
         Func<IQueryable<MT>, IOrderedQueryable<MT>>? orderBy = null,
@@ -23,7 +31,14 @@ public interface IBaseRepository<MT>
 
     public Task SaveAsync();
 
-    Task<IEnumerable<MT>> FindAsync(Expression<Func<MT, bool>>? predicate = null,
+    Task<IEnumerable<MT>> FindAsync(
+        IEnumerable<FilterCondition<MT>>? filters = null,
+        int? page = null,
+        int? pageSize = null,
+        Func<IQueryable<MT>, IOrderedQueryable<MT>>? orderBy = null,
+        params Expression<Func<MT, object?>>[]? includes);
+    Task<IEnumerable<MT>> FindAsync(
+        Expression<Func<MT, bool>>? predicate = null,
         int? page = null,
         int? pageSize = null,
         Func<IQueryable<MT>, IOrderedQueryable<MT>>? orderBy = null,

@@ -1,11 +1,4 @@
-﻿using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Extensions;
-using SchoolManagement.Core.Shared.Models;
-
-namespace SchoolManagement.Application.Services
+namespace SchoolManagement.Application.Features.Candidates.Services
 {
     public class CandidateService : ICandidateService
     {
@@ -27,7 +20,7 @@ namespace SchoolManagement.Application.Services
                     await _candidateRepository.DeleteAsync(candidate);
                     return new()
                     {
-                        Message = $"សិស្សឈ្មោះ៖ \"{candidate.FullName}\" ត្រូវបានលុបជាការស្រេច!",
+                        Message = $"ព័ត៌មានសិស្សឈ្មោះ \"{candidate.FullName}\" ត្រូវបានលុបរួចរាល់ជាការស្រេច!",
                         Status = Status.Success
                     };
                 }
@@ -35,7 +28,7 @@ namespace SchoolManagement.Application.Services
                 {
                     return new()
                     {
-                        Message = $"មិនអាចរកឃើញសិស្សដែលមាន ID: \"{candidateId}\" នោះទេ!",
+                        Message = $"មិនអាចរកឃើញសិស្សដែលមានលេខ ID: \"{candidateId}\" នោះទេ!",
                         Status = Status.Rejected
                     };
                 }
@@ -44,7 +37,7 @@ namespace SchoolManagement.Application.Services
             {
                 return new()
                 {
-                    Message = $"ប្រព័ន្ធបានចាប់កំហុសបច្ចេកទេសមួយនៅពេលដែលកំពុងព្យាយាមលុប\nError: {ex}",
+                    Message = $"មានកំហុសបច្ចេកទេសក្នុងការលុបទិន្នន័យ\nError: {ex}",
                     Status = Status.Failed
                 };
             }
@@ -55,10 +48,10 @@ namespace SchoolManagement.Application.Services
             ValidationResponse response = candidate.HasAllRequiredData();
             if (response.IsValid)
             {
-                candidate.FirstName = candidate.FirstName.RemoveHiddenSpaces();
-                candidate.LastName = candidate.LastName.RemoveHiddenSpaces();
-                candidate.LatinFirstName = candidate.LatinFirstName.RemoveHiddenSpaces();
-                candidate.LatinLastName = candidate.LatinLastName.RemoveHiddenSpaces();
+                candidate.FirstName = StringExtensions.RemoveHiddenSpaces(candidate.FirstName, true);
+                candidate.LastName = StringExtensions.RemoveHiddenSpaces(candidate.LastName, true);
+                candidate.LatinFirstName = StringExtensions.RemoveHiddenSpaces(candidate.LatinFirstName, true);
+                candidate.LatinLastName = StringExtensions.RemoveHiddenSpaces(candidate.LatinLastName, true);
 
                 try
                 {
@@ -77,7 +70,7 @@ namespace SchoolManagement.Application.Services
             }
             else
             {
-                string message = "ព័ត៌មានសិស្សានុសិស្សមានការខ្វះខាត, សូមធ្វើការត្រួតពិនិត្យទៅលើព័ត៌មានខាងក្រោម៖";
+                string message = "?????????????????????????????????, ??????????????????????????????????????????";
                 for (int i = 0; i < response.MissingProperties.Length; i++)
                 {
                     ValidationError missing = response.MissingProperties[i];
@@ -162,10 +155,10 @@ namespace SchoolManagement.Application.Services
 
             if (response.IsValid)
             {
-                candidate.FirstName = candidate.FirstName.RemoveHiddenSpaces();
-                candidate.LastName = candidate.LastName.RemoveHiddenSpaces();
-                candidate.LatinFirstName = candidate.LatinFirstName.RemoveHiddenSpaces();
-                candidate.LatinLastName = candidate.LatinLastName.RemoveHiddenSpaces();
+                candidate.FirstName = Core.Shared.Extensions.StringExtensions.RemoveHiddenSpaces(candidate.FirstName);
+                candidate.LastName = Core.Shared.Extensions.StringExtensions.RemoveHiddenSpaces(candidate.LastName);
+                candidate.LatinFirstName = Core.Shared.Extensions.StringExtensions.RemoveHiddenSpaces(candidate.LatinFirstName);
+                candidate.LatinLastName = Core.Shared.Extensions.StringExtensions.RemoveHiddenSpaces(candidate.LatinLastName);
 
                 try
                 {
@@ -188,7 +181,7 @@ namespace SchoolManagement.Application.Services
             }
             else
             {
-                string message = "ព័ត៌មានសិស្សានុសិស្សមានការខ្វះខាត, សូមធ្វើការត្រួតពិនិត្យទៅលើព័ត៌មានខាងក្រោម៖";
+                string message = "?????????????????????????????????, ??????????????????????????????????????????";
                 for (int i = 0; i < response.MissingProperties.Length; i++)
                 {
                     ValidationError missing = response.MissingProperties[i];
@@ -203,3 +196,5 @@ namespace SchoolManagement.Application.Services
         }
     }
 }
+
+

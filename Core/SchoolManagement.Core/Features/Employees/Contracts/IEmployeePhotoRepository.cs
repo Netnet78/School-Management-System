@@ -1,6 +1,8 @@
-﻿using SchoolManagement.Core.Models;
 
-namespace SchoolManagement.Core.Infrastructure.Interfaces
+using SchoolManagement.Core.Features.Employees.Models;
+using SchoolManagement.Core.Shared.Contracts;
+
+namespace SchoolManagement.Core.Features.Employees.Contracts
 {
     public interface IEmployeePhotoRepository : IBaseRepository<EmployeePhoto>
     {
@@ -8,3 +10,4 @@ namespace SchoolManagement.Core.Infrastructure.Interfaces
         Task<IEnumerable<EmployeePhoto>> GetPendingUploads(CancellationToken? token = null);
     }
 }
+

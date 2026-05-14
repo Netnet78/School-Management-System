@@ -1,7 +1,9 @@
-using SchoolManagement.Core.Models;
+
+using SchoolManagement.Core.Features.Candidates.Models;
+using SchoolManagement.Core.Features.Students.Models;
 using SchoolManagement.Core.Shared.Models;
 
-namespace SchoolManagement.Core.Application.Interfaces
+namespace SchoolManagement.Core.Features.Candidates.Contracts
 {
     public interface ICandidateService
     {
@@ -13,3 +15,4 @@ namespace SchoolManagement.Core.Application.Interfaces
         Task<ReturnResponse> UpdateCandidateAsync(Candidate candidate);
     }
 }
+

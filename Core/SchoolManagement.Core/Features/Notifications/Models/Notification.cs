@@ -1,6 +1,9 @@
-﻿namespace SchoolManagement.Core.Models
+﻿using SchoolManagement.Core.Features.Students.Models;
+using SchoolManagement.Core.Shared.Contracts;
+
+namespace SchoolManagement.Core.Features.Notifications.Models
 {
-    public class Notification
+    public class Notification : IEntity
     {
         public int Id { get; set; }
         public string Message { get; set; } = string.Empty;

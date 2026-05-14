@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace SchoolManagement.Core.Enums
+namespace SchoolManagement.Core.Features.Employees.Enums
 {
     public enum MaritalStatus
     {

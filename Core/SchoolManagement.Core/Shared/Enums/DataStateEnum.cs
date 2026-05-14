@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace SchoolManagement.Core.Enums
+namespace SchoolManagement.Core.Shared.Enums
 {
     /// <summary>
     /// This is an enum that describes the data state of an object (is it missing some data or not)

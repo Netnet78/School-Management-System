@@ -1,4 +1,4 @@
-﻿using SchoolManagement.Core.Enums;
+﻿using SchoolManagement.Core.Features.AuditLogs.Enums;
 
 namespace SchoolManagement.Core.Shared.Attributes
 {

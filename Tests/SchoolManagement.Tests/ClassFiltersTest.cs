@@ -1,6 +1,3 @@
-using SchoolManagement.Core.Helpers;
-using SchoolManagement.Core.Models;
-
 namespace SchoolManagement.Tests
 {
     public class ClassFiltersTest
@@ -50,3 +47,4 @@ namespace SchoolManagement.Tests
         }
     }
 }
+

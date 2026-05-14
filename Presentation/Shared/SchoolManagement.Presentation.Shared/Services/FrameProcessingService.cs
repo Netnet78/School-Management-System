@@ -1,6 +1,4 @@
-﻿using SchoolManagement.Core.Shared.Models;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 

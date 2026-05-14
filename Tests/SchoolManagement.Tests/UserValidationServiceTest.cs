@@ -1,12 +1,4 @@
-﻿using Moq;
-using SchoolManagement.Application.Services;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Shared.Models;
-using SchoolManagement.Core.Shared.Helpers;
-using SchoolManagement.Application.Services;
-
+using Moq;
 namespace SchoolManagement.Tests
 {
     public class UserValidationServiceTest
@@ -92,3 +84,4 @@ namespace SchoolManagement.Tests
         }
     }
 }
+

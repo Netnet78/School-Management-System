@@ -1,8 +1,11 @@
-﻿using System.ComponentModel;
+﻿using SchoolManagement.Core.Features.Classes.Models;
+using SchoolManagement.Core.Features.Departments.Models;
+using SchoolManagement.Core.Shared.Contracts;
+using System.ComponentModel;
 
-namespace SchoolManagement.Core.Models
+namespace SchoolManagement.Core.Features.Generations.Models
 {
-    public class Generation
+    public class Generation : IEntity
     {
         [Description("លេខសម្គាល់")]
         public int Id { get; set; }

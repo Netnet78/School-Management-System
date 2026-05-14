@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
 
 namespace SchoolManagement.Presentation.Shared.Services
 {

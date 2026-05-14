@@ -1,14 +1,8 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Helpers;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Models;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
 using System.Diagnostics;
 
-namespace SchoolManagement.Presentation.Shared.ViewModels
+namespace SchoolManagement.Presentation.Shared.Features.Authentication.ViewModels
 {
     public partial class LoginViewModel : ObservableObject
     {
@@ -38,8 +32,8 @@ namespace SchoolManagement.Presentation.Shared.ViewModels
 
                 string messageHeader = string.Empty;
 
-                if (response.Status == Status.Failed) messageHeader = "ខុសព័ត៌មាន!";
-                else if (response.Status == Status.Rejected) messageHeader = "ត្រជាក់ៗ! មួយៗ កុំលឿនពេក!";
+                if (response.Status == Status.Failed) messageHeader = "??????????!";
+                else if (response.Status == Status.Rejected) messageHeader = "????????! ???? ?????????!";
 
                 if (response.Value == null)
                 {
@@ -68,9 +62,11 @@ namespace SchoolManagement.Presentation.Shared.ViewModels
                 Debug.WriteLine(ex.Source);
 
                 LoginSucceeded?.Invoke(false);
+
                 return false;
             }
         }
 
     }
 }
+

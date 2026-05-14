@@ -1,6 +1,6 @@
 using SchoolManagement.Core.Shared.Models;
 
-namespace SchoolManagement.Core.Models
+namespace SchoolManagement.Core.Features.Students.Models
 {
     public class StudentQRResponse : ReturnResponse
     {

@@ -1,6 +1,6 @@
-﻿using SchoolManagement.Core.Shared.Models;
+using SchoolManagement.Core.Shared.Models;
 
-namespace SchoolManagement.Core.Infrastructure.Interfaces;
+namespace SchoolManagement.Core.Features.Files.Contracts;
 
 public interface ISettingsService
 {

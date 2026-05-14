@@ -1,8 +1,11 @@
-using SchoolManagement.Core.Models;
 
-namespace SchoolManagement.Core.Infrastructure.Interfaces
+using SchoolManagement.Core.Features.Grades.Models;
+using SchoolManagement.Core.Shared.Contracts;
+
+namespace SchoolManagement.Core.Features.Grades.Contracts
 {
     public interface IScoreRepository : IBaseRepository<Score>
     {
     }
 }
+

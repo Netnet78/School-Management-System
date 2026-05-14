@@ -1,4 +1,4 @@
-﻿using SchoolManagement.Core.Enums;
+﻿using SchoolManagement.Core.Shared.Enums;
 
 namespace SchoolManagement.Core.Shared.Models
 {

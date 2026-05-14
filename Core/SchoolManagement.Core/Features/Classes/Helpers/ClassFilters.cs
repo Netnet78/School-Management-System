@@ -1,8 +1,9 @@
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Models;
+using SchoolManagement.Core.Features.Auth.Enums;
+using SchoolManagement.Core.Features.Auth.Models;
+using SchoolManagement.Core.Features.Classes.Models;
 using System.Linq.Expressions;
 
-namespace SchoolManagement.Core.Helpers
+namespace SchoolManagement.Core.Features.Classes.Helpers
 {
     public static class ClassFilters
     {
@@ -24,3 +25,4 @@ namespace SchoolManagement.Core.Helpers
         }
     }
 }
+

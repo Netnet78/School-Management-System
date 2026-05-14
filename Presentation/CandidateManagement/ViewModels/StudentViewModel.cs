@@ -1,11 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
-using SchoolManagement.Core.Shared.Extensions;
-using SchoolManagement.Core.Shared.Models;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -112,7 +106,7 @@ namespace CandidateManagement.ViewModels
         public string? _sortBy;
 
         [ObservableProperty]
-        private OrderType _orderType = SchoolManagement.Core.Enums.OrderType.Descending;
+        private OrderType _orderType = OrderType.Descending;
 
         public IEnumerable<OrderType> OrderTypeOptions { get; } =
             Enum.GetValues<OrderType>();
@@ -187,15 +181,15 @@ namespace CandidateManagement.ViewModels
         [ObservableProperty]
         private string _studentSearch = string.Empty;
 
-        partial void OnStudentSearchChanged(string value)
+        async partial void OnStudentSearchChanged(string value)
         {
             // Debounce the search: wait 300ms after user stops typing before filtering
             _searchDebounceTimer?.Dispose();
             _searchDebounceTimer = new Timer(
-                (_) =>
+                async (_) =>
                 {
                     CurrentPage = 1;
-                    RefreshStudentsViewAsync();
+                    await RefreshStudentsViewAsync();
                 },
                 null,
                 SearchDebounceDelayMs,
@@ -273,7 +267,7 @@ namespace CandidateManagement.ViewModels
             FromDate = null;
             ToDate = null;
             SortBy = string.Empty;
-            OrderType = SchoolManagement.Core.Enums.OrderType.Descending;
+            OrderType = OrderType.Descending;
             await RefreshStudentsViewAsync();
         }
 

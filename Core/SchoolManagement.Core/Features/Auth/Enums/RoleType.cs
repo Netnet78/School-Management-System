@@ -1,4 +1,4 @@
-﻿namespace SchoolManagement.Core.Enums
+﻿namespace SchoolManagement.Core.Features.Auth.Enums
 {
     public enum RoleType
     {

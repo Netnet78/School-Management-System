@@ -1,8 +1,4 @@
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Models;
-
-namespace SchoolManagement.Application.Policies
+namespace SchoolManagement.Application.Features.Employees.Authorization
 {
     /// <summary>
     /// Handles authorization for Employee-related operations.
@@ -38,3 +34,5 @@ namespace SchoolManagement.Application.Policies
         }
     }
 }
+
+

@@ -1,8 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Extensions;
 using SchoolManagement.Infrastructure.Data;
 using System.Linq.Expressions;
 

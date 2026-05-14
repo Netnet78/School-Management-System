@@ -1,6 +1,8 @@
-﻿using SchoolManagement.Core.Models;
 
-namespace SchoolManagement.Core.Application.Interfaces
+
+using SchoolManagement.Core.Features.Auth.Models;
+
+namespace SchoolManagement.Core.Features.Auth.Contracts
 {
     public interface IUserSessionService
     {
@@ -14,3 +16,4 @@ namespace SchoolManagement.Core.Application.Interfaces
         public Task LogoutSession();
     }
 }
+

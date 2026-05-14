@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using SchoolManagement.Core.Infrastructure.Interfaces;
 using SchoolManagement.Infrastructure.Data;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -7,7 +6,7 @@ using System.Reflection;
 namespace SchoolManagement.Infrastructure.Repositories;
 
 public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity>
-    where TEntity : class
+    where TEntity : class, IEntity
 {
     protected readonly SchoolDbContext Context;
 
@@ -78,13 +77,45 @@ public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity>
     }
 
     public virtual async Task<IEnumerable<TEntity>> FindAsync(
+        IEnumerable<FilterCondition<TEntity>>? filters = null,
+        int? page = null,
+        int? pageSize = null,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+        params Expression<Func<TEntity, object?>>[]? includes)
+    {
+        IQueryable<TEntity> query = BuildQuery(filters, includes);
+
+        if (orderBy != null)
+        {
+            query = orderBy(query);
+        }
+
+        if (page.HasValue && pageSize.HasValue)
+        {
+            query = query
+                .Skip(pageSize.Value * (page.Value - 1))
+                .Take(pageSize.Value);
+        }
+
+        return await query.ToListAsync();
+    }
+
+    public virtual async Task<IEnumerable<TEntity>> FindAsync(
         Expression<Func<TEntity, bool>>? predicate = null,
         int? page = null,
         int? pageSize = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
         params Expression<Func<TEntity, object?>>[]? includes)
     {
-        IQueryable<TEntity> query = BuildQuery(includes);
+        IQueryable<TEntity> query = CreateQuery();
+
+        if (includes != null)
+        {
+            foreach (Expression<Func<TEntity, object?>> include in includes)
+            {
+                query = query.Include(include);
+            }
+        }
 
         if (predicate != null)
         {
@@ -107,13 +138,45 @@ public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity>
     }
 
     public virtual async Task<int> CountAsync(
+        IEnumerable<FilterCondition<TEntity>>? filters = null,
+        int? page = null,
+        int? pageSize = null,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+        params Expression<Func<TEntity, object?>>[]? includes)
+    {
+        IQueryable<TEntity> query = BuildQuery(filters, includes);
+
+        if (orderBy != null)
+        {
+            query = orderBy(query);
+        }
+
+        if (page.HasValue && pageSize.HasValue)
+        {
+            query = query
+                .Skip(pageSize.Value * (page.Value - 1))
+                .Take(pageSize.Value);
+        }
+
+        return await query.CountAsync();
+    }
+
+    public virtual async Task<int> CountAsync(
         Expression<Func<TEntity, bool>>? predicate = null,
         int? page = null,
         int? pageSize = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
         params Expression<Func<TEntity, object?>>[]? includes)
     {
-        IQueryable<TEntity> query = BuildQuery(includes);
+        IQueryable<TEntity> query = CreateQuery();
+
+        if (includes != null)
+        {
+            foreach (Expression<Func<TEntity, object?>> include in includes)
+            {
+                query = query.Include(include);
+            }
+        }
 
         if (predicate != null)
         {
@@ -135,7 +198,9 @@ public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity>
         return await query.CountAsync();
     }
 
-    protected virtual IQueryable<TEntity> BuildQuery(params Expression<Func<TEntity, object?>>[]? includes)
+    protected virtual IQueryable<TEntity> BuildQuery(
+        IEnumerable<FilterCondition<TEntity>>? filters,
+        params Expression<Func<TEntity, object?>>[]? includes)
     {
         IQueryable<TEntity> query = CreateQuery();
 
@@ -145,6 +210,11 @@ public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity>
             {
                 query = query.Include(include);
             }
+        }
+
+        if (filters != null)
+        {
+            query = query.ApplyFilters(filters);
         }
 
         return query;

@@ -1,8 +1,10 @@
-using SchoolManagement.Core.Models;
+using SchoolManagement.Core.Features.Employees.Models;
+using SchoolManagement.Core.Shared.Contracts;
 
-namespace SchoolManagement.Core.Infrastructure.Interfaces
+namespace SchoolManagement.Core.Features.Employees.Contracts
 {
     public interface IEmployeeRepository : IBaseRepository<Employee>
     {
     }
 }
+

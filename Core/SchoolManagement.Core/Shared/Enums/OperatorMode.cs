@@ -1,4 +1,4 @@
-﻿namespace SchoolManagement.Core.Enums
+﻿namespace SchoolManagement.Core.Shared.Enums
 {
     /// <summary>
     /// Specifies the logical operator mode used to evaluate multiple conditions.

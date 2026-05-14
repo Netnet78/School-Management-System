@@ -1,8 +1,4 @@
-﻿using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Models;
-
-namespace SchoolManagement.Application.Policies
+namespace SchoolManagement.Application.Features.AuditLogs.Authorization
 {
     public class AuditLogAuthorizationHandler : IAuthorizationHandler
     {
@@ -18,3 +14,5 @@ namespace SchoolManagement.Application.Policies
         }
     }
 }
+
+

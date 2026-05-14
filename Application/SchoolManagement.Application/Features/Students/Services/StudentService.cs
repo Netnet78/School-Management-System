@@ -1,15 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using OpenCvSharp;
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Application.DTOs;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Models;
 using System.Linq.Expressions;
-using SchoolManagement.Core.Shared.Models;
-using SchoolManagement.Core.Shared.Extensions;
 
-namespace SchoolManagement.Application.Services
+namespace SchoolManagement.Application.Features.Students.Services
 {
     public class StudentService : CrudServiceBase<Student>, IStudentService
     {
@@ -46,7 +37,7 @@ namespace SchoolManagement.Application.Services
                 return new()
                 {
                     Status = Status.Failed,
-                    Message = $"មិនអាចរកឃើញសិស្សដែលមាន ID: {student.Id} នេះទេ",
+                    Message = $"មិនអាចរកឃើញសិស្សលេខ ID៖ {student.Id} ។",
                 };
             }
 
@@ -54,7 +45,7 @@ namespace SchoolManagement.Application.Services
             {
                 return new()
                 {
-                    Message = "អ្នកគ្មានសិទិ្ធ​លុបទិន្នន័យសិស្សនេះឡើយ!",
+                    Message = "អ្នកមិនមាន​​ការអនុញ្ញាត​ដើម្បីលុបយកសិស្សនេះ!",
                     Status = Status.Rejected
                 };
             }
@@ -72,7 +63,7 @@ namespace SchoolManagement.Application.Services
                 return new()
                 {
                     Status = Status.Failed,
-                    Message = $"មិនអាចលុបសិស្សដែលមាន ID: {student.Id} នេះបានទេ\n{ex.Message}",
+                    Message = $"ការលុបព័ត៌មានសិស្សលេខ ID៖ {student.Id} ប្រកបដោយ​បរាជ័យ\n{ex.Message}",
                 };
             }
         }
@@ -83,17 +74,18 @@ namespace SchoolManagement.Application.Services
 
             if (!canProceed) return new()
             {
-                Message = "អ្នកមិនអាចអានទិន្នន័យសិស្សទាំងអស់នេះបានទេ!",
+                Message = "អ្នកមិនមាន​​ការអនុញ្ញាតដើម្បីមើលសិស្សនោះទេ!",
                 Status = Status.Rejected
             };
 
-            User? user = _userSessionService.CurrentUser;
+            User user = _authorizationService.CurrentUser;
 
             if (user == null)
             {
                 return new()
                 {
-                    Message = "អ្នកគ្មានសិទ្ធិទាញយកទិន្នន័យបានទេ ប្រសិនបើអ្នកមិនមែនជាអ្នកប្រើប្រាស់ពិតប្រាកដ!",
+                    Message = "រកមិនឃើញព័ត៌មាននៃអ្នកប្រើប្រាស់នៅក្នុងមូលដ្ឋានទិន្នន័យ។ " +
+                    "សូមទាក់ទងអ្នកគ្រប់គ្រងភ្លាមៗ ប្រសិនបើអ្នកជឿជាក់ថាវាជាកំហុសបច្ចេកទេស!",
                     Status = Status.Rejected
                 };
             }
@@ -118,8 +110,8 @@ namespace SchoolManagement.Application.Services
                     {
                         return new()
                         {
-                            Message = "ទិន្នន័យអ្នកប្រើប្រាស់ដែលកំពុងប្រើកម្មវិធីនេះ មិនមាននៅក្នុងផ្នែកណាទេ\n" +
-                            "សូមធ្វើការជូនដំណឹងទៅកាន់អ្នកគ្រប់គ្រងភ្លាមៗ ប្រសិនបើវាជាកំហុសបច្ចេកទេស។",
+                            Message = "រកមិនឃើញព័ត៌មាននៃអ្នកប្រើប្រាស់នៅក្នុងមូលដ្ឋានទិន្នន័យ។ " +
+                            "សូមទាក់ទងអ្នកគ្រប់គ្រងភ្លាមៗ ប្រសិនបើអ្នកជឿជាក់ថាវាជាកំហុសបច្ចេកទេស!",
                             Status = Status.Rejected,
                         };
                     }
@@ -139,8 +131,8 @@ namespace SchoolManagement.Application.Services
                     {
                         return new()
                         {
-                            Message = "ទិន្នន័យអ្នកប្រើប្រាស់ដែលកំពុងប្រើកម្មវិធីនេះ មិនមាននៅក្នុងផ្នែកណាទេ\n" +
-                            "សូមធ្វើការជូនដំណឹងទៅកាន់អ្នកគ្រប់គ្រងភ្លាមៗ ប្រសិនបើវាជាកំហុសបច្ចេកទេស។",
+                            Message = "រកមិនឃើញព័ត៌មាននៃអ្នកប្រើប្រាស់នៅក្នុងមូលដ្ឋានទិន្នន័យ។ " +
+                            "សូមទាក់ទងអ្នកគ្រប់គ្រងភ្លាមៗ ប្រសិនបើអ្នកជឿជាក់ថាវាជាកំហុសបច្ចេកទេស!",
                             Status = Status.Rejected
                         };
                     }
@@ -152,7 +144,12 @@ namespace SchoolManagement.Application.Services
 
             try
             {
-                IEnumerable<Student> students = await _studentRepositoy.FindAsync(options, page, pageSize, orderBy, s => s.Candidate, s => s.Candidate.Skill, s => s.Candidate.Photo, s=> s.Classes);
+                IEnumerable<Student> students = await _studentRepositoy.FindAsync(
+                    options, 
+                    page, 
+                    pageSize, 
+                    orderBy, 
+                    s => s.Candidate, s => s.Candidate.Skill, s => s.Candidate.Photo, s=> s.Classes);
 
                 return new()
                 {
@@ -166,7 +163,7 @@ namespace SchoolManagement.Application.Services
                 {
                     Status = Status.Failed,
                     Value = null,
-                    Message = $"មិនអាចទាញរកទិន្នន័យសិស្សបានទេ មូលហេតុ:\n {ex.Message}"
+                    Message = $"មានកំហុសក្នុងការទទួលបានរាយនាមសិស្ស៖ \n {ex.Message}"
                 };
             }
         }
@@ -177,7 +174,7 @@ namespace SchoolManagement.Application.Services
 
             if (!canProceed) return new()
             {
-                Message = "អ្នកគ្មានសិទ្ធិ​បញ្ចូល​ទិន្នន័យសិស្សនេះបានទេ!",
+                Message = "អ្នកមិនមានលិខិតឆ្លងដែនដើម្បីបង្កើតសិស្សថ្មី!",
                 Status = Status.Rejected
             };
 
@@ -194,7 +191,7 @@ namespace SchoolManagement.Application.Services
                 return new()
                 {
                     Status = Status.Failed,
-                    Message = $"មិនអាចបន្ថែមសិស្សបានទេ មូលហេតុ៖\n{ex.Message}",
+                    Message = $"មានកំហុសក្នុងការបង្កើតសិស្ស\n{ex.Message}",
                 };
             }
         }
@@ -207,7 +204,7 @@ namespace SchoolManagement.Application.Services
             if (updating == null) return new()
             {
                 Status = Status.Failed,
-                Message = $"គ្មានសិស្សណាដែលមាន ID: {student.Id} នេះទេ",
+                Message = $"?????????????????? ID: {student.Id} ?????",
             };
 
             bool canProceed = await CanProceed(updating, requiredPermissions: PermissionType.EditStudents);
@@ -217,7 +214,7 @@ namespace SchoolManagement.Application.Services
                 return new()
                 {
                     Status = Status.Rejected,
-                    Message = "អ្នកគ្មានសិទ្ធិក្នុងការកែប្រែសិស្សនេះបានឡើយ!"
+                    Message = "???????????????????????????????????????????!"
                 };
             }
 
@@ -234,7 +231,7 @@ namespace SchoolManagement.Application.Services
                 return new()
                 {
                     Status = Status.Failed,
-                    Message = $"មិនអាចកែប្រែទិន្នន័យសិស្សនេះបានទេ មូលហេតុ៖\n{ex.Message}"
+                    Message = $"????????????????????????????????? ????????\n{ex.Message}"
                 };
             }
         }
@@ -245,14 +242,14 @@ namespace SchoolManagement.Application.Services
             if (user == null) return new()
             {
                 Status = Status.Rejected,
-                Message = "អ្នកគ្មានសិទ្ធិទាញយកទិន្នន័យបានទេ ប្រសិនបើអ្នកមិនមែនជាអ្នកប្រើប្រាស់ពិតប្រាកដ!",
+                Message = "????????????????????????????????? ???????????????????????????????????????????!",
             };
 
             bool canProceed = await CanProceed(requiredPermissions: PermissionType.ViewStudents);
 
             if (!canProceed) return new()
             {
-                Message = "អ្នកគ្មានសិទ្ធិក្នុងការរាប់ចំនួនទិន្នន័យសិស្សទាំងអស់នេះបានទេ!",
+                Message = "????????????????????????????????????????????????????????????!",
                 Status = Status.Rejected
             };
 
@@ -276,8 +273,8 @@ namespace SchoolManagement.Application.Services
                     {
                         return new()
                         {
-                            Message = "ទិន្នន័យអ្នកប្រើប្រាស់ដែលកំពុងប្រើកម្មវិធីនេះ មិនមាននៅក្នុងផ្នែកណាទេ\n" +
-                            "សូមធ្វើការជូនដំណឹងទៅកាន់អ្នកគ្រប់គ្រងភ្លាមៗ ប្រសិនបើវាជាកំហុសបច្ចេកទេស។",
+                            Message = "????????????????????????????????????????????? ??????????????????????\n" +
+                            "??????????????????????????????????????????? ???????????????????????????",
                             Status = Status.Rejected,
                         };
                     }
@@ -297,8 +294,8 @@ namespace SchoolManagement.Application.Services
                     {
                         return new()
                         {
-                            Message = "ទិន្នន័យអ្នកប្រើប្រាស់ដែលកំពុងប្រើកម្មវិធីនេះ មិនមាននៅក្នុងផ្នែកណាទេ\n" +
-                            "សូមធ្វើការជូនដំណឹងទៅកាន់អ្នកគ្រប់គ្រងភ្លាមៗ ប្រសិនបើវាជាកំហុសបច្ចេកទេស។",
+                            Message = "????????????????????????????????????????????? ??????????????????????\n" +
+                            "??????????????????????????????????????????? ???????????????????????????",
                             Status = Status.Rejected
                         };
                     }
@@ -323,7 +320,7 @@ namespace SchoolManagement.Application.Services
                 return new()
                 {
                     Status = Status.Failed,
-                    Message = $"មិនអាចទាញរកទិន្នន័យសិស្សបានទេ មូលហេតុ:\n {ex.Message}"
+                    Message = $"????????????????????????????? ???????:\n {ex.Message}"
                 };
             }
         }
@@ -389,3 +386,4 @@ namespace SchoolManagement.Application.Services
 
     }
 }
+

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 using CandidateManagement.ViewModels;
 using CandidateManagement.Views;
 using SchoolManagement.Application;
-using SchoolManagement.Application.Workers;
+using SchoolManagement.Application.Features.Files.Workers;
 using SchoolManagement.Infrastructure;
 using SchoolManagement.Presentation.Shared;
 using System.Windows;

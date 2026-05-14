@@ -1,7 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
+using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace SchoolManagement.Presentation.ViewModels
+namespace SchoolManagement.Presentation.Features.Reports.ViewModels
 {
     public partial class ReportViewModel : ObservableObject, IViewModel
     {

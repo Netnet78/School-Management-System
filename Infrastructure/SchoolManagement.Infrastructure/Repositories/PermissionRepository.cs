@@ -1,5 +1,4 @@
-using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Models;
+using SchoolManagement.Core.Features.Auth.Models;
 using SchoolManagement.Infrastructure.Data;
 
 namespace SchoolManagement.Infrastructure.Repositories;

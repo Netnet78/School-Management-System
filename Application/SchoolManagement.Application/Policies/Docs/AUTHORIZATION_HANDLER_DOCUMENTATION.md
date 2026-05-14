@@ -87,9 +87,9 @@ No handlers returning true = Request denied
 
 #### Step 1: Create the Handler Class
 ```csharp
-using SchoolManagement.Core.Enums;
+
 using SchoolManagement.Core.Interfaces.Application;
-using SchoolManagement.Core.Models;
+
 
 namespace SchoolManagement.Application.Policies
 {

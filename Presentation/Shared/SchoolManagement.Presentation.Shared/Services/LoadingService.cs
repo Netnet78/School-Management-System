@@ -1,6 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
 
 namespace SchoolManagement.Presentation.Shared.Services
 {

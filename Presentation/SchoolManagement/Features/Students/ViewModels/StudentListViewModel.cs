@@ -1,19 +1,14 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SchoolManagement.Application.Policies;
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
+using SchoolManagement.Application.Features.Classes.Authorization;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 
-namespace SchoolManagement.Presentation.ViewModels
+namespace SchoolManagement.Presentation.Features.Students.ViewModels
 {
     public partial class StudentListViewModel : ObservableObject, IViewModel, IAsyncLoadable
     {
         private readonly IStudentService _studentService;
-        private readonly IUserSessionService _userSessionService;
         private readonly IAuthorizationService _authorizationService;
         private readonly IMessageService _messageService;
         private readonly User _currentUser;
@@ -24,26 +19,18 @@ namespace SchoolManagement.Presentation.ViewModels
 
         public StudentListViewModel(
             IStudentService studentService,
-            IUserSessionService userSessionService,
             IAuthorizationService authorizationService,
             IMessageService messageService)
         {
             _studentService = studentService;
-            _userSessionService = userSessionService;
             _authorizationService = authorizationService;
             _messageService = messageService;
 
-            if (_userSessionService.CurrentUser == null)
-            {
-                _messageService.Show("Current user session hasn't been set!");
-                throw new Exception("Current user session hasn't been set!");
-            }
-            _currentUser = _userSessionService.CurrentUser;
+            _currentUser = _authorizationService.CurrentUser;
 
             Filters = new()
             {
                 IsActive = true,
-                IncludeInActive = false,
             };
             Students = new();
 
@@ -52,6 +39,9 @@ namespace SchoolManagement.Presentation.ViewModels
 
         [ObservableProperty]
         private StudentFilterObservableModel _filters;
+
+        [ObservableProperty]
+        private bool _showInactiveStudents = false;
 
         [ObservableProperty]
         private ObservableCollection<Student> _students;
@@ -98,7 +88,7 @@ namespace SchoolManagement.Presentation.ViewModels
             {
                 if (_currentUser.IsAdmin())
                 {
-                    Filters.IncludeInActive = true;
+                    ShowInactiveStudents = true;
                 }
 
                 var response = await _studentService.GetStudentsAsync(CurrentPage, DefaultPageSize, Filters.ToFilterOptions());
@@ -127,7 +117,7 @@ namespace SchoolManagement.Presentation.ViewModels
 
                     double pages = Math.Ceiling((double)TotalCount / DefaultPageSize);
                     MaxPage = (int)pages;
-                    PageCount = $"ទំព័រទី {CurrentPage} នៃ {pages:F0}";
+                    PageCount = $"??????? {CurrentPage} ?? {pages:F0}";
                 }
                 else
                 {
@@ -206,6 +196,11 @@ namespace SchoolManagement.Presentation.ViewModels
             catch (TaskCanceledException) { }
         }
 
+        async partial void OnShowInactiveStudentsChanged(bool value)
+        {
+            Filters.IsActive = !value ? true : null;
+        }
+
         [RelayCommand]
         private async Task ResetFilters()
         {
@@ -252,3 +247,4 @@ namespace SchoolManagement.Presentation.ViewModels
         }
     }
 }
+

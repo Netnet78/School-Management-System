@@ -1,7 +1,9 @@
-using SchoolManagement.Core.Application.DTOs;
-using SchoolManagement.Core.Models;
 
-namespace SchoolManagement.Core.Infrastructure.Interfaces
+using SchoolManagement.Core.Features.Classes.DTOs;
+using SchoolManagement.Core.Features.Students.Models;
+using SchoolManagement.Core.Shared.Contracts;
+
+namespace SchoolManagement.Core.Features.Students.Contracts
 {
     public interface IStudentClassRepository : IBaseRepository<StudentClass>
     {
@@ -9,3 +11,4 @@ namespace SchoolManagement.Core.Infrastructure.Interfaces
         Task<IEnumerable<ClassStudentCountDto>> GetStudentCountPerClass(int currentYear);
     }
 }
+

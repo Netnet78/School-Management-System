@@ -1,10 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Shared.Extensions;
 
 namespace SchoolManagement.Infrastructure.Interceptors
 {
@@ -77,3 +73,4 @@ namespace SchoolManagement.Infrastructure.Interceptors
         }
     }
 }
+

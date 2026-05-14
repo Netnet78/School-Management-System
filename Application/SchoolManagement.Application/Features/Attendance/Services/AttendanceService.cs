@@ -1,76 +1,78 @@
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Extensions;
-using SchoolManagement.Core.Shared.Models;
 using System.Linq.Expressions;
 
-namespace SchoolManagement.Application.Services
+namespace SchoolManagement.Application.Features.Attendance.Services
 {
-    public class AttendanceService : CrudServiceBase<Attendance>, IAttendanceService
+    public class AttendanceService : CrudServiceBase<SchoolManagement.Core.Features.Attendances.Models.Attendance>, IAttendanceService
     {
+        private readonly IAttendanceRepository _repository;
         private readonly IUserSessionService _userSessionService;
         public AttendanceService(IAttendanceRepository repository, IUserSessionService userSessionService) : base(repository)
         {
+            _repository = repository;
             _userSessionService = userSessionService;
         }
 
         public async Task<ReturnResponse<int>> GetLateStudentCountToday()
         {
-            DateTime now = DateTime.Now;
-
-            Expression<Func<Attendance, bool>> basePredicate =
-                a => a.AttendanceDate == DateOnly.FromDateTime(now) &&
-                     a.Status == AttendanceStatus.Late;
-
-            var predicate = TeacherPredicate().And(basePredicate);
-
-            return await GetAllCountAsync(predicate: predicate);
+            return await GetCountTodayAsync(AttendanceStatus.Late);
         }
 
         public async Task<ReturnResponse<int>> GetAbsentStudentCountToday()
         {
-            DateTime now = DateTime.Now;
-
-            Expression<Func<Attendance, bool>> basePredicate =
-                a => a.AttendanceDate == DateOnly.FromDateTime(now) &&
-                     a.Status == AttendanceStatus.Absent;
-
-            var predicate = TeacherPredicate().And(basePredicate);
-
-            return await GetAllCountAsync(predicate: predicate);
+            return await GetCountTodayAsync(AttendanceStatus.Absent);
         }
 
         public async Task<ReturnResponse<int>> GetPresentStudentCountToday()
         {
-            DateTime now = DateTime.Now;
-
-            Expression<Func<Attendance, bool>> basePredicate =
-                a => a.AttendanceDate == DateOnly.FromDateTime(now) &&
-                     a.Status == AttendanceStatus.Present;
-
-            var predicate = TeacherPredicate().And(basePredicate);
-
-            return await GetAllCountAsync(predicate: predicate);
+            return await GetCountTodayAsync(AttendanceStatus.Present);
         }
 
         public async Task<ReturnResponse<int>> GetExcusedStudentCountToday()
         {
-            DateTime now = DateTime.Now;
-
-            Expression<Func<Attendance, bool>> basePredicate = a => 
-            a.AttendanceDate == DateOnly.FromDateTime(now) && 
-            (a.Status == AttendanceStatus.Excused || a.Status == AttendanceStatus.ExcusedLate);
-
-            var predicate = TeacherPredicate().And(basePredicate);
-
-            ReturnResponse<int> absentCount = await GetAllCountAsync(predicate: predicate);
-
-            return absentCount;
+            return await GetCountTodayAsync(AttendanceStatus.Excused, AttendanceStatus.ExcusedLate);
         }
 
-        private Expression<Func<Attendance, bool>> TeacherPredicate()
+        private async Task<ReturnResponse<int>> GetCountTodayAsync(params AttendanceStatus[] statuses)
+        {
+            DateTime now = DateTime.Now;
+            DateOnly today = DateOnly.FromDateTime(now);
+
+            SchoolManagement.Core.Shared.Models.FilterCondition<SchoolManagement.Core.Features.Attendances.Models.Attendance>[] filters =
+            [
+                new(a => a.AttendanceDate, FilterOperator.Equals, today)
+            ];
+
+            if (statuses.Length > 0)
+            {
+                filters = [
+                    .. filters,
+                    new(a => a.Status, FilterOperator.In, statuses.Cast<object>())
+                ];
+            }
+
+            Expression<Func<SchoolManagement.Core.Features.Attendances.Models.Attendance, object?>>[] includes =
+            [
+                a => a.StudentClass,
+                a => a.StudentClass.Class,
+                a => a.StudentClass.Class.Generation,
+                a => a.StudentClass.Class.Generation.Department
+            ];
+
+            IEnumerable<SchoolManagement.Core.Features.Attendances.Models.Attendance> records =
+                await _repository.FindAsync(
+                    filters: filters,
+                    includes: includes);
+
+            int count = records.Where(TeacherPredicate().Compile()).Count();
+
+            return new()
+            {
+                Status = Status.Success,
+                Value = count
+            };
+        }
+
+        private Expression<Func<SchoolManagement.Core.Features.Attendances.Models.Attendance, bool>> TeacherPredicate()
         {
             User? user = _userSessionService.CurrentUser ?? 
                 throw new Exception("User session cannot be null!");
@@ -91,3 +93,7 @@ namespace SchoolManagement.Application.Services
         }
     }
 }
+
+
+
+

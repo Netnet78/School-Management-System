@@ -1,8 +1,11 @@
-﻿using System.ComponentModel;
+﻿using SchoolManagement.Core.Features.Employees.Models;
+using SchoolManagement.Core.Features.Generations.Models;
+using SchoolManagement.Core.Shared.Contracts;
+using System.ComponentModel;
 
-namespace SchoolManagement.Core.Models
+namespace SchoolManagement.Core.Features.Departments.Models
 {
-    public class Department
+    public class Department : IEntity
     {
         [Description("លេខសម្គាល់")]
         public int Id { get; set; }

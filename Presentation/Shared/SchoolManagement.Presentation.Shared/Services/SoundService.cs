@@ -1,6 +1,4 @@
-﻿using SchoolManagement.Core.Shared.Models;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
-using System.Media;
+﻿using System.Media;
 
 namespace SchoolManagement.Presentation.Shared.Services
 {

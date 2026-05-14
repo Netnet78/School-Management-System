@@ -1,19 +1,12 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LiveChartsCore.Measure;
 using LiveChartsCore.Painting;
 using LiveChartsCore.SkiaSharpView;
-using SchoolManagement.Core.Application.DTOs;
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
-using SchoolManagement.Core.Shared.Models;
-using SchoolManagement.Presentation.Shared.Observables;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 
-namespace SchoolManagement.Presentation.ViewModels
+namespace SchoolManagement.Presentation.Features.Dashboard.ViewModels
 {
     public partial class DashboardViewModel : ObservableObject, IAsyncLoadable, IViewModel
     {
@@ -99,9 +92,8 @@ namespace SchoolManagement.Presentation.ViewModels
         {
             ReturnResponse<int> studentCountResponse = await _studentService.GetStudentsCount(1, int.MaxValue, new()
             {
-                IsActive = true,
                 FromDate = new DateTime(FromYear, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                ToDate = new DateTime(ToYear + 1, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                ToDate = new DateTime(ToYear + 1, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             });
 
             if (!EnsureSuccess(studentCountResponse, "Failed to load total students"))
@@ -112,10 +104,14 @@ namespace SchoolManagement.Presentation.ViewModels
 
         private async Task LoadTotalClasses()
         {
-            DateTime now = DateTime.UtcNow;
-            ReturnResponse<int> classCountReponse = await _classService.GetAllCountAsync(
-                predicate: c => c.Generation.AcademicStartYear >= now.Year
-            );
+            FilterCondition<Class>[] filters = 
+                [
+                    new(c => c.TeacherId ?? 0, FilterOperator.Equals, _authorizationService.CurrentUser.EmployeeId),
+                    new(c => c.Generation.AcademicStartYear, FilterOperator.GreaterThanOrEqual, FromYear),
+                    new(c => c.Generation.AcademicEndYear, FilterOperator.LessThanOrEqual, ToYear)
+                ];
+
+            ReturnResponse<int> classCountReponse = await _classService.GetAllCountAsync(1, null, filters);
 
             if (!EnsureSuccess(classCountReponse, "Failed to load total classes"))
                 return;
@@ -125,8 +121,12 @@ namespace SchoolManagement.Presentation.ViewModels
 
         private async Task LoadTotalTeachers()
         {
-            ReturnResponse<int> returnResponse = await _employeeService.GetAllCountAsync(1, null, 
-                e => e.Position.ToLower() == "teacher" && e.IsActive);
+            FilterCondition<Employee>[] filters = 
+                [
+                    new(e => e.Position, FilterOperator.Contains, "teacher"),
+                    new(e => e.IsActive, FilterOperator.Equals, true)
+                ];
+            ReturnResponse<int> returnResponse = await _employeeService.GetAllCountAsync(1, null, filters);
 
             if (!EnsureSuccess(returnResponse, "Failed to load total teachers"))
                 return;
@@ -175,21 +175,21 @@ namespace SchoolManagement.Presentation.ViewModels
                     }
                 );
 
-                StudentsPerClassChart.XAxes = new[]
-                {
+                StudentsPerClassChart.XAxes =
+                [
                     new Axis
                     {
                         Labels = labels
                     }
-                };
+                ];
 
-                StudentsPerClassChart.YAxes = new[]
-                {
+                StudentsPerClassChart.YAxes =
+                [
                     new Axis
                     {
                         MinLimit = 0
                     }
-                };
+                ];
             });
         }
 
@@ -200,7 +200,7 @@ namespace SchoolManagement.Presentation.ViewModels
 
             if (authorizedResponse.Status != Status.Success)
             {
-                _messageService.Show("អ្នកមិនអាចអានទិន្នន័យវត្តមានសិស្សបានទេ", "មិនអនុញ្ញាតជាដាច់ខាត!", icon: MessageIcon.Hand);
+                _messageService.Show("??????????????????????????????????????", "????????????????????!", icon: MessageIcon.Hand);
                 return;
             }
 
@@ -218,7 +218,7 @@ namespace SchoolManagement.Presentation.ViewModels
 
                 AttendanceChart.Series.Add(new PieSeries<int>
                 {
-                    Values = new[] { lateCount.Value },
+                    Values = [lateCount.Value],
                     Name = "Late",
                     DataLabelsSize = 14,
                     DataLabelsPosition = PolarLabelsPosition.Middle,
@@ -227,7 +227,7 @@ namespace SchoolManagement.Presentation.ViewModels
 
                 AttendanceChart.Series.Add(new PieSeries<int>
                 {
-                    Values = new[] { absentCount.Value },
+                    Values = [absentCount.Value],
                     Name = "Absent",
                     DataLabelsSize = 14,
                     DataLabelsPosition = PolarLabelsPosition.Middle,
@@ -236,7 +236,7 @@ namespace SchoolManagement.Presentation.ViewModels
 
                 AttendanceChart.Series.Add(new PieSeries<int>
                 {
-                    Values = new[] { excusedCount.Value },
+                    Values = [excusedCount.Value],
                     Name = "Excused",
                     DataLabelsSize = 14,
                     DataLabelsPosition = PolarLabelsPosition.Middle,
@@ -245,7 +245,7 @@ namespace SchoolManagement.Presentation.ViewModels
 
                 AttendanceChart.Series.Add(new PieSeries<int>
                 {
-                    Values = new[] { presentCount.Value },
+                    Values = [presentCount.Value],
                     Name = "Present",
                     DataLabelsSize = 14,
                     DataLabelsPosition = PolarLabelsPosition.Middle,
@@ -263,10 +263,10 @@ namespace SchoolManagement.Presentation.ViewModels
                 double absentPercent = (double)absent / total * 100;
                 double latePercent = (double)late / total * 100;
 
-                ExcusedCount = $"មានច្បាប់ (Excused): {excused} នាក់ ({excusedPercent:F0}%)";
-                PresentCount = $"មានវត្តមាន (Present): {present} នាក់ ({presentPercent:F0}%)";
-                AbsentCount = $"អត់ច្បាប់ (Absent): {absent} នាក់ ({absentPercent:F0}%)";
-                LateCount = $"យឺត (Late): {late} នាក់ ({latePercent:F0}%)";
+                ExcusedCount = $"????????? (Excused): {excused} ???? ({excusedPercent:F0}%)";
+                PresentCount = $"?????????? (Present): {present} ???? ({presentPercent:F0}%)";
+                AbsentCount = $"????????? (Absent): {absent} ???? ({absentPercent:F0}%)";
+                LateCount = $"??? (Late): {late} ???? ({latePercent:F0}%)";
             });
         }
 
@@ -301,7 +301,7 @@ namespace SchoolManagement.Presentation.ViewModels
 
                 GenderChart.Series.Add(new PieSeries<int>
                 {
-                    Values = new[] { femaleCount.Value },
+                    Values = [femaleCount.Value],
                     Name = "Female",
                     DataLabelsSize = 14,
                     DataLabelsPosition = PolarLabelsPosition.Middle,
@@ -310,7 +310,7 @@ namespace SchoolManagement.Presentation.ViewModels
 
                 GenderChart.Series.Add(new PieSeries<int>
                 {
-                    Values = new[] { maleCount.Value },
+                    Values = [maleCount.Value],
                     Name = "Male",
                     DataLabelsSize = 14,
                     DataLabelsPosition = PolarLabelsPosition.Middle,
@@ -323,8 +323,8 @@ namespace SchoolManagement.Presentation.ViewModels
                 double malePercent = (double)totalMale / total * 100;
                 double femalePercent = (double)totalFemale / total * 100;
 
-                MaleCount = $"ភេទប្រុស (Male): {maleCount.Value} នាក់ ({malePercent:F0}%)";
-                FemaleCount = $"ភេទស្រី (Female): {femaleCount.Value} នាក់ ({femalePercent:F0}%)";
+                MaleCount = $"???????? (Male): {maleCount.Value} ???? ({malePercent:F0}%)";
+                FemaleCount = $"??????? (Female): {femaleCount.Value} ???? ({femalePercent:F0}%)";
             });
         }
 
@@ -393,3 +393,4 @@ namespace SchoolManagement.Presentation.ViewModels
         }
     }
 }
+

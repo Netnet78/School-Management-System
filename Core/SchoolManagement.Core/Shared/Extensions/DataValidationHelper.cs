@@ -1,7 +1,6 @@
 ﻿using SchoolManagement.Core.Shared.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using System.Text;
 
 namespace SchoolManagement.Core.Shared.Extensions
 {
@@ -49,23 +48,6 @@ namespace SchoolManagement.Core.Shared.Extensions
             })).ToArray();
 
             return new() { IsValid = isValid, MissingProperties = errors };
-        }
-
-        public static string RemoveHiddenSpaces(this string text)
-        {
-            char[] blockedCharacters = ['\u200b', '\u200c', '\u200d'];
-
-            StringBuilder sb = new(text.Length);
-
-            foreach (char c in text.Trim())
-            {
-                if (!blockedCharacters.Contains(c))
-                {
-                    sb.Append(c);
-                }
-            }
-
-            return sb.ToString();
         }
     }
 }

@@ -1,8 +1,6 @@
-﻿using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Models;
+using AttendanceModel = SchoolManagement.Core.Features.Attendances.Models.Attendance;
 
-namespace SchoolManagement.Application.Policies
+namespace SchoolManagement.Application.Features.Attendance.Authorization
 {
     public class AttendanceAuthorizationHandler : IAuthorizationHandler
     {
@@ -17,7 +15,7 @@ namespace SchoolManagement.Application.Policies
 
             if (!isNullable)
             {
-                if (resource is not Attendance attendance) return false;
+                if (resource is not AttendanceModel attendance) return false;
 
                 if (user.Employee?.DepartmentId != 
                     attendance.StudentClass.Class.Generation.DepartmentId)
@@ -30,3 +28,5 @@ namespace SchoolManagement.Application.Policies
         }
     }
 }
+
+

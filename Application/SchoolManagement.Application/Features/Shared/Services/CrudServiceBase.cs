@@ -1,11 +1,6 @@
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Shared.Models;
-using System.Linq;
 using System.Linq.Expressions;
 
-namespace SchoolManagement.Application.Services
+namespace SchoolManagement.Application.Features.Shared.Services
 {
     public abstract class CrudServiceBase<TEntity> : ICrudService<TEntity>
         where TEntity : class
@@ -20,7 +15,33 @@ namespace SchoolManagement.Application.Services
         public async Task<ReturnResponse<IEnumerable<TEntity>>> GetAllAsync(
             int page = 1,
             int? pageSize = null,
+            IEnumerable<FilterCondition<TEntity>>? filters = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+            params Expression<Func<TEntity, object?>>[]? includes)
+        {
+            try
+            {
+                IEnumerable<TEntity> entities = await _repository.FindAsync(filters, page, pageSize, orderBy, includes);
+                return new()
+                {
+                    Status = Status.Success,
+                    Value = entities,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new()
+                {
+                    Status = Status.Failed,
+                    Message = $"Could not retrieve {typeof(TEntity).Name} data.\n{ex.Message}",
+                };
+            }
+        }
+
+        public async Task<ReturnResponse<IEnumerable<TEntity>>> GetAllAsync(
             Expression<Func<TEntity, bool>>? predicate = null,
+            int page = 1,
+            int? pageSize = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             params Expression<Func<TEntity, object?>>[]? includes)
         {
@@ -46,11 +67,11 @@ namespace SchoolManagement.Application.Services
         public async Task<ReturnResponse<int>> GetAllCountAsync(
             int page = 1,
             int? pageSize = null,
-            Expression<Func<TEntity, bool>>? predicate = null)
+            IEnumerable<FilterCondition<TEntity>>? filters = null)
         {
             try
             {
-                int count = await _repository.CountAsync(predicate, page, pageSize);
+                int count = await _repository.CountAsync(filters, page, pageSize);
                 return new()
                 {
                     Status = Status.Success,
@@ -158,3 +179,4 @@ namespace SchoolManagement.Application.Services
         }
     }
 }
+

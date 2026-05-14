@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SchoolManagement.Core.Models;
+using SchoolManagement.Core.Features.Auth.Models;
 
 namespace SchoolManagement.Infrastructure.Data
 {

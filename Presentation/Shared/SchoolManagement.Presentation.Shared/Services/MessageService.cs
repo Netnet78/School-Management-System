@@ -1,6 +1,4 @@
-﻿using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
-using SchoolManagement.Presentation.Shared.Components;
+﻿using SchoolManagement.Presentation.Shared.Components;
 
 namespace SchoolManagement.Presentation.Shared.Services
 {

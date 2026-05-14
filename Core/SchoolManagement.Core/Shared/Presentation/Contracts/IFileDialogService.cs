@@ -1,4 +1,6 @@
-﻿using SchoolManagement.Core.Models;
+﻿
+
+using SchoolManagement.Core.Features.Files.Models;
 
 namespace SchoolManagement.Core.Shared.Presentation.Contracts
 {

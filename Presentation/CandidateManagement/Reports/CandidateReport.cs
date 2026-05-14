@@ -1,9 +1,6 @@
 ﻿using ClosedXML.Excel;
 using KhmerCalendar;
 using Microsoft.Win32;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Extensions;
 using System.Windows;
 
 namespace CandidateManagement.Reports

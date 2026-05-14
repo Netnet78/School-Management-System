@@ -1,6 +1,6 @@
-﻿using SchoolManagement.Core.Enums;
+﻿using SchoolManagement.Core.Shared.Enums;
 
-namespace SchoolManagement.Core.Application.DTOs
+namespace SchoolManagement.Core.Features.Students.DTOs
 {
     public class StudentGenderCountDto
     {

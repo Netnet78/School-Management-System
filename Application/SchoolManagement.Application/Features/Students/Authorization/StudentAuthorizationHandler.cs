@@ -1,8 +1,4 @@
-﻿using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Models;
-
-namespace SchoolManagement.Application.Policies
+namespace SchoolManagement.Application.Features.Students.Authorization
 {
     public class StudentAuthorizationHandler : IAuthorizationHandler
     {
@@ -42,3 +38,5 @@ namespace SchoolManagement.Application.Policies
         }
     }
 }
+
+

@@ -1,8 +1,10 @@
-using SchoolManagement.Core.Models;
+using SchoolManagement.Core.Features.Skills.Models;
+using SchoolManagement.Core.Shared.Contracts;
 
-namespace SchoolManagement.Core.Application.Interfaces
+namespace SchoolManagement.Core.Features.Skills.Contracts
 {
     public interface ISkillService : ICrudService<Skill>
     {
     }
 }
+

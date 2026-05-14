@@ -1,6 +1,6 @@
-﻿using SchoolManagement.Core.Shared.Models;
+using SchoolManagement.Core.Shared.Models;
 
-namespace SchoolManagement.Core.Infrastructure.Interfaces
+namespace SchoolManagement.Core.Features.Files.Contracts
 {
     public interface IS3Service
     {
@@ -9,3 +9,4 @@ namespace SchoolManagement.Core.Infrastructure.Interfaces
         Task<ReturnResponse> DownloadFile(string key, string savePath, string? folder = null, CancellationToken cancellationToken = default);
     }
 }
+

@@ -1,9 +1,15 @@
-﻿using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Infrastructure.Interfaces;
+﻿
+using SchoolManagement.Core.Features.Candidates.Models;
+using SchoolManagement.Core.Features.Departments.Models;
+using SchoolManagement.Core.Features.Notifications.Models;
+using SchoolManagement.Core.Features.Skills.Models;
+using SchoolManagement.Core.Features.Students.Enums;
+using SchoolManagement.Core.Shared.Contracts;
+using SchoolManagement.Core.Shared.Enums;
 
-namespace SchoolManagement.Core.Models
+namespace SchoolManagement.Core.Features.Students.Models
 {
-    public class Student : IAuditableEntity
+    public class Student : IAuditableEntity, IEntity
     {
         public int Id { get; set; }
         public DateOnly? EnrollDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);

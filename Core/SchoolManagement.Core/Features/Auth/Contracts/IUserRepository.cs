@@ -1,6 +1,7 @@
-﻿using SchoolManagement.Core.Models;
+﻿using SchoolManagement.Core.Features.Auth.Models;
+using SchoolManagement.Core.Shared.Contracts;
 
-namespace SchoolManagement.Core.Infrastructure.Interfaces
+namespace SchoolManagement.Core.Features.Auth.Contracts
 {
     public interface IUserRepository : IBaseRepository<User>
     {

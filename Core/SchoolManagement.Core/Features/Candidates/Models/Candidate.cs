@@ -1,10 +1,15 @@
-﻿using SchoolManagement.Core.Enums;
+﻿
+using SchoolManagement.Core.Features.Skills.Models;
+using SchoolManagement.Core.Features.Students.Enums;
+using SchoolManagement.Core.Features.Students.Models;
+using SchoolManagement.Core.Shared.Contracts;
+using SchoolManagement.Core.Shared.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace SchoolManagement.Core.Models
+namespace SchoolManagement.Core.Features.Candidates.Models
 {
-    public class Candidate
+    public class Candidate : IEntity
     {
         [Description("លេខសម្គាល់")]
         public int Id { get; set; }

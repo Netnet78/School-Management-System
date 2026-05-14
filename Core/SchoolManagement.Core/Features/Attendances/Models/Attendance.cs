@@ -1,10 +1,14 @@
 using SchoolManagement.Core.Shared.Attributes;
-using SchoolManagement.Core.Enums;
+using SchoolManagement.Core.Shared.Contracts;
+using SchoolManagement.Core.Features.AuditLogs.Enums;
+using SchoolManagement.Core.Features.Students.Models;
+using SchoolManagement.Core.Features.Employees.Models;
+using SchoolManagement.Core.Features.Attendances.Enums;
 
-namespace SchoolManagement.Core.Models
+namespace SchoolManagement.Core.Features.Attendances.Models
 {
     [AuditIgnoreType(AuditOperation.Insert | AuditOperation.Update)]
-    public class Attendance
+    public class Attendance : IEntity
     {
         public int Id { get; set; }
         public TimeOnly ScanTime { get; set; }

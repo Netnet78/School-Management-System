@@ -1,8 +1,6 @@
-﻿using SchoolManagement.Core.Shared.Models;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using ZXing;
 using ZXing.Windows.Compatibility;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
 
 namespace SchoolManagement.Presentation.Shared.Services
 {

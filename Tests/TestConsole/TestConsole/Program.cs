@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SchoolManagement.Core.Models;
+using SchoolManagement.Core.Features.Candidates.Models;
+using SchoolManagement.Core.Features.Classes.Models;
+using SchoolManagement.Core.Shared.Extensions;
 using SchoolManagement.Infrastructure.Data;
 
 internal class Program
@@ -19,6 +21,18 @@ internal class Program
 
         //headTeacher.Permissions = permissions;
         //context.Update(headTeacher);
+
+        Candidate[] candidates = await context.Candidates.ToArrayAsync();
+
+        foreach (Candidate candidate in candidates)
+        {
+            candidate.FirstName = StringExtensions.RemoveHiddenSpaces(candidate.FirstName, true);
+            candidate.LastName = StringExtensions.RemoveHiddenSpaces(candidate.LastName, true);
+            candidate.LatinLastName = StringExtensions.RemoveHiddenSpaces(candidate.LatinLastName, true);
+            candidate.LatinFirstName = StringExtensions.RemoveHiddenSpaces(candidate.LatinFirstName, true);
+
+            Console.WriteLine($"{candidate.Id}. Updated {candidate.LastName} {candidate.FirstName}");
+        }
 
         await context.SaveChangesAsync();
         Console.WriteLine("Operation is successful");

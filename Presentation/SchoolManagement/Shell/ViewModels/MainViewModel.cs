@@ -1,13 +1,13 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SchoolManagement.Application.Services;
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
-using SchoolManagement.Core.Shared.Models;
+using SchoolManagement.Presentation.Features.Attendance.ViewModels;
+using SchoolManagement.Presentation.Features.Classes.ViewModels;
+using SchoolManagement.Presentation.Features.Dashboard.ViewModels;
+using SchoolManagement.Presentation.Features.Employees.ViewModels;
+using SchoolManagement.Presentation.Features.Reports.ViewModels;
+using SchoolManagement.Presentation.Features.Students.ViewModels;
 
-namespace SchoolManagement.Presentation.ViewModels
+namespace SchoolManagement.Presentation.Shell.ViewModels
 {
     public partial class MainViewModel : ObservableObject, IViewModel
     {
@@ -125,15 +125,15 @@ namespace SchoolManagement.Presentation.ViewModels
             string message;
             if (now < noon)
             {
-                message = "អរុណសួស្ដី";
+                message = $"Good morning";
             }
             else if (now > noon && now < evening)
             {
-                message = "សួស្ដី";
+                message = $"Good afternoon";
             }
             else
             {
-                message = "សាយ័ន្តសួស្ដី";
+                message = $"Good evening";
             }
 
             if (obj != null)
@@ -160,7 +160,7 @@ namespace SchoolManagement.Presentation.ViewModels
         [RelayCommand]
         private async Task ExitApplicationAsync()
         {
-            MessageResult result = _messageService.Show("តើអ្នកប្រាកដទេថានឹងចាកចេញពីកម្មវិធីនេះ?", "ជម្រាបលា?", MessageButton.YesNo, MessageIcon.Question);
+            MessageResult result = _messageService.Show("តើអ្នកចង់បន្តធ្វើការចាកចេញពីកម្មវិធីដែរឬទេ?", "ឈប់សិន!", MessageButton.YesNo, MessageIcon.Question);
 
             if (result == MessageResult.Yes)
             {
@@ -175,3 +175,4 @@ namespace SchoolManagement.Presentation.ViewModels
         }
     }
 }
+

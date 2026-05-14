@@ -1,6 +1,7 @@
-using SchoolManagement.Core.Models;
+using SchoolManagement.Core.Features.Attendances.Models;
+using SchoolManagement.Core.Shared.Contracts;
 
-namespace SchoolManagement.Core.Infrastructure.Interfaces
+namespace SchoolManagement.Core.Features.Attendances.Contracts
 {
     public interface IAttendanceRepository : IBaseRepository<Attendance>
     {

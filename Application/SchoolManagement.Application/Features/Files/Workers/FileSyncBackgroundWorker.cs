@@ -1,8 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using SchoolManagement.Core.Infrastructure.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 
-namespace SchoolManagement.Application.Workers
+namespace SchoolManagement.Application.Features.Files.Workers
 {
     public class FileSyncBackgroundWorker
     {
@@ -69,3 +68,4 @@ namespace SchoolManagement.Application.Workers
         
     }
 }
+

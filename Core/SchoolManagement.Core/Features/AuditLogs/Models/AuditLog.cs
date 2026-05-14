@@ -1,11 +1,13 @@
 
 using SchoolManagement.Core.Shared.Attributes;
-using SchoolManagement.Core.Enums;
+using SchoolManagement.Core.Shared.Contracts;
+using SchoolManagement.Core.Features.AuditLogs.Enums;
+using SchoolManagement.Core.Features.Auth.Models;
 
-namespace SchoolManagement.Core.Models
+namespace SchoolManagement.Core.Features.AuditLogs.Models
 {
     [AuditIgnoreType(AuditOperation.All)]
-    public class AuditLog
+    public class AuditLog : IEntity
     {
         public int Id { get; set; }
         public string Action { get; set; } = string.Empty;

@@ -1,7 +1,4 @@
-﻿using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Models;
-
-namespace SchoolManagement.Application.Policies
+namespace SchoolManagement.Application.Features.Classes.Authorization
 {
     public static class AuthorizationClassHelper
     {
@@ -54,3 +51,4 @@ namespace SchoolManagement.Application.Policies
         }
     }
 }
+

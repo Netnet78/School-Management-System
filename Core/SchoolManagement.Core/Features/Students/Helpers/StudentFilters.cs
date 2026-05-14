@@ -1,8 +1,9 @@
-﻿using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Models;
+using SchoolManagement.Core.Features.Candidates.Models;
+using SchoolManagement.Core.Features.Students.Enums;
+using SchoolManagement.Core.Shared.Enums;
 using SchoolManagement.Core.Shared.Extensions;
 
-namespace SchoolManagement.Core.Helpers
+namespace SchoolManagement.Core.Features.Students.Helpers
 {
     public static class StudentFilters
     {
@@ -141,3 +142,4 @@ namespace SchoolManagement.Core.Helpers
         }
     }
 }
+

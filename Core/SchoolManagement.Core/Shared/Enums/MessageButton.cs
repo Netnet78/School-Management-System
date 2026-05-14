@@ -1,4 +1,4 @@
-﻿namespace SchoolManagement.Core.Enums
+﻿namespace SchoolManagement.Core.Shared.Enums
 {
     public enum MessageButton
     {

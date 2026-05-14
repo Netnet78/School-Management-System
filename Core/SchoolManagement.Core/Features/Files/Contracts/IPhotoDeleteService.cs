@@ -1,7 +1,7 @@
-﻿using SchoolManagement.Core.Models;
+﻿using SchoolManagement.Core.Features.Candidates.Models;
 using SchoolManagement.Core.Shared.Models;
 
-namespace SchoolManagement.Core.Application.Interfaces
+namespace SchoolManagement.Core.Features.Files.Contracts
 {
     public interface IPhotoDeleteService
     {

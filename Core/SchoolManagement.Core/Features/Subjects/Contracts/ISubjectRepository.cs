@@ -1,8 +1,11 @@
-using SchoolManagement.Core.Models;
 
-namespace SchoolManagement.Core.Infrastructure.Interfaces
+using SchoolManagement.Core.Features.Subjects.Models;
+using SchoolManagement.Core.Shared.Contracts;
+
+namespace SchoolManagement.Core.Features.Subjects.Contracts
 {
     public interface ISubjectRepository : IBaseRepository<Subject>
     {
     }
 }
+

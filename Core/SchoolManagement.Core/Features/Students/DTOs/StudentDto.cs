@@ -1,4 +1,4 @@
-﻿namespace SchoolManagement.Core.Application.DTOs
+﻿namespace SchoolManagement.Core.Features.Students.DTOs
 {
     public class StudentDto
     {

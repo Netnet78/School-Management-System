@@ -1,6 +1,11 @@
-﻿namespace SchoolManagement.Core.Models
+﻿using SchoolManagement.Core.Features.Classes.Models;
+using SchoolManagement.Core.Features.Exams.Models;
+using SchoolManagement.Core.Features.Students.Models;
+using SchoolManagement.Core.Shared.Contracts;
+
+namespace SchoolManagement.Core.Features.Grades.Models
 {
-    public class Score
+    public class Score : IEntity
     {
         public int Id { get; set; }
         public decimal Amount { get; set; }

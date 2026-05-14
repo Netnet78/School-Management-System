@@ -1,4 +1,4 @@
-﻿namespace SchoolManagement.Core.Enums
+﻿namespace SchoolManagement.Core.Features.Files.Enums
 {
     public enum FileLocationOptions
     {

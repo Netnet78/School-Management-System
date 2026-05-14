@@ -1,6 +1,9 @@
-using SchoolManagement.Core.Models;
 
-namespace SchoolManagement.Core.Infrastructure.Interfaces
+using SchoolManagement.Core.Features.Candidates.Models;
+using SchoolManagement.Core.Features.Students.Models;
+using SchoolManagement.Core.Shared.Contracts;
+
+namespace SchoolManagement.Core.Features.Candidates.Contracts
 {
     public interface ICandidateRepository : IBaseRepository<Candidate>
     {
@@ -16,3 +19,4 @@ namespace SchoolManagement.Core.Infrastructure.Interfaces
         Task<int> GetAllCountAsync(StudentFilterOptions options);
     }
 }
+

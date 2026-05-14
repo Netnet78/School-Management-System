@@ -1,8 +1,11 @@
-using SchoolManagement.Core.Models;
 
-namespace SchoolManagement.Core.Application.Interfaces
+using SchoolManagement.Core.Features.Generations.Models;
+using SchoolManagement.Core.Shared.Contracts;
+
+namespace SchoolManagement.Core.Features.Generations.Contracts
 {
     public interface IGenerationService : ICrudService<Generation>
     {
     }
 }
+

@@ -1,6 +1,4 @@
 ﻿using AttendanceScanner.ViewModels;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Shared.Models;
 using SchoolManagement.Presentation.Shared.Animations;
 using System.Windows;
 using System.Windows.Controls;

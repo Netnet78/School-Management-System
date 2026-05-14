@@ -1,9 +1,4 @@
-﻿using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Models;
-
-namespace SchoolManagement.Infrastructure.Repositories
+﻿namespace SchoolManagement.Infrastructure.Repositories
 {
     public class PhotoSyncService : IPhotoSyncService
     {

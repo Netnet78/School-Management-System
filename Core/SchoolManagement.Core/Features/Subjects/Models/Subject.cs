@@ -1,6 +1,9 @@
-﻿namespace SchoolManagement.Core.Models
+﻿using SchoolManagement.Core.Features.Classes.Models;
+using SchoolManagement.Core.Shared.Contracts;
+
+namespace SchoolManagement.Core.Features.Subjects.Models
 {
-    public class Subject
+    public class Subject : IEntity
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;

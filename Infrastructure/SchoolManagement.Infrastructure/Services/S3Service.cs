@@ -1,9 +1,6 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Infrastructure.Interfaces;
 using SchoolManagement.Core.Shared.Configurations;
-using SchoolManagement.Core.Shared.Models;
 
 namespace SchoolManagement.Infrastructure.Services
 {

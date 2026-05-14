@@ -1,8 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using SchoolManagement.Application.Policies;
-using SchoolManagement.Application.Services;
-using SchoolManagement.Application.Workers;
-using SchoolManagement.Core.Application.Interfaces;
 
 namespace SchoolManagement.Application
 {

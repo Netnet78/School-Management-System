@@ -2,14 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using KhmerCalendar;
 using CandidateManagement.Reports;
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
-using SchoolManagement.Core.Shared.Extensions;
-using SchoolManagement.Core.Shared.Models;
-using SchoolManagement.Presentation.Shared.Helpers;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;

@@ -1,8 +1,8 @@
-﻿using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Enums;
+﻿using SchoolManagement.Core.Features.Files.Models;
+using SchoolManagement.Core.Features.Files.Enums;
 using SchoolManagement.Core.Shared.Models;
 
-namespace SchoolManagement.Core.Application.Interfaces
+namespace SchoolManagement.Core.Features.Files.Contracts
 {
     public interface IPhotoFetchService
     {

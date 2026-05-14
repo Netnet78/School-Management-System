@@ -1,9 +1,12 @@
+using SchoolManagement.Core.Features.AuditLogs.Models;
+using SchoolManagement.Core.Features.Employees.Models;
 using SchoolManagement.Core.Shared.Attributes;
+using SchoolManagement.Core.Shared.Contracts;
 using System.ComponentModel.DataAnnotations;
 
-namespace SchoolManagement.Core.Models
+namespace SchoolManagement.Core.Features.Auth.Models
 {
-    public class User
+    public class User : IEntity
     {
         public int Id { get; set; }
         [Required]

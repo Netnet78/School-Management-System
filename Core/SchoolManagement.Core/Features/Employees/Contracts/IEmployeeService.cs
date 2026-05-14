@@ -1,6 +1,7 @@
-using SchoolManagement.Core.Models;
+using SchoolManagement.Core.Features.Employees.Models;
+using SchoolManagement.Core.Shared.Contracts;
 
-namespace SchoolManagement.Core.Application.Interfaces
+namespace SchoolManagement.Core.Features.Employees.Contracts
 {
     public interface IEmployeeService : ICrudService<Employee>
     {

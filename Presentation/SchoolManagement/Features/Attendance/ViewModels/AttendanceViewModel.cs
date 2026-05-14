@@ -1,7 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
+using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace SchoolManagement.Presentation.ViewModels
+namespace SchoolManagement.Presentation.Features.Attendance.ViewModels
 {
     public partial class AttendanceViewModel : ObservableObject, IViewModel
     {

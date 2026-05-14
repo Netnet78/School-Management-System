@@ -1,8 +1,4 @@
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Models;
-
-namespace SchoolManagement.Application.Policies
+namespace SchoolManagement.Application.Features.Classes.Authorization
 {
     /// <summary>
     /// Handles authorization for Class-related operations.
@@ -41,3 +37,5 @@ namespace SchoolManagement.Application.Policies
         }
     }
 }
+
+

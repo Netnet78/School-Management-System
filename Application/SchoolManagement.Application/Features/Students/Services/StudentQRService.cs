@@ -1,8 +1,4 @@
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Models;
-
-namespace SchoolManagement.Application.Services
+namespace SchoolManagement.Application.Features.Students.Services
 {
     public class StudentQRService : CrudServiceBase<StudentQR>, IStudentQRService
     {
@@ -11,3 +7,5 @@ namespace SchoolManagement.Application.Services
         }
     }
 }
+
+

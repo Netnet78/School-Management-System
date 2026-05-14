@@ -1,7 +1,8 @@
-using SchoolManagement.Core.Models;
+using SchoolManagement.Core.Features.Attendances.Models;
+using SchoolManagement.Core.Shared.Contracts;
 using SchoolManagement.Core.Shared.Models;
 
-namespace SchoolManagement.Core.Application.Interfaces
+namespace SchoolManagement.Core.Features.Attendances.Contracts
 {
     public interface IAttendanceService : ICrudService<Attendance>
     {

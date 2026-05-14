@@ -1,7 +1,6 @@
-﻿using SchoolManagement.Presentation.ViewModels;
 using System.Windows.Controls;
 
-namespace SchoolManagement.Presentation.Views
+namespace SchoolManagement.Presentation.Features.Students.Views
 {
     /// <summary>
     /// Interaction logic for StudentListView.xaml
@@ -14,3 +13,4 @@ namespace SchoolManagement.Presentation.Views
         }
     }
 }
+

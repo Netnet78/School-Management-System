@@ -1,7 +1,9 @@
-﻿using SchoolManagement.Core.Models;
+
+using SchoolManagement.Core.Features.Students.Models;
+using SchoolManagement.Core.Shared.Contracts;
 using SchoolManagement.Core.Shared.Models;
 
-namespace SchoolManagement.Core.Application.Interfaces
+namespace SchoolManagement.Core.Features.Students.Contracts
 {
     public interface IStudentService : ICrudService<Student>
     {
@@ -12,3 +14,4 @@ namespace SchoolManagement.Core.Application.Interfaces
         public Task<ReturnResponse> DeleteStudentAsync(Student student);
     }
 }
+

@@ -1,8 +1,4 @@
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Models;
-
-namespace SchoolManagement.Application.Services
+namespace SchoolManagement.Application.Features.Exams.Services
 {
     public class ExamService : CrudServiceBase<Exam>, IExamService
     {
@@ -11,3 +7,5 @@ namespace SchoolManagement.Application.Services
         }
     }
 }
+
+

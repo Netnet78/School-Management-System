@@ -1,6 +1,10 @@
-﻿using SchoolManagement.Core.Models;
 
-namespace SchoolManagement.Core.Application.Interfaces
+
+using SchoolManagement.Core.Features.Candidates.Models;
+using SchoolManagement.Core.Features.Files.Models;
+using SchoolManagement.Core.Features.Students.Models;
+
+namespace SchoolManagement.Core.Features.Files.Contracts
 {
     public interface IPhotoUploadService
     {
@@ -12,3 +16,4 @@ namespace SchoolManagement.Core.Application.Interfaces
         Task<FileObject> UploadEmployeePhoto(string path);
     }
 }
+

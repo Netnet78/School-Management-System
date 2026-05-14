@@ -1,7 +1,9 @@
-﻿using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Models;
 
-namespace SchoolManagement.Core.Application.Interfaces
+using SchoolManagement.Core.Features.Auth.Enums;
+using SchoolManagement.Core.Features.Auth.Models;
+using SchoolManagement.Core.Shared.Enums;
+
+namespace SchoolManagement.Core.Features.Auth.Contracts
 {
     /// <summary>
     /// Defines a contract for evaluating whether a user is authorized to perform actions on a specified resource based
@@ -36,3 +38,4 @@ namespace SchoolManagement.Core.Application.Interfaces
 
     }
 }
+

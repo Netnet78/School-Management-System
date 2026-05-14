@@ -1,4 +1,4 @@
-﻿namespace SchoolManagement.Core.Models;
+﻿namespace SchoolManagement.Core.Features.Files.Models;
 
 /// <summary>
 /// A class that contains information about the file and is initialized by a path

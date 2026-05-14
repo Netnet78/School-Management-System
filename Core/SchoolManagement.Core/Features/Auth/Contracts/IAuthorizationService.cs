@@ -1,7 +1,9 @@
-﻿using SchoolManagement.Core.Enums;
+using SchoolManagement.Core.Features.Auth.Enums;
+using SchoolManagement.Core.Features.Auth.Models;
+using SchoolManagement.Core.Shared.Enums;
 using SchoolManagement.Core.Shared.Models;
 
-namespace SchoolManagement.Core.Application.Interfaces
+namespace SchoolManagement.Core.Features.Auth.Contracts
 {
     /// <summary>
     /// Defines a service for authorizing access to resources based on specified permissions and operator modes.
@@ -12,6 +14,7 @@ namespace SchoolManagement.Core.Application.Interfaces
     /// resource access must be controlled.</remarks>
     public interface IAuthorizationService
     {
+        User CurrentUser { get; set; }
         /// <summary>
         /// Asynchronously determines whether the specified permissions are granted for the given resource and operator
         /// mode.
@@ -32,3 +35,4 @@ namespace SchoolManagement.Core.Application.Interfaces
         Task<ReturnResponse> AuthorizeAsync(object? resource, PermissionType permission);
     }
 }
+

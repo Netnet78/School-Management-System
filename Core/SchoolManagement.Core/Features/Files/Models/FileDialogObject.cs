@@ -1,4 +1,4 @@
-﻿namespace SchoolManagement.Core.Models
+﻿namespace SchoolManagement.Core.Features.Files.Models
 {
     public class FileDialogObject
     {

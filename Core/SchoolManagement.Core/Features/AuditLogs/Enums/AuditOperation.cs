@@ -1,4 +1,4 @@
-﻿namespace SchoolManagement.Core.Enums
+﻿namespace SchoolManagement.Core.Features.AuditLogs.Enums
 {
     [Flags]
     public enum AuditOperation

@@ -1,11 +1,6 @@
-﻿using ClosedXML.Excel;
+using ClosedXML.Excel;
 using ClosedXML.Excel.Drawings;
 using Microsoft.Win32;
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Extensions;
-using SchoolManagement.Core.Shared.Models;
 using System.Windows;
 
 namespace CandidateManagement.Reports
@@ -151,7 +146,7 @@ namespace CandidateManagement.Reports
             ws.Cell(newStartRow + 1, 5).SetValue(student.DateOfBirth?.Month);
             ws.Cell(newStartRow, 5).SetValue(student.DateOfBirth?.Year);
             // Exam Degree
-            ws.Cell(newStartRow, 6).SetValue("ឌីប្លូម (ថ្នាក់ទី៩)");
+            ws.Cell(newStartRow, 6).SetValue("??????? (?????????)");
             // Place of Birth
             ws.Cell(newStartRow, 7).SetValue(student.BirthVillage);
             ws.Cell(newStartRow, 8).SetValue(student.BirthCommune);
@@ -169,7 +164,7 @@ namespace CandidateManagement.Reports
             }
             else
             {
-                ws.Cell(newStartRow, 15).SetValue("កូនទោល");
+                ws.Cell(newStartRow, 15).SetValue("??????");
             }
             // Religion
             ws.Cell(newStartRow, 16).SetValue(student.Religion);
@@ -205,3 +200,4 @@ namespace CandidateManagement.Reports
     }
 
 }
+

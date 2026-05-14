@@ -1,7 +1,5 @@
 ﻿using AForge.Video;
 using AForge.Video.DirectShow;
-using SchoolManagement.Core.Shared.Models;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
 using SchoolManagement.Presentation.Shared.Converters;
 using System.Drawing;
 

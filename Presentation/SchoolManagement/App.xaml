@@ -1,36 +1,45 @@
-﻿<Application x:Class="SchoolManagement.Presentation.App"
+<Application x:Class="SchoolManagement.Presentation.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:SchoolManagement.Presentation"
              xmlns:components="clr-namespace:SchoolManagement.Presentation.Shared.Components;assembly=SchoolManagement.Presentation.Shared"
-             xmlns:vm="clr-namespace:SchoolManagement.Presentation.ViewModels"
-             xmlns:views="clr-namespace:SchoolManagement.Presentation.Views">
+             xmlns:dashboardVm="clr-namespace:SchoolManagement.Presentation.Features.Dashboard.ViewModels"
+             xmlns:studentVm="clr-namespace:SchoolManagement.Presentation.Features.Students.ViewModels"
+             xmlns:classVm="clr-namespace:SchoolManagement.Presentation.Features.Classes.ViewModels"
+             xmlns:attendanceVm="clr-namespace:SchoolManagement.Presentation.Features.Attendance.ViewModels"
+             xmlns:reportVm="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewModels"
+             xmlns:employeeVm="clr-namespace:SchoolManagement.Presentation.Features.Employees.ViewModels"
+             xmlns:dashboardViews="clr-namespace:SchoolManagement.Presentation.Features.Dashboard.Views"
+             xmlns:studentViews="clr-namespace:SchoolManagement.Presentation.Features.Students.Views"
+             xmlns:classViews="clr-namespace:SchoolManagement.Presentation.Features.Classes.Views"
+             xmlns:attendanceViews="clr-namespace:SchoolManagement.Presentation.Features.Attendance.Views"
+             xmlns:reportViews="clr-namespace:SchoolManagement.Presentation.Features.Reports.Views"
+             xmlns:employeeViews="clr-namespace:SchoolManagement.Presentation.Features.Employees.Views">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
 
-                <ResourceDictionary 
-                Source="/SchoolManagement.Presentation.Shared;component/Themes.xaml" />
+                <ResourceDictionary Source="/SchoolManagement.Presentation.Shared;component/Themes.xaml" />
 
             </ResourceDictionary.MergedDictionaries>
 
-            <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
-                <views:DashboardView />
+            <DataTemplate DataType="{x:Type dashboardVm:DashboardViewModel}">
+                <dashboardViews:DashboardView />
             </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:StudentListViewModel}">
-                <views:StudentListView />
+            <DataTemplate DataType="{x:Type studentVm:StudentListViewModel}">
+                <studentViews:StudentListView />
             </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:ClassViewModel}">
-                <views:ClassView />
+            <DataTemplate DataType="{x:Type classVm:ClassViewModel}">
+                <classViews:ClassView />
             </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:AttendanceViewModel}">
-                <views:AttendanceView />
+            <DataTemplate DataType="{x:Type attendanceVm:AttendanceViewModel}">
+                <attendanceViews:AttendanceView />
             </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:ReportViewModel}">
-                <views:ReportView />
+            <DataTemplate DataType="{x:Type reportVm:ReportViewModel}">
+                <reportViews:ReportView />
             </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:EmployeeViewModel}">
-                <views:EmployeeView />
+            <DataTemplate DataType="{x:Type employeeVm:EmployeeViewModel}">
+                <employeeViews:EmployeeView />
             </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>

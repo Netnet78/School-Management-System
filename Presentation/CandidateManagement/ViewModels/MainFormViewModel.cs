@@ -1,7 +1,4 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
 
 namespace CandidateManagement.ViewModels
 {
@@ -33,3 +30,4 @@ namespace CandidateManagement.ViewModels
         }
     }
 }
+

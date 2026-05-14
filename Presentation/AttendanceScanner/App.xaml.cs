@@ -4,14 +4,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SchoolManagement.Application;
-using SchoolManagement.Application.Workers;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
+using SchoolManagement.Application.Features.Files.Workers;
 using SchoolManagement.Core.Shared.Configurations;
 using SchoolManagement.Infrastructure;
 using SchoolManagement.Infrastructure.Data;
 using SchoolManagement.Presentation.Shared.Services;
-using SchoolManagement.Presentation.Shared.ViewModels;
-using SchoolManagement.Presentation.Shared.Views;
+using SchoolManagement.Presentation.Shared.Features.Authentication.ViewModels;
+using SchoolManagement.Presentation.Shared.Features.Authentication.Views;
 using System.IO;
 using System.Windows;
 

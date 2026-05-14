@@ -1,10 +1,4 @@
-﻿using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Models;
-
-namespace SchoolManagement.Application.Services
+namespace SchoolManagement.Application.Features.Files.Services
 {
     public class PhotoUploadService : IPhotoUploadService
     {
@@ -99,3 +93,4 @@ namespace SchoolManagement.Application.Services
         }
     }
 }
+

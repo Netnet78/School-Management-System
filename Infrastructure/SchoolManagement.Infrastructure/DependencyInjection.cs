@@ -1,7 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using SchoolManagement.Core.Infrastructure.Interfaces;
 using SchoolManagement.Core.Shared.Configurations;
 using SchoolManagement.Infrastructure.Data;
 using SchoolManagement.Infrastructure.Interceptors;
@@ -62,3 +60,4 @@ namespace SchoolManagement.Infrastructure
         }
     }
 }
+

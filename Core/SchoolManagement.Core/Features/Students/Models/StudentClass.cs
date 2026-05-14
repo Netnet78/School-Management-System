@@ -1,6 +1,11 @@
-﻿namespace SchoolManagement.Core.Models
+﻿using SchoolManagement.Core.Features.Classes.Models;
+using SchoolManagement.Core.Features.Grades.Models;
+using SchoolManagement.Core.Features.Attendances.Models;
+using SchoolManagement.Core.Shared.Contracts;
+
+namespace SchoolManagement.Core.Features.Students.Models
 {
-    public class StudentClass
+    public class StudentClass : IEntity
     {
         public int Id { get; set; }
         public DateOnly StartDate { get; set; }

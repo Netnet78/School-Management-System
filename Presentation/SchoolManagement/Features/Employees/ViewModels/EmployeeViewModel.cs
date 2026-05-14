@@ -1,7 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
+using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace SchoolManagement.Presentation.ViewModels
+namespace SchoolManagement.Presentation.Features.Employees.ViewModels
 {
     public partial class EmployeeViewModel : ObservableObject, IViewModel, IAsyncLoadable
     {
@@ -13,3 +12,4 @@ namespace SchoolManagement.Presentation.ViewModels
         }
     }
 }
+

@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace SchoolManagement.Core.Shared.Extensions
+namespace SchoolManagement.Infrastructure.Querying
 {
     public static class QueryExtension
     {

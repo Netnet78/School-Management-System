@@ -1,11 +1,4 @@
-using SchoolManagement.Core.Application.DTOs;
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Models;
-
-namespace SchoolManagement.Application.Services
+namespace SchoolManagement.Application.Features.Classes.Services
 {
     public class ClassService : CrudServiceBase<Class>, IClassService
     {
@@ -45,3 +38,5 @@ namespace SchoolManagement.Application.Services
 
     }
 }
+
+

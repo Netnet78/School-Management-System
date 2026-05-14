@@ -1,7 +1,4 @@
-﻿using SchoolManagement.Core.Shared.Presentation.Contracts;
-
-
-namespace SchoolManagement.Presentation.Shared.Services
+﻿namespace SchoolManagement.Presentation.Shared.Services
 {
     public class DispatcherService : IDispatcherService
     {

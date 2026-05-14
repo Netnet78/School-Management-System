@@ -1,8 +1,9 @@
-﻿using SchoolManagement.Core.Models;
+
+using SchoolManagement.Core.Features.Auth.Models;
 using SchoolManagement.Core.Shared.Models;
 using System.Security;
 
-namespace SchoolManagement.Core.Application.Interfaces
+namespace SchoolManagement.Core.Features.Auth.Contracts
 {
     public interface IUserValidationService
     {
@@ -10,3 +11,4 @@ namespace SchoolManagement.Core.Application.Interfaces
         public Task<ReturnResponse<User>> ValidateUserAsync(string username, SecureString password);
     }
 }
+

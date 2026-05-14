@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SchoolManagement.Core.Infrastructure.Interfaces
+namespace SchoolManagement.Core.Features.Files.Contracts
 {
     public interface IPhotoSyncService
     {
@@ -10,3 +6,4 @@ namespace SchoolManagement.Core.Infrastructure.Interfaces
         Task ProcessPendingDeletes(CancellationToken token);
     }
 }
+

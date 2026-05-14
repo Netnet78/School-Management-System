@@ -1,14 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
-using SchoolManagement.Core.Shared.Models;
-using SchoolManagement.Presentation.Shared.Observables;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
 
-namespace SchoolManagement.Presentation.ViewModels
+namespace SchoolManagement.Presentation.Features.AuditLogs.ViewModels
 {
     public partial class AuditLogViewModel : ObservableObject, IViewModel, IAsyncLoadable
     {
@@ -43,8 +36,8 @@ namespace SchoolManagement.Presentation.ViewModels
 
             if (!canProceed)
             {
-                _messageService.Show("អ្នកមិនអាចចូលមើល history នៃសកម្មភាពគ្រប់គ្រងទិន្នន័យទេ!",
-                    "អ្នកគ្មានសិទ្ធិចូលប្រើប្រាស់ទេ!",
+                _messageService.Show("???????????????? history ?????????????????????????????!",
+                    "??????????????????????????????!",
                     MessageButton.OK,
                     MessageIcon.Information);
                 return;
@@ -81,3 +74,4 @@ namespace SchoolManagement.Presentation.ViewModels
         }
     }
 }
+

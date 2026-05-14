@@ -1,10 +1,11 @@
 using SchoolManagement.Core.Shared.Attributes;
-using SchoolManagement.Core.Enums;
+using SchoolManagement.Core.Shared.Contracts;
+using SchoolManagement.Core.Features.AuditLogs.Enums;
 
-namespace SchoolManagement.Core.Models
+namespace SchoolManagement.Core.Features.Students.Models
 {
     [AuditIgnoreType(AuditOperation.All)]
-    public class StudentQR
+    public class StudentQR : IEntity
     {
         public int Id { get; set; }
         public string QRCodeValue { get; set; } = string.Empty;

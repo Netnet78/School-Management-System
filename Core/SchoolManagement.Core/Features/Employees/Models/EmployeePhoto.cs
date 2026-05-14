@@ -1,10 +1,12 @@
 using SchoolManagement.Core.Shared.Attributes;
-using SchoolManagement.Core.Enums;
+using SchoolManagement.Core.Shared.Contracts;
+using SchoolManagement.Core.Features.AuditLogs.Enums;
+using SchoolManagement.Core.Features.Files.Enums;
 
-namespace SchoolManagement.Core.Models
+namespace SchoolManagement.Core.Features.Employees.Models
 {
     [AuditIgnoreType(AuditOperation.All)]
-    public class EmployeePhoto
+    public class EmployeePhoto : IEntity
     {
         public int Id { get; set; }
         public string? Key { get; set; }

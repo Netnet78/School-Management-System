@@ -1,8 +1,4 @@
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Models;
-
-namespace SchoolManagement.Application.Services
+namespace SchoolManagement.Application.Features.Departments.Services
 {
     public class DepartmentService : CrudServiceBase<Department>, IDepartmentService
     {
@@ -11,3 +7,5 @@ namespace SchoolManagement.Application.Services
         }
     }
 }
+
+

@@ -1,9 +1,4 @@
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Models;
-
-namespace SchoolManagement.Application.Services
+namespace SchoolManagement.Application.Features.Permissions.Services
 {
     public class PermissionService : CrudServiceBase<Permission>, IPermissionService
     {
@@ -13,3 +8,5 @@ namespace SchoolManagement.Application.Services
         }
     }
 }
+
+

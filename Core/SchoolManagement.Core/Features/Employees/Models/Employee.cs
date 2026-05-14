@@ -1,9 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SchoolManagement.Core.Enums;
+﻿using SchoolManagement.Core.Shared.Enums;
+using SchoolManagement.Core.Shared.Contracts;
+using SchoolManagement.Core.Features.Employees.Enums;
+using SchoolManagement.Core.Features.Auth.Models;
+using SchoolManagement.Core.Features.Departments.Models;
+using SchoolManagement.Core.Features.Classes.Models;
+using SchoolManagement.Core.Features.Attendances.Models;
 
-namespace SchoolManagement.Core.Models
+namespace SchoolManagement.Core.Features.Employees.Models
 {
-    public class Employee
+    public class Employee : IEntity
     {
         public int Id { get; set; }
         public string FullName { get; set; } = string.Empty;

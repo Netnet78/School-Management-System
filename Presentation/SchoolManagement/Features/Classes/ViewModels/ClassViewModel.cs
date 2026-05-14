@@ -1,16 +1,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SchoolManagement.Application.Policies;
-using SchoolManagement.Core.Application.Interfaces;
-using SchoolManagement.Core.Enums;
-using SchoolManagement.Core.Helpers;
-using SchoolManagement.Core.Models;
-using SchoolManagement.Core.Shared.Presentation.Contracts;
-using SchoolManagement.Core.Shared.Models;
 using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 
-namespace SchoolManagement.Presentation.ViewModels
+namespace SchoolManagement.Presentation.Features.Classes.ViewModels
 {
     public partial class ClassViewModel : ObservableObject, IViewModel, IAsyncLoadable
     {
@@ -110,3 +103,4 @@ namespace SchoolManagement.Presentation.ViewModels
         }
     }
 }
+

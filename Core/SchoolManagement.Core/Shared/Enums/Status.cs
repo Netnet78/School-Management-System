@@ -1,4 +1,4 @@
-﻿namespace SchoolManagement.Core.Enums
+﻿namespace SchoolManagement.Core.Shared.Enums
 {
     /// <summary>
     /// Represents the result or current state of an operation.

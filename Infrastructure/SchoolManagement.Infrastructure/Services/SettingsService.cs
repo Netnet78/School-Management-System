@@ -1,6 +1,4 @@
-﻿using SchoolManagement.Core.Infrastructure.Interfaces;
-using SchoolManagement.Core.Shared.Models;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace SchoolManagement.Infrastructure.Services
 {

@@ -1,6 +1,9 @@
-﻿namespace SchoolManagement.Core.Models
+﻿using SchoolManagement.Core.Features.Candidates.Models;
+using SchoolManagement.Core.Shared.Contracts;
+
+namespace SchoolManagement.Core.Features.Skills.Models
 {
-    public class Skill
+    public class Skill : IEntity
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
