@@ -8,11 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="4.0.23" />
-    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260302" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\Core\SchoolManagement.Core\SchoolManagement.Core.csproj" />
     <ProjectReference Include="..\..\Infrastructure\SchoolManagement.Infrastructure\SchoolManagement.Infrastructure.csproj" />
   </ItemGroup>

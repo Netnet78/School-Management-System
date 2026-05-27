@@ -10,10 +10,10 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/SchoolManagement.Tests/SchoolManagement.Tests.csproj" />
+    <Project Path="Tests/TestConsole/TestConsole/TestConsole.csproj" />
   </Folder>
   <Project Path="Application/SchoolManagement.Application/SchoolManagement.Application.csproj" />
   <Project Path="Assets/SchoolManagement.Assets.csproj" Id="b00d533c-6eb5-4e57-a838-e3d3155ce53c" />
   <Project Path="Core/SchoolManagement.Core/SchoolManagement.Core.csproj" />
   <Project Path="Infrastructure/SchoolManagement.Infrastructure/SchoolManagement.Infrastructure.csproj" />
-  <Project Path="Tests/TestConsole/TestConsole/TestConsole.csproj" />
 </Solution>
