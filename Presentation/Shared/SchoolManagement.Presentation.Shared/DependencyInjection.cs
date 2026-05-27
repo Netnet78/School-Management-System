@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using SchoolManagement.Presentation.Shared.Features.Authentication.Views;
 using SchoolManagement.Presentation.Shared.Services;
 
 namespace SchoolManagement.Presentation.Shared
@@ -16,6 +17,13 @@ namespace SchoolManagement.Presentation.Shared
             services.AddSingleton<IDispatcherService, DispatcherService>();
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<ILoadingService, LoadingService>();
+            services.AddSingleton<ILoginService, LoginService>();
+
+            // Shared views
+            services.AddTransient<LoginViewWindow>();
+
+            // Shared view models
+            services.AddSingleton<LoginViewModel>();
 
             return services;
         }

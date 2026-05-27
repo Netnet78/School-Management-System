@@ -3,12 +3,270 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:SchoolManagement.Presentation.Features.Employees.Views"
+             xmlns:conv="clr-namespace:SchoolManagement.Presentation.Shared.XAMLConverters;assembly=SchoolManagement.Presentation.Shared"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:viewmodels="clr-namespace:SchoolManagement.Presentation.Features.Employees.ViewModels"
              d:DataContext="{d:DesignInstance Type=viewmodels:EmployeeViewModel}"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
+             d:DesignHeight="800"
+             d:DesignWidth="1000">
+    <UserControl.Resources>
+        <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" Collapse="True" />
+        <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverterReversed" IsReversed="True" Collapse="True" />
+    </UserControl.Resources>
 
+    <Grid Background="White" TextElement.FontFamily="{StaticResource NotoSansKhmer}" TextElement.FontSize="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="20" VerticalAlignment="Center">
+            <TextBlock Text="បញ្ជី​បុគ្គលិក" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,0,0,0">
+                <Button Command="{Binding AddEmployeeCommand}"
+                        IsEnabled="{Binding CanManageEmployees}"
+                        Padding="10,5"
+                        Margin="5"
+                        Background="#4CAF50"
+                        Foreground="White">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="AccountPlus"
+                                                 Width="20"
+                                                 Height="20"
+                                                 Margin="0,0,5,0" />
+                        <TextBlock Text="បន្ថែមបុគ្គលិក" />
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding RefreshCommand}"
+                        Padding="10,5"
+                        Margin="5"
+                        Background="#2196F3"
+                        Foreground="White">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Refresh"
+                                                 Width="20"
+                                                 Height="20"
+                                                 Margin="0,0,5,0" />
+                        <TextBlock Text="ច្រោះទិន្នន័យ" />
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding ResetFiltersCommand}"
+                        Padding="10,5"
+                        Margin="5"
+                        Background="#FF9800"
+                        Foreground="White">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Broom"
+                                                 Width="20"
+                                                 Height="20"
+                                                 Margin="0,0,5,0" />
+                        <TextBlock Text="សម្អាតតម្រង" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </StackPanel>
+
+        <Expander Grid.Row="1" Margin="20,10" Background="#F5F5F5" Padding="10" IsExpanded="True">
+            <Expander.Header>
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="Filter" VerticalAlignment="Center" Margin="0 0 5 0" />
+                    <TextBlock FontSize="18" FontWeight="Bold">ច្រោះទិន្នន័យ</TextBlock>
+                </StackPanel>
+            </Expander.Header>
+
+            <StackPanel>
+                <Grid ColumnDefinitions="2*,*,*" TextElement.FontFamily="{StaticResource NotoSansKhmer}" TextElement.FontSize="16">
+                    <StackPanel Margin="5">
+                        <TextBlock Text="ស្វែងរកតាមឈ្មោះ/មុខតំណែង/លេខទំនាក់ទំនង"
+                                   FontWeight="Regular"
+                                   FontSize="16"
+                                   Margin="0,0,0,5" />
+                        <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Padding="8" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="5" Visibility="{Binding CanFilterDepartment, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Text="ផ្នែក" FontWeight="Regular" FontSize="16" Margin="0,0,0,5" />
+                        <ComboBox ItemsSource="{Binding Departments}"
+                                  SelectedValue="{Binding SelectedDepartmentFilterId}"
+                                  SelectedValuePath="Id"
+                                  DisplayMemberPath="KhmerName"
+                                  Padding="8" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Margin="5">
+                        <TextBlock Text="ស្ថានភាព" FontWeight="Regular" FontSize="16" Margin="0,0,0,5" />
+                        <ComboBox ItemsSource="{Binding ActiveFilterOptions}"
+                                  SelectedValue="{Binding SelectedActiveFilter}"
+                                  SelectedValuePath="Value"
+                                  DisplayMemberPath="Description"
+                                  Padding="8" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Expander>
+
+        <Grid Grid.Row="2" Margin="20,0,20,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Background="White"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="{Binding TotalCount, StringFormat=បុគ្គលិកសរុប {0} នាក់}"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Margin="0,0,0,10" />
+
+                    <Grid Grid.Row="1">
+                        <DataGrid ItemsSource="{Binding Employees}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  FontFamily="{StaticResource NotoSansKhmer}"
+                                  FontSize="16"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False">
+                            <DataGrid.Resources>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontSize" Value="16" />
+                                </Style>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Secondary}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" />
+                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                    <Setter Property="FontSize" Value="16" />
+                                    <Setter Property="Height" Value="48" />
+                                    <Setter Property="BorderThickness" Value=".5" />
+                                    <Setter Property="BorderBrush" Value="#E0E0E0" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="ContentTemplate">
+                                        <Setter.Value>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           TextAlignment="Center" />
+                                            </DataTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </DataGrid.Resources>
+
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70" />
+                                <DataGridTextColumn Header="ឈ្មោះពេញ" Binding="{Binding FullName}" Width="180" />
+                                <DataGridTextColumn Header="តួនាទី" Binding="{Binding Position}" Width="140" />
+                                <DataGridTextColumn Header="ផ្នែក" Binding="{Binding Department.KhmerName}" Width="130" />
+                                <DataGridTextColumn Header="លេខទំនាក់ទំនង" Binding="{Binding ContactNumber}" Width="140" />
+                                <DataGridTextColumn Header="ស្ថានភាព" Binding="{Binding IsActiveReadable}" Width="120" />
+                                <DataGridTemplateColumn Header="ការកែប្រែ" Width="280">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Margin="5">
+                                                <Button Content="កែប្រែ"
+                                                        Padding="6,4"
+                                                        Margin="2"
+                                                        IsEnabled="{Binding DataContext.CanManageEmployees, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        Command="{Binding DataContext.EditEmployeeCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="#FF9800"
+                                                        Foreground="White"
+                                                        FontSize="16"
+                                                        Width="70" />
+                                                <Button Content="លុប"
+                                                        Padding="6,4"
+                                                        Margin="2"
+                                                        IsEnabled="{Binding DataContext.CanManageEmployees, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        Command="{Binding DataContext.DeleteEmployeeCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="#F44336"
+                                                        Foreground="White"
+                                                        FontSize="16"
+                                                        Width="70" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <Grid Background="#44000000"
+                              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Border VerticalAlignment="Center"
+                                    HorizontalAlignment="Center"
+                                    Background="White"
+                                    Padding="12"
+                                    CornerRadius="8">
+                                <StackPanel>
+                                    <ProgressBar IsIndeterminate="True" Width="200" Height="20" />
+                                    <TextBlock Text="កំពុងផ្ទុកបុគ្គលិក..."
+                                               HorizontalAlignment="Center"
+                                               Margin="0,10,0,0"
+                                               FontSize="16" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <StackPanel Grid.Row="1"
+                        Margin="0,12,0,0"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                <TextBlock Text="{Binding CurrentPage, StringFormat=ទំព័រ {0}}"
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           Margin="0,0,10,0" />
+                <TextBox Width="60"
+                         BorderThickness="2"
+                         FontSize="16"
+                         Text="{Binding CurrentPage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         TextAlignment="Center"
+                         BorderBrush="{DynamicResource MaterialDesign.Brush.Primary}" />
+                <TextBlock Text="នៃ"
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           Margin="10,0" />
+                <TextBox Width="60"
+                         BorderThickness="2"
+                         FontSize="16"
+                         IsReadOnly="True"
+                         Text="{Binding MaxPage}"
+                         TextAlignment="Center"
+                         BorderBrush="{DynamicResource MaterialDesign.Brush.Secondary}" />
+                <Button Content="ថយក្រោយ"
+                        Command="{Binding PreviousPageCommand}"
+                        Padding="12,6"
+                        Margin="15,0,8,0"
+                        FontSize="16" />
+                <Button Content="ទៅមុខ"
+                        Command="{Binding NextPageCommand}"
+                        Padding="12,6"
+                        FontSize="16" />
+            </StackPanel>
+
+            <TextBlock Text="{Binding CurrentPageTotalCount, StringFormat='កំពុងបង្ហាញព័ត៌មាន {0} នាក់នៅក្នុងទំព័រនេះ'}"
+                           VerticalAlignment="Center"
+                           TextAlignment="Center"
+                           FontSize="16"
+                           Grid.Row="1" 
+                           HorizontalAlignment="Left" 
+                           Margin="10 10 0 0"/>
+        </Grid>
     </Grid>
 </UserControl>

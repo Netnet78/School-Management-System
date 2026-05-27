@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SchoolManagement.Presentation.Features.Attendance.ViewModels;
+using SchoolManagement.Presentation.Features.Attendances.ViewModels;
+using SchoolManagement.Presentation.Features.AuditLogs.ViewModels;
 using SchoolManagement.Presentation.Features.Classes.ViewModels;
 using SchoolManagement.Presentation.Features.Dashboard.ViewModels;
 using SchoolManagement.Presentation.Features.Employees.ViewModels;
@@ -16,6 +17,7 @@ namespace SchoolManagement.Presentation.Shell.ViewModels
         private readonly IMessageService _messageService;
         private readonly IDispatcherService _dispatcherService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly ILoginService _loginService;
 
         public event Action? OnExit;
 
@@ -45,12 +47,16 @@ namespace SchoolManagement.Presentation.Shell.ViewModels
         [ObservableProperty]
         private bool _canAccessEmployeeView;
 
+        [ObservableProperty]
+        private bool _canAccessAuditLogView;
+
         public MainViewModel(
             INavigationService navigationService,
             IUserSessionService userSessionService,
             IMessageService messageService,
             IDispatcherService dispatcherService,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService,
+            ILoginService loginService)
         {
             _navigationService = navigationService;
             _userSessionService = userSessionService;
@@ -61,6 +67,7 @@ namespace SchoolManagement.Presentation.Shell.ViewModels
             _navigationService.OnViewModelChanged += OnViewModelChanged;
 
             _authorizationService = authorizationService;
+            _loginService = loginService;
         }
 
         [RelayCommand]
@@ -79,6 +86,11 @@ namespace SchoolManagement.Presentation.Shell.ViewModels
             await NavigateTo<StudentListViewModel>();
         }
         [RelayCommand]
+        private async Task ShowAddStudentAsync()
+        {
+            await NavigateTo<AddStudentViewModel>();
+        }
+        [RelayCommand]
         private async Task ShowClassAsync()
         {
             await NavigateTo<ClassViewModel>();
@@ -92,6 +104,11 @@ namespace SchoolManagement.Presentation.Shell.ViewModels
         private async Task ShowEmployeeAsync()
         {
             await NavigateTo<EmployeeViewModel>();
+        }
+        [RelayCommand]
+        private async Task ShowAuditLogAsync()
+        {
+            await NavigateTo<AuditLogViewModel>();
         }
 
         private async Task NavigateTo<T>() where T : IViewModel
@@ -149,6 +166,7 @@ namespace SchoolManagement.Presentation.Shell.ViewModels
             CanAccessAttendanceView = await HasPermission(PermissionType.ManageAttendances);
             CanAccessAnalyticsView = true;
             CanAccessEmployeeView = await HasPermission(PermissionType.ManageEmployees);
+            CanAccessAuditLogView = _authorizationService.UserIsAdmin;
         }
 
         private async Task<bool> HasPermission(params PermissionType[] permissions)
@@ -165,6 +183,17 @@ namespace SchoolManagement.Presentation.Shell.ViewModels
             if (result == MessageResult.Yes)
             {
                 OnExit?.Invoke();
+            }
+        }
+
+        [RelayCommand]
+        private async Task LogoutAsync()
+        {
+            MessageResult result = _messageService.Show("តើអ្នកចង់បន្តធ្វើការចាកចេញពីការប្រើប្រាស់គណនីមួយនេះ​ដែរឬទេ?", "ឈប់សិន!", MessageButton.YesNo, MessageIcon.Question);
+
+            if (result == MessageResult.Yes)
+            {
+                await _loginService.ShowLoginWindow<DashboardViewModel>();
             }
         }
 

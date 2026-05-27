@@ -75,7 +75,7 @@ namespace SchoolManagement.Presentation.Shared.Components
 
         public void CloseButton_MouseDown(object sender, RoutedEventArgs e)
         {
-            System.Windows.Application.Current?.Shutdown();
+            Application.Current?.Shutdown();
         }
 
         private void TitlebarPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UserSecretsId>7db07307-8f4b-4bd2-826e-2362265df032</UserSecretsId>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,7 +24,11 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.S3" Version="4.0.23" />
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="QuestPDF" Version="2026.5.0" />
     <PackageReference Include="BCrypt.Net-Core" Version="1.6.0" />
+    <PackageReference Include="ZXing.Net" Version="0.16.11" />
+    <PackageReference Include="SkiaSharp" Version="3.119.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.7">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -39,6 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Assets\SchoolManagement.Assets.csproj" />
     <ProjectReference Include="..\..\Core\SchoolManagement.Core\SchoolManagement.Core.csproj" />
   </ItemGroup>
 

@@ -17,7 +17,7 @@ namespace SchoolManagement.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.4")
+                .HasAnnotation("ProductVersion", "10.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -37,7 +37,71 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("PermissionRole");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Attendance", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Accessments.Models.Assessment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ClassSubjectId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ExamId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("OtherInfo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("StudentClassId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalScore")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassSubjectId");
+
+                    b.HasIndex("ExamId");
+
+                    b.HasIndex("StudentClassId");
+
+                    b.ToTable("Assessments");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Accessments.Models.Score", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccessmentId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("AssessmentId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ComponentId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssessmentId");
+
+                    b.HasIndex("ComponentId");
+
+                    b.ToTable("Scores");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Attendances.Models.Attendance", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -74,7 +138,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("Attendances");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.AuditLog", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.AuditLogs.Models.AuditLog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -115,7 +179,91 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("AuditLogs");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Candidate", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Auth.Models.Permission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Permissions");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Auth.Models.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Auth.Models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("EmployeeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("LastLogin")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("LockedOutEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId")
+                        .IsUnique();
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Candidates.Models.Candidate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -239,7 +387,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("Candidates");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Class", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Classes.Models.Class", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -267,7 +415,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("Classes");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.ClassSubject", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Classes.Models.ClassSubject", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -278,33 +426,28 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.Property<int>("ClassId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("SubjectId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("TeacherId")
-                        .HasColumnType("integer");
+                    b.Property<int?>("TeacherId")
+                        .HasColumnType("integer")
+                        .HasColumnName("EmployeeId");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ClassId");
 
-                    b.HasIndex("EmployeeId");
-
                     b.HasIndex("SubjectId");
+
+                    b.HasIndex("TeacherId");
 
                     b.ToTable("ClassSubjects");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Department", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Departments.Models.Department", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -312,6 +455,10 @@ namespace SchoolManagement.Infrastructure.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("KhmerName")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -322,7 +469,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("Departments");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Employee", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Employees.Models.Employee", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -399,7 +546,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("Employees");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.EmployeePhoto", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Employees.Models.EmployeePhoto", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer");
@@ -421,13 +568,17 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("EmployeePhotos");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Exam", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Exams.Models.Exam", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("KhmerName")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -438,7 +589,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("Exams");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Generation", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Generations.Models.Generation", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -465,7 +616,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("Generations");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Grade", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Grades.Models.Grade", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -486,7 +637,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("Grades");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Notification", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Notifications.Models.Notification", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -514,75 +665,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("Notifications");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Permission", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Permissions");
-                });
-
-            modelBuilder.Entity("SchoolManagement.Core.Models.Role", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Roles");
-                });
-
-            modelBuilder.Entity("SchoolManagement.Core.Models.Score", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("ClassSubjectId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ExamId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("StudentClassId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClassSubjectId");
-
-                    b.HasIndex("ExamId");
-
-                    b.HasIndex("StudentClassId");
-
-                    b.ToTable("Scores");
-                });
-
-            modelBuilder.Entity("SchoolManagement.Core.Models.Skill", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Skills.Models.Skill", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -606,7 +689,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("Skills");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Student", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Students.Models.Student", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -634,7 +717,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("Students");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.StudentClass", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Students.Models.StudentClass", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -666,7 +749,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("StudentClasses");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.StudentPhoto", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Students.Models.StudentPhoto", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer");
@@ -688,7 +771,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("StudentPhotos");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.StudentQR", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Students.Models.StudentQR", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer");
@@ -708,7 +791,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("StudentQRs");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Subject", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Subjects.Models.Subject", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -723,6 +806,10 @@ namespace SchoolManagement.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<decimal>("MaxScore")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -732,7 +819,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("Subjects");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.User", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Subjects.Models.SubjectComponent", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -740,206 +827,50 @@ namespace SchoolManagement.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("EmployeeId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("FailedLoginAttempts")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("LastLogin")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("LockedOutEnd")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("PasswordHash")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("RoleId")
+                    b.Property<int>("SubjectId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EmployeeId")
-                        .IsUnique();
+                    b.HasIndex("SubjectId");
 
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("Users");
+                    b.ToTable("SubjectComponents");
                 });
 
             modelBuilder.Entity("PermissionRole", b =>
                 {
-                    b.HasOne("SchoolManagement.Core.Models.Permission", null)
+                    b.HasOne("SchoolManagement.Core.Features.Auth.Models.Permission", null)
                         .WithMany()
                         .HasForeignKey("PermissionsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SchoolManagement.Core.Models.Role", null)
+                    b.HasOne("SchoolManagement.Core.Features.Auth.Models.Role", null)
                         .WithMany()
                         .HasForeignKey("RolesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Attendance", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Accessments.Models.Assessment", b =>
                 {
-                    b.HasOne("SchoolManagement.Core.Models.Employee", "MarkedByEmployee")
-                        .WithMany("MarkedAttendances")
-                        .HasForeignKey("MarkedByEmployeeId");
-
-                    b.HasOne("SchoolManagement.Core.Models.StudentClass", "StudentClass")
-                        .WithMany("Attendances")
-                        .HasForeignKey("StudentClassId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MarkedByEmployee");
-
-                    b.Navigation("StudentClass");
-                });
-
-            modelBuilder.Entity("SchoolManagement.Core.Models.AuditLog", b =>
-                {
-                    b.HasOne("SchoolManagement.Core.Models.User", "User")
-                        .WithMany("AuditLogs")
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SchoolManagement.Core.Models.Candidate", b =>
-                {
-                    b.HasOne("SchoolManagement.Core.Models.Skill", "Skill")
-                        .WithMany()
-                        .HasForeignKey("SkillId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Skill");
-                });
-
-            modelBuilder.Entity("SchoolManagement.Core.Models.Class", b =>
-                {
-                    b.HasOne("SchoolManagement.Core.Models.Generation", "Generation")
-                        .WithMany("Classes")
-                        .HasForeignKey("GenerationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SchoolManagement.Core.Models.Grade", "Grade")
-                        .WithMany("Classes")
-                        .HasForeignKey("GradeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SchoolManagement.Core.Models.Employee", "Teacher")
-                        .WithMany("Classes")
-                        .HasForeignKey("TeacherId");
-
-                    b.Navigation("Generation");
-
-                    b.Navigation("Grade");
-
-                    b.Navigation("Teacher");
-                });
-
-            modelBuilder.Entity("SchoolManagement.Core.Models.ClassSubject", b =>
-                {
-                    b.HasOne("SchoolManagement.Core.Models.Class", "Class")
-                        .WithMany("Subjects")
-                        .HasForeignKey("ClassId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SchoolManagement.Core.Models.Employee", "Employee")
-                        .WithMany("ClassSubjects")
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SchoolManagement.Core.Models.Subject", "Subject")
-                        .WithMany("ClassSubjects")
-                        .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Class");
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("Subject");
-                });
-
-            modelBuilder.Entity("SchoolManagement.Core.Models.Employee", b =>
-                {
-                    b.HasOne("SchoolManagement.Core.Models.Department", "Department")
-                        .WithMany("Employees")
-                        .HasForeignKey("DepartmentId");
-
-                    b.Navigation("Department");
-                });
-
-            modelBuilder.Entity("SchoolManagement.Core.Models.EmployeePhoto", b =>
-                {
-                    b.HasOne("SchoolManagement.Core.Models.Employee", "Employee")
-                        .WithOne("Photo")
-                        .HasForeignKey("SchoolManagement.Core.Models.EmployeePhoto", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Employee");
-                });
-
-            modelBuilder.Entity("SchoolManagement.Core.Models.Generation", b =>
-                {
-                    b.HasOne("SchoolManagement.Core.Models.Department", "Department")
-                        .WithMany("Generations")
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Department");
-                });
-
-            modelBuilder.Entity("SchoolManagement.Core.Models.Notification", b =>
-                {
-                    b.HasOne("SchoolManagement.Core.Models.Student", "Student")
-                        .WithMany("Notifications")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Student");
-                });
-
-            modelBuilder.Entity("SchoolManagement.Core.Models.Score", b =>
-                {
-                    b.HasOne("SchoolManagement.Core.Models.ClassSubject", "ClassSubject")
+                    b.HasOne("SchoolManagement.Core.Features.Classes.Models.ClassSubject", "ClassSubject")
                         .WithMany("Scores")
                         .HasForeignKey("ClassSubjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SchoolManagement.Core.Models.Exam", "Exam")
+                    b.HasOne("SchoolManagement.Core.Features.Exams.Models.Exam", "Exam")
                         .WithMany("Scores")
                         .HasForeignKey("ExamId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SchoolManagement.Core.Models.StudentClass", "StudentClass")
+                    b.HasOne("SchoolManagement.Core.Features.Students.Models.StudentClass", "StudentClass")
                         .WithMany("Scores")
                         .HasForeignKey("StudentClassId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -952,65 +883,58 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.Navigation("StudentClass");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Student", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Accessments.Models.Score", b =>
                 {
-                    b.HasOne("SchoolManagement.Core.Models.Candidate", "Candidate")
-                        .WithOne("Student")
-                        .HasForeignKey("SchoolManagement.Core.Models.Student", "CandidateId")
+                    b.HasOne("SchoolManagement.Core.Features.Accessments.Models.Assessment", "Assessment")
+                        .WithMany("Scores")
+                        .HasForeignKey("AssessmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Candidate");
+                    b.HasOne("SchoolManagement.Core.Features.Subjects.Models.SubjectComponent", "Component")
+                        .WithMany("Scores")
+                        .HasForeignKey("ComponentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Assessment");
+
+                    b.Navigation("Component");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.StudentClass", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Attendances.Models.Attendance", b =>
                 {
-                    b.HasOne("SchoolManagement.Core.Models.Class", "Class")
-                        .WithMany("Students")
-                        .HasForeignKey("ClassId")
+                    b.HasOne("SchoolManagement.Core.Features.Employees.Models.Employee", "MarkedByEmployee")
+                        .WithMany("MarkedAttendances")
+                        .HasForeignKey("MarkedByEmployeeId");
+
+                    b.HasOne("SchoolManagement.Core.Features.Students.Models.StudentClass", "StudentClass")
+                        .WithMany("Attendances")
+                        .HasForeignKey("StudentClassId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SchoolManagement.Core.Models.Student", "Student")
-                        .WithMany("Classes")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("MarkedByEmployee");
 
-                    b.Navigation("Class");
-
-                    b.Navigation("Student");
+                    b.Navigation("StudentClass");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.StudentPhoto", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.AuditLogs.Models.AuditLog", b =>
                 {
-                    b.HasOne("SchoolManagement.Core.Models.Candidate", "Student")
-                        .WithOne("Photo")
-                        .HasForeignKey("SchoolManagement.Core.Models.StudentPhoto", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("SchoolManagement.Core.Features.Auth.Models.User", "User")
+                        .WithMany("AuditLogs")
+                        .HasForeignKey("UserId");
 
-                    b.Navigation("Student");
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.StudentQR", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Auth.Models.User", b =>
                 {
-                    b.HasOne("SchoolManagement.Core.Models.Student", "Student")
-                        .WithOne("StudentQR")
-                        .HasForeignKey("SchoolManagement.Core.Models.StudentQR", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Student");
-                });
-
-            modelBuilder.Entity("SchoolManagement.Core.Models.User", b =>
-                {
-                    b.HasOne("SchoolManagement.Core.Models.Employee", "Employee")
+                    b.HasOne("SchoolManagement.Core.Features.Employees.Models.Employee", "Employee")
                         .WithOne("User")
-                        .HasForeignKey("SchoolManagement.Core.Models.User", "EmployeeId");
+                        .HasForeignKey("SchoolManagement.Core.Features.Auth.Models.User", "EmployeeId");
 
-                    b.HasOne("SchoolManagement.Core.Models.Role", "Role")
+                    b.HasOne("SchoolManagement.Core.Features.Auth.Models.Role", "Role")
                         .WithMany("Users")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1021,33 +945,226 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Candidate", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Candidates.Models.Candidate", b =>
+                {
+                    b.HasOne("SchoolManagement.Core.Features.Skills.Models.Skill", "Skill")
+                        .WithMany("Candidates")
+                        .HasForeignKey("SkillId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Skill");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Classes.Models.Class", b =>
+                {
+                    b.HasOne("SchoolManagement.Core.Features.Generations.Models.Generation", "Generation")
+                        .WithMany("Classes")
+                        .HasForeignKey("GenerationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagement.Core.Features.Grades.Models.Grade", "Grade")
+                        .WithMany("Classes")
+                        .HasForeignKey("GradeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagement.Core.Features.Employees.Models.Employee", "Teacher")
+                        .WithMany("Classes")
+                        .HasForeignKey("TeacherId");
+
+                    b.Navigation("Generation");
+
+                    b.Navigation("Grade");
+
+                    b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Classes.Models.ClassSubject", b =>
+                {
+                    b.HasOne("SchoolManagement.Core.Features.Classes.Models.Class", "Class")
+                        .WithMany("Subjects")
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagement.Core.Features.Subjects.Models.Subject", "Subject")
+                        .WithMany("ClassSubjects")
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagement.Core.Features.Employees.Models.Employee", "Teacher")
+                        .WithMany("ClassSubjects")
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Class");
+
+                    b.Navigation("Subject");
+
+                    b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Departments.Models.Department", b =>
+                {
+                    b.HasOne("SchoolManagement.Core.Features.Skills.Models.Skill", "Skill")
+                        .WithOne("Department")
+                        .HasForeignKey("SchoolManagement.Core.Features.Departments.Models.Department", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Skill");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Employees.Models.Employee", b =>
+                {
+                    b.HasOne("SchoolManagement.Core.Features.Departments.Models.Department", "Department")
+                        .WithMany("Employees")
+                        .HasForeignKey("DepartmentId");
+
+                    b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Employees.Models.EmployeePhoto", b =>
+                {
+                    b.HasOne("SchoolManagement.Core.Features.Employees.Models.Employee", "Employee")
+                        .WithOne("Photo")
+                        .HasForeignKey("SchoolManagement.Core.Features.Employees.Models.EmployeePhoto", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Generations.Models.Generation", b =>
+                {
+                    b.HasOne("SchoolManagement.Core.Features.Departments.Models.Department", "Department")
+                        .WithMany("Generations")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Notifications.Models.Notification", b =>
+                {
+                    b.HasOne("SchoolManagement.Core.Features.Students.Models.Student", "Student")
+                        .WithMany("Notifications")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Students.Models.Student", b =>
+                {
+                    b.HasOne("SchoolManagement.Core.Features.Candidates.Models.Candidate", "Candidate")
+                        .WithOne("Student")
+                        .HasForeignKey("SchoolManagement.Core.Features.Students.Models.Student", "CandidateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Candidate");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Students.Models.StudentClass", b =>
+                {
+                    b.HasOne("SchoolManagement.Core.Features.Classes.Models.Class", "Class")
+                        .WithMany("Students")
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagement.Core.Features.Students.Models.Student", "Student")
+                        .WithMany("Classes")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Class");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Students.Models.StudentPhoto", b =>
+                {
+                    b.HasOne("SchoolManagement.Core.Features.Candidates.Models.Candidate", "Student")
+                        .WithOne("Photo")
+                        .HasForeignKey("SchoolManagement.Core.Features.Students.Models.StudentPhoto", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Students.Models.StudentQR", b =>
+                {
+                    b.HasOne("SchoolManagement.Core.Features.Students.Models.Student", "Student")
+                        .WithOne("StudentQR")
+                        .HasForeignKey("SchoolManagement.Core.Features.Students.Models.StudentQR", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Subjects.Models.SubjectComponent", b =>
+                {
+                    b.HasOne("SchoolManagement.Core.Features.Subjects.Models.Subject", "Subject")
+                        .WithMany("Components")
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Subject");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Accessments.Models.Assessment", b =>
+                {
+                    b.Navigation("Scores");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Auth.Models.Role", b =>
+                {
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Auth.Models.User", b =>
+                {
+                    b.Navigation("AuditLogs");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Candidates.Models.Candidate", b =>
                 {
                     b.Navigation("Photo");
 
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Class", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Classes.Models.Class", b =>
                 {
                     b.Navigation("Students");
 
                     b.Navigation("Subjects");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.ClassSubject", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Classes.Models.ClassSubject", b =>
                 {
                     b.Navigation("Scores");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Department", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Departments.Models.Department", b =>
                 {
                     b.Navigation("Employees");
 
                     b.Navigation("Generations");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Employee", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Employees.Models.Employee", b =>
                 {
                     b.Navigation("ClassSubjects");
 
@@ -1060,27 +1177,30 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Exam", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Exams.Models.Exam", b =>
                 {
                     b.Navigation("Scores");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Generation", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Generations.Models.Generation", b =>
                 {
                     b.Navigation("Classes");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Grade", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Grades.Models.Grade", b =>
                 {
                     b.Navigation("Classes");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Role", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Skills.Models.Skill", b =>
                 {
-                    b.Navigation("Users");
+                    b.Navigation("Candidates");
+
+                    b.Navigation("Department")
+                        .IsRequired();
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Student", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Students.Models.Student", b =>
                 {
                     b.Navigation("Classes");
 
@@ -1089,21 +1209,23 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.Navigation("StudentQR");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.StudentClass", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Students.Models.StudentClass", b =>
                 {
                     b.Navigation("Attendances");
 
                     b.Navigation("Scores");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Subject", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Subjects.Models.Subject", b =>
                 {
                     b.Navigation("ClassSubjects");
+
+                    b.Navigation("Components");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.User", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Subjects.Models.SubjectComponent", b =>
                 {
-                    b.Navigation("AuditLogs");
+                    b.Navigation("Scores");
                 });
 #pragma warning restore 612, 618
         }

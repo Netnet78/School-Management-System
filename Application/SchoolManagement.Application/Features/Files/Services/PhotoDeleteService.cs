@@ -5,14 +5,17 @@ namespace SchoolManagement.Application.Features.Files.Services
         private readonly ISettingsService settingsService;
         private readonly IS3Service s3Service;
         private readonly IStudentPhotoRepository studentPhotoRepository;
+        private readonly IEmployeePhotoRepository employeePhotoRepository;
 
         public PhotoDeleteService(ISettingsService settingsService,
                                   IS3Service s3Service,
-                                  IStudentPhotoRepository studentPhotoRepository)
+                                  IStudentPhotoRepository studentPhotoRepository,
+                                  IEmployeePhotoRepository employeePhotoRepository)
         {
             this.settingsService = settingsService;
             this.s3Service = s3Service;
             this.studentPhotoRepository = studentPhotoRepository;
+            this.employeePhotoRepository = employeePhotoRepository;
         }
 
         /// <summary>
@@ -25,44 +28,37 @@ namespace SchoolManagement.Application.Features.Files.Services
         /// <exception cref="ArgumentException">Thrown if the specified path does not point to an existing photo.</exception>
         public async Task<ReturnResponse> DeleteStudentPhoto(Candidate student)
         {
-            string photoKey = student.PhotoKey;
+            StudentPhoto? existingPhoto = await studentPhotoRepository.GetByIdAsync(student.Id);
 
-            if (string.IsNullOrWhiteSpace(photoKey))
+            if (existingPhoto == null || string.IsNullOrWhiteSpace(existingPhoto.Key))
             {
                 return new()
                 {
                     Status = Status.Rejected,
-                    Message = "?????????????????????????????????????"
+                    Message = "រូបភាពនៃសិស្សមិនអាចគ្មានទិន្នន័យ​បានទេ!"
                 };
             }
 
             Settings config = settingsService.GetAllSettings();
             string photoDirectory = Path.Combine(config.StudentPhotoFolderPath);
-            string destination = Path.Combine(photoDirectory, photoKey);
+            string destination = Path.Combine(photoDirectory, existingPhoto.Key);
             if (Path.Exists(destination))
             {
                 File.Delete(destination);
             }
 
-            StudentPhoto studentPhoto = new()
-            {
-                Student = student,
-                FileStatus = FileStatus.PendingDelete,
-                Key = student.PhotoKey,
-                LastAttempt = DateTime.UtcNow,
-                LocalPath = destination
-            };
+            existingPhoto.FileStatus = FileStatus.PendingDelete;
+            existingPhoto.LastAttempt = DateTime.UtcNow;
 
-            ReturnResponse response = await s3Service.DeleteFile(photoKey, config.StudentPhotoFolderBucketPath);
+            ReturnResponse response = await s3Service.DeleteFile(existingPhoto.Key, config.StudentPhotoFolderBucketPath);
 
-            if (response.Status == Status.Success && student.Photo != null)
+            if (response.Status == Status.Success)
             {
-                await studentPhotoRepository.DeleteAsync(student.Photo);
+                await studentPhotoRepository.DeleteAsync(existingPhoto);
             }
             else
             {
-                studentPhoto.FileStatus = FileStatus.PendingDelete;
-                await studentPhotoRepository.UpdateAsync(studentPhoto);
+                await studentPhotoRepository.UpdateAsync(existingPhoto);
             }
 
             return new()
@@ -71,22 +67,45 @@ namespace SchoolManagement.Application.Features.Files.Services
                 Message = response.Message,
             };
         }
-        public async Task<ReturnResponse> DeleteEmployeePhoto(string photoKey)
+        public async Task<ReturnResponse> DeleteEmployeePhoto(Employee employee)
         {
+            EmployeePhoto? existingPhoto = await employeePhotoRepository.GetByIdAsync(employee.Id);
+
+            if (existingPhoto == null || string.IsNullOrWhiteSpace(existingPhoto.Key))
+            {
+                return new()
+                {
+                    Status = Status.Rejected,
+                    Message = "រូបភាពនៃបុគ្គលិកមិនអាចគ្មានទិន្នន័យ​បានទេ!"
+                };
+            }
+
             Settings config = settingsService.GetAllSettings();
             string photoDirectory = Path.Combine(config.EmployeePhotoFolderPath);
-            string destination = Path.Combine(photoDirectory, photoKey);
+            string destination = Path.Combine(photoDirectory, existingPhoto.Key);
             if (Path.Exists(destination))
             {
                 File.Delete(destination);
             }
 
-            ReturnResponse response = await s3Service.DeleteFile(photoKey, config.EmployeePhotoFolderBucketPath);
+            existingPhoto.FileStatus = FileStatus.PendingDelete;
+            existingPhoto.LastAttempt = DateTime.UtcNow;
+
+            ReturnResponse response = await s3Service.DeleteFile(existingPhoto.Key, config.EmployeePhotoFolderBucketPath);
+
+            if (response.Status == Status.Success)
+            {
+                await employeePhotoRepository.DeleteAsync(existingPhoto);
+            }
+            else
+            {
+                await employeePhotoRepository.UpdateAsync(existingPhoto);
+            }
 
             return new()
             {
-                Message = response.Message,
                 Status = response.Status,
+                Message = response.Message,
             };
         }
     }

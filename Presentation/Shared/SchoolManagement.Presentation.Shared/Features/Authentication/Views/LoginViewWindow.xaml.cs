@@ -5,7 +5,7 @@ namespace SchoolManagement.Presentation.Shared.Features.Authentication.Views
     /// <summary>
     /// Interaction logic for LoginViewWindow.xaml
     /// </summary>
-    public partial class LoginViewWindow : Window
+    public partial class LoginViewWindow : Window, IDialogWindow
     {
         public LoginViewWindow(LoginViewModel vm)
         {
@@ -22,9 +22,12 @@ namespace SchoolManagement.Presentation.Shared.Features.Authentication.Views
             };
         }
 
+        public event Action<bool?>? OnDialogClosed;
+        public event Action? OnDialogOpened;
+
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.Application.Current.Shutdown();
+            Application.Current.Shutdown();
         }
 
         private void LoginButtonClicked(object sender, RoutedEventArgs e)
@@ -32,6 +35,25 @@ namespace SchoolManagement.Presentation.Shared.Features.Authentication.Views
             if (DataContext is LoginViewModel vm)
             {
                 vm.LoginCommand.Execute(PasswordBox.Password);
+            }
+        }
+
+        public bool? OpenDialog(IViewModel? viewModel = null)
+        {
+            if (viewModel != null)
+            {
+                DataContext = viewModel;
+            }
+            bool? result = null;
+            try
+            {
+                OnDialogOpened?.Invoke();
+                result = ShowDialog();
+                return result;
+            }
+            finally
+            {
+                OnDialogClosed?.Invoke(result);
             }
         }
     }

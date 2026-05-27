@@ -25,11 +25,11 @@ namespace SchoolManagement.Application.Features.Users.Services
             if (user != null && user.LockedOutEnd != null && user.LockedOutEnd > DateTime.UtcNow)
             {
                 DateTime lockedOutEnd = TimeHelper.ToLocalTimeZone(user.LockedOutEnd.Value);
-                string time = lockedOutEnd.TimeOfDay <= new TimeSpan(12, 0, 0) ? "?????" : "?????";
+                string time = lockedOutEnd.TimeOfDay <= new TimeSpan(12, 0, 0) ? "ព្រឹក" : "ល្ងាច";
                 return new()
                 {
                     Status = Status.Rejected,
-                    Message = $"???????????????????????? ???????????/?????????????!\n??????????????????? ???? {lockedOutEnd.Hour}, {lockedOutEnd.Minute} ???? {time} \n??????? {(user.LockedOutEnd.Value - DateTime.UtcNow).TotalMinutes} ????",
+                    Message = $"ការចូលប្រើប្រាស់របស់អ្នក ត្រូវបានផ្អាកជាមុនសិន!\nសូមមេត្តារងចាំរហូតដល់ ម៉ោង{lockedOutEnd.Hour} : {lockedOutEnd.Minute}នាទី  ពេល{time} \nនៅសល់ {(user.LockedOutEnd.Value - DateTime.UtcNow).TotalMinutes} នាទីទៀត!",
                 };
             }
 
@@ -52,7 +52,10 @@ namespace SchoolManagement.Application.Features.Users.Services
 
                 if (user.FailedLoginAttempts >= maximumAttempts)
                 {
-                    user.LockedOutEnd = DateTime.UtcNow.AddMinutes(5);
+                    int amount = user.FailedLoginAttempts > maximumAttempts
+                        ? (5 + maximumAttempts) * 2
+                        : 5;
+                    user.LockedOutEnd = DateTime.UtcNow.AddMinutes(amount);
                 }
 
                 await _repo.UpdateAsync(user);
@@ -61,7 +64,7 @@ namespace SchoolManagement.Application.Features.Users.Services
             return new()
             {
                 Status = Status.Failed,
-                Message = "??????? Username ? Password ??????????????? ?????????????????!",
+                Message = "ព័ត៌មាន Username ឬ Password មិនត្រឹមត្រូវនោះទេ! សូមព្យាយាមម្ដងទៀត",
             };
         }
     }

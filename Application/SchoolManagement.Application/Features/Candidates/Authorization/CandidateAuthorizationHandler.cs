@@ -16,7 +16,7 @@ namespace SchoolManagement.Application.Features.Candidates.Authorization
             if (!user.HasValidPermissions(operatorMode, requirements))
                 return false;
 
-            // Candidates are admin-only resources
+            
             return resource == null;
         }
     }

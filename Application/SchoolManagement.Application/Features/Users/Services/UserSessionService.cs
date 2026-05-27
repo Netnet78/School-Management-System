@@ -26,10 +26,18 @@ namespace SchoolManagement.Application.Features.Users.Services
             {
                 CustomDescription = $"User {CurrentUser.Username} LOGGED OUT after {(logoutTime - LoggedInAt)?.TotalMinutes:F1} minutes",
                 Timestamp = logoutTime,
-                UserId = CurrentUser.Id
+                UserId = CurrentUser.Id,
+                EntityType = "User",
+                EntityName = CurrentUser.Username,
+                Action = "Logged out",
             });
 
-            OnUserLoggedOut?.Invoke(CurrentUser);
+            User loggedOutUser = CurrentUser;
+
+            CurrentUser = null;
+            LoggedInAt = null;
+
+            OnUserLoggedOut?.Invoke(loggedOutUser);
             OnUserSessionChanged?.Invoke(null);
         }
 
@@ -52,7 +60,10 @@ namespace SchoolManagement.Application.Features.Users.Services
                 {
                     CustomDescription = $"User {CurrentUser.Username} has LOGGED IN",
                     Timestamp = LoggedInAt.Value,
-                    UserId = CurrentUser.Id
+                    UserId = CurrentUser.Id,
+                    EntityType = "User",
+                    EntityName = CurrentUser.Username,
+                    Action = "Logged in",
                 });
 
                 OnUserSessionChanged?.Invoke(user);

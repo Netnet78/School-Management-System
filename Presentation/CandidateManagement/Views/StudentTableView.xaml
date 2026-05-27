@@ -92,10 +92,12 @@
                         </StackPanel>
                         <StackPanel Margin="0 15">
                             <TextBlock Text="រៀបលំដាប់លំដោយតាម៖" FontWeight="Bold"/>
-                            <ComboBox SelectedValue="{Binding SortBy}"
-                                      ItemsSource="{Binding StudentFieldItems}"
-                                      DisplayMemberPath="Description"
-                                      SelectedValuePath="Name"/>
+                            <ComboBox SelectedValue="{Binding SortBy}" SelectedValuePath="Tag">
+                                <ComboBoxItem Content="ID" Tag="Id"/>
+                                <ComboBoxItem Content="ឈ្មោះពេញ" Tag="FullName"/>
+                                <ComboBoxItem Content="ឈ្មោះពេញ (ឡាតាំង)" Tag="LatinFullName"/>
+                                <ComboBoxItem Content="កាលបរិច្ឆេទបង្កើត" Tag="CreatedAt"/>
+                            </ComboBox>
                         </StackPanel>
                         <StackPanel Margin="0 15">
                             <TextBlock Text="ប្រភេទនៃលំដាប់លំដោយ៖" FontWeight="Bold"/>
@@ -252,13 +254,8 @@
                         </Button>
                         <StackPanel Orientation="Horizontal" Margin="20 0 0 0">
                             <TextBlock Margin="0 0 10 0" FontSize="16" VerticalAlignment="Center">
-                                ស្វែងរកសិស្សតាម៖
+                                ស្វែងរក៖
                             </TextBlock>
-                            <ComboBox Width="150" Height="32" Margin="0 0 20 0"
-                                                    SelectedValue="{Binding CurrentSearchField, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                    SelectedValuePath="Value"
-                                                    DisplayMemberPath="Description"
-                                                    ItemsSource="{Binding StudentFieldItems}" />
                             <TextBox Width="160"
                                               Text="{Binding StudentSearch, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
                             <materialDesign:PackIcon Kind="Search"
@@ -613,7 +610,7 @@
                                            SnapsToDevicePixels="True"
                                            UseLayoutRounding="True"
                                            RenderOptions.BitmapScalingMode="HighQuality"
-                                           Source="{Binding SelectedStudentPhoto.FilePath, Converter={StaticResource PhotoPathToImageSourceConverter}}" />
+                                           Source="{Binding SelectedStudentPhoto, Converter={StaticResource PhotoPathToImageSourceConverter}}" />
                                 </Viewbox>
 
                                 <Border Visibility="{Binding ValidPhotoPath, Converter={StaticResource BooleanToVisibilityConverterReversed}, FallbackValue=Visible}"

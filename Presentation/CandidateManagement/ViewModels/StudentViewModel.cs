@@ -36,8 +36,6 @@ namespace CandidateManagement.ViewModels
             _messageService = messageService;
             _navigationService = navigationService;
             _dispatcherService = dispatcherService;
-
-            ToggleLatinNames = false;
         }
 
         // Students per page limit
@@ -83,6 +81,9 @@ namespace CandidateManagement.ViewModels
         private bool _showFilterDialog = false;
 
         [ObservableProperty]
+        private bool _toggleLatinNames = false;
+
+        [ObservableProperty]
         private Gender? _selectedGender;
 
         public IEnumerable<GenderOption> GenderOptions { get; } =
@@ -106,10 +107,10 @@ namespace CandidateManagement.ViewModels
         public string? _sortBy;
 
         [ObservableProperty]
-        private OrderType _orderType = OrderType.Descending;
+        private OrderDirection _orderType = OrderDirection.Descending;
 
-        public IEnumerable<OrderType> OrderTypeOptions { get; } =
-            Enum.GetValues<OrderType>();
+        public IEnumerable<OrderDirection> OrderTypeOptions { get; } =
+            Enum.GetValues<OrderDirection>();
 
         async partial void OnSelectedStudentChanged(Candidate? value)
         {
@@ -134,8 +135,8 @@ namespace CandidateManagement.ViewModels
                 IsLoadingPhoto = true;
                 if (!string.IsNullOrWhiteSpace(value.PhotoKey))
                 {
-                    SelectedStudentPhoto = (await _photoFetchService.GetStudentPhoto(value.PhotoKey)).Value;
-                    ValidPhotoPath = File.Exists(SelectedStudentPhoto?.FilePath);
+                    SelectedStudentPhoto = (await _photoFetchService.GetStudentPhoto(value.PhotoKey)).Value?.FilePath;
+                    ValidPhotoPath = File.Exists(SelectedStudentPhoto);
                 }
                 else
                 {
@@ -144,7 +145,6 @@ namespace CandidateManagement.ViewModels
             }
             catch (OperationCanceledException)
             {
-                SelectedStudent = null;
                 ValidPhotoPath = false;
             }
             finally
@@ -157,7 +157,7 @@ namespace CandidateManagement.ViewModels
         private bool _isLoadingPhoto;
 
         [ObservableProperty]
-        private FileObject? _selectedStudentPhoto;
+        private string? _selectedStudentPhoto;
 
         [ObservableProperty]
         private bool _validPhotoPath;
@@ -196,64 +196,6 @@ namespace CandidateManagement.ViewModels
                 Timeout.Infinite);
         }
 
-        // ច្រោះទិន្នន័យតាម​ការស្វែងរក
-        [ObservableProperty]
-        private StudentField _currentSearchField = StudentField.FullName;
-
-        async partial void OnCurrentSearchFieldChanged(StudentField value)
-        {
-            CurrentPage = 1;
-            await RefreshStudentsViewAsync();
-        }
-
-        // Fields ដែលត្រូវបានរំលងក្នុងការ Filter/Search
-        private static readonly HashSet<StudentField> IgnoredFields =
-        [
-            StudentField.FirstName,
-            StudentField.LastName,
-            StudentField.LatinFirstName,
-            StudentField.LatinLastName,
-            StudentField.PhotoPath,
-            StudentField.CreatedAt,
-        ];
-
-        // ទិន្នន័យសម្រាប់ Combo box ​ច្រោះទិន្នន័យតាម​ការស្វែងរក
-        public IEnumerable<object> StudentFieldItems { get; } =
-            Enum.GetValues<StudentField>()
-                .Where(f =>
-                {
-                    if (IgnoredFields.Contains(f))
-                    {
-                        return false;
-                    }
-                    return true;
-                })
-                .Select(f =>
-                {
-                    return new
-                    {
-                        Value = f,
-                        Name = f.ToString(),
-                        Description = EnumExtensions.GetDescription(f)
-                    };
-                });
-
-        // ផ្លាស់ប្ដូរការបង្ហាញឈ្មោះជាអក្សរខ្មែរនិងឡាតាំង
-        [ObservableProperty]
-        private bool _toggleLatinNames;
-
-        async partial void OnToggleLatinNamesChanged(bool value)
-        {
-            if (CurrentSearchField == StudentField.FullName || CurrentSearchField == StudentField.LatinFullName)
-            {
-                StudentField searchField = value
-                    ? StudentField.LatinFullName
-                    : StudentField.FullName;
-                CurrentSearchField = searchField;
-            }
-            await RefreshStudentsViewAsync();
-        }
-
         [RelayCommand]
         private void ToggleFilterDialog()
         {
@@ -267,7 +209,7 @@ namespace CandidateManagement.ViewModels
             FromDate = null;
             ToDate = null;
             SortBy = string.Empty;
-            OrderType = OrderType.Descending;
+            OrderType = OrderDirection.Descending;
             await RefreshStudentsViewAsync();
         }
 
@@ -297,8 +239,9 @@ namespace CandidateManagement.ViewModels
             DataLoading = true;
             try
             {
-                StudentFilterOptions filterOptions = BuildStudentFilterOptions();
-                ReturnResponse<int> countResponse = await _candidateService.GetAllCountAsync(filterOptions);
+                List<FilterCondition<Candidate>> filters = BuildFilters();
+                ReturnResponse<int> countResponse = await _candidateService.GetAllCountAsync(
+                    filters, DataStateFilter);
                 if (countResponse.Status == Status.Failed)
                 {
                     await _dispatcherService.InvokeAsync(() =>
@@ -308,7 +251,9 @@ namespace CandidateManagement.ViewModels
                     return;
                 }
 
-                ReturnResponse<IEnumerable<Candidate>> studentsResponse = await _candidateService.GetAllAsync(CurrentPage, _studentsPerPage, filterOptions);
+                ReturnResponse<IEnumerable<Candidate>> studentsResponse = await _candidateService.GetAllAsync(
+                    CurrentPage, _studentsPerPage,
+                    filters, DataStateFilter, SortBy, (OrderDirection)OrderType);
                 IEnumerable<Candidate>? students = studentsResponse.Value;
                 if (studentsResponse.Status == Status.Failed || students == null)
                 {
@@ -331,19 +276,17 @@ namespace CandidateManagement.ViewModels
             }
         }
 
-        private StudentFilterOptions BuildStudentFilterOptions()
+        private List<FilterCondition<Candidate>> BuildFilters()
         {
-            return new StudentFilterOptions
-            {
-                Gender = SelectedGender,
-                Search = StudentSearch,
-                SearchField = CurrentSearchField,
-                DataState = DataStateFilter,
-                FromDate = FromDate == null ? FromDate : FromDate.Value.ToUniversalTime(),
-                ToDate = ToDate == null ? ToDate : ToDate.Value.ToUniversalTime(),
-                SortBy = SortBy,
-                OrderBy = OrderType
-            };
+            return
+            [
+                new(c => c.Gender, FilterOperator.Equals, SelectedGender),
+                new(c => c.CreatedAt, FilterOperator.GreaterThanOrEqual,
+                    FromDate.HasValue ? FromDate.Value.ToUniversalTime().Date : null),
+                new(c => c.CreatedAt, FilterOperator.LessThan,
+                    ToDate.HasValue ? ToDate.Value.ToUniversalTime().Date.AddDays(1) : null),
+                new(c => c.FullName, FilterOperator.Contains, StudentSearch)
+            ];
         }
 
         [RelayCommand]

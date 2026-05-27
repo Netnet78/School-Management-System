@@ -25,7 +25,7 @@ namespace SchoolManagement.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.Candidate", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Candidates.Models.Candidate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -137,7 +137,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("Candidates");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Models.User", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Auth.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

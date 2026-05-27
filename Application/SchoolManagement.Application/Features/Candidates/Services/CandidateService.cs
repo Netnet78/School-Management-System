@@ -70,7 +70,7 @@ namespace SchoolManagement.Application.Features.Candidates.Services
             }
             else
             {
-                string message = "?????????????????????????????????, ??????????????????????????????????????????";
+                string message = "ទិន្នន័យសិស្សមាននៅមានភាព​ខ្វះខាត, សូមធ្វើការត្រួតពិនិត្យលើព័ត៌មានបញ្ចូលថែមទៀត!";
                 for (int i = 0; i < response.MissingProperties.Length; i++)
                 {
                     ValidationError missing = response.MissingProperties[i];
@@ -84,11 +84,16 @@ namespace SchoolManagement.Application.Features.Candidates.Services
             }
         }
 
-        public async Task<ReturnResponse<IEnumerable<Candidate>>> GetAllAsync(int page, int pageSize)
+        public async Task<ReturnResponse<IEnumerable<Candidate>>> GetAllAsync(int page, int pageSize,
+            IEnumerable<FilterCondition<Candidate>>? filters,
+            StudentDataStateFilterOptions dataState,
+            string? sortBy,
+            OrderDirection orderBy)
         {
             try
             {
-                IEnumerable<Candidate> candidates = await _candidateRepository.GetCandidatesOnlyAsync(page, pageSize);
+                IEnumerable<Candidate> candidates = await _candidateRepository.GetPagedAsync(
+                    page, pageSize, filters, dataState, sortBy, orderBy);
                 return new()
                 {
                     Status = Status.Success,
@@ -105,34 +110,13 @@ namespace SchoolManagement.Application.Features.Candidates.Services
             }
         }
 
-        public async Task<ReturnResponse<IEnumerable<Candidate>>> GetAllAsync(int page, int pageSize, StudentFilterOptions options)
+        public async Task<ReturnResponse<int>> GetAllCountAsync(
+            IEnumerable<FilterCondition<Candidate>>? filters,
+            StudentDataStateFilterOptions dataState)
         {
             try
             {
-                options ??= new StudentFilterOptions();
-                IEnumerable<Candidate> candidates = await _candidateRepository.GetCandidatesOnlyPagedAsync(page, pageSize, options);
-                return new()
-                {
-                    Status = Status.Success,
-                    Value = candidates,
-                };
-            }
-            catch (Exception ex)
-            {
-                return new()
-                {
-                    Status = Status.Failed,
-                    Message = $"There's an error when trying to retrieve the candidates data\n{ex.Message}"
-                };
-            }
-        }
-
-        public async Task<ReturnResponse<int>> GetAllCountAsync(StudentFilterOptions options)
-        {
-            try
-            {
-                options ??= new StudentFilterOptions();
-                int count = await _candidateRepository.GetCandidatesOnlyCountAsync(options);
+                int count = await _candidateRepository.GetCountAsync(filters, dataState);
                 return new()
                 {
                     Status = Status.Success,
@@ -148,53 +132,5 @@ namespace SchoolManagement.Application.Features.Candidates.Services
                 };
             }
         }
-
-        public async Task<ReturnResponse> InsertCandidateAsync(Candidate candidate)
-        {
-            ValidationResponse response = candidate.HasAllRequiredData();
-
-            if (response.IsValid)
-            {
-                candidate.FirstName = Core.Shared.Extensions.StringExtensions.RemoveHiddenSpaces(candidate.FirstName);
-                candidate.LastName = Core.Shared.Extensions.StringExtensions.RemoveHiddenSpaces(candidate.LastName);
-                candidate.LatinFirstName = Core.Shared.Extensions.StringExtensions.RemoveHiddenSpaces(candidate.LatinFirstName);
-                candidate.LatinLastName = Core.Shared.Extensions.StringExtensions.RemoveHiddenSpaces(candidate.LatinLastName);
-
-                try
-                {
-                    await _candidateRepository.AddAsync(candidate);
-                }
-                catch (Exception ex)
-                {
-                    return new()
-                    {
-                        Status = Status.Failed,
-                        Message = $"There's an error when trying to insert the student:\n{ex.Message}"
-                    };
-                }
-
-                return new()
-                {
-                    Status = Status.Success,
-                    Message = $"Successfully updated the candidate named \"{candidate.FullName}\""
-                };
-            }
-            else
-            {
-                string message = "?????????????????????????????????, ??????????????????????????????????????????";
-                for (int i = 0; i < response.MissingProperties.Length; i++)
-                {
-                    ValidationError missing = response.MissingProperties[i];
-                    message += $"\n{i + 1}. {missing.PropertyName}: {missing.ErrorMessage}";
-                }
-                return new()
-                {
-                    Status = Status.Rejected,
-                    Message = message,
-                };
-            }
-        }
     }
 }
-
-

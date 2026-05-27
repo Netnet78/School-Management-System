@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SchoolManagement.Core.Features.Accessments.Models;
 using SchoolManagement.Core.Features.Auth.Models;
 
 namespace SchoolManagement.Infrastructure.Data
@@ -10,10 +11,12 @@ namespace SchoolManagement.Infrastructure.Data
         public DbSet<Attendance> Attendances { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<Subject> Subjects { get; set; }
+        public DbSet<SubjectComponent> SubjectComponents { get; set; }
         public DbSet<StudentQR> StudentQRs { get; set; }
         public DbSet<StudentClass> StudentClasses { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<StudentPhoto> StudentPhotos { get; set; }
+        public DbSet<Assessment> Assessments { get; set; }
         public DbSet<Score> Scores { get; set; }
         public DbSet<Skill> Skills { get; set; }
         public DbSet<Role> Roles { get; set; }
@@ -35,6 +38,15 @@ namespace SchoolManagement.Infrastructure.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Subject>()
+                .Property(s => s.MaxScore)
+                .HasPrecision(5, 2);
+
+            modelBuilder.Entity<Skill>()
+                .HasOne(s => s.Department)
+                .WithOne(d => d.Skill)
+                .HasForeignKey<Department>(d => d.Id);
+
             modelBuilder.Entity<Student>()
                 .HasOne(s => s.StudentQR)
                 .WithOne(q => q.Student)
@@ -55,10 +67,10 @@ namespace SchoolManagement.Infrastructure.Data
                 .IsUnique();
             modelBuilder.Entity<Candidate>()
                 .Property(c => c.FullName)
-                .HasComputedColumnSql("\"LastName\" || ' ' || \"FirstName\"", true);
+                .HasComputedColumnSql($"\"{nameof(Candidate.LastName)}\" || ' ' || \"{nameof(Candidate.FirstName)}\"", true);
             modelBuilder.Entity<Candidate>()
                 .Property(c => c.LatinFullName)
-                .HasComputedColumnSql("\"LatinLastName\" || ' ' || \"LatinFirstName\"", true);
+                .HasComputedColumnSql($"\"{nameof(Candidate.LatinLastName)}\" || ' ' || \"{nameof(Candidate.LatinFirstName)}\"", true);
             modelBuilder.Entity<Candidate>()
                 .Property(c => c.Id)
                 .ValueGeneratedOnAdd();
@@ -91,6 +103,25 @@ namespace SchoolManagement.Infrastructure.Data
             modelBuilder.Entity<Employee>()
                 .Property(e => e.MaritalStatus)
                 .HasConversion<string>();
+
+            modelBuilder.Entity<ClassSubject>(entity =>
+            {
+                entity.Property(cs => cs.TeacherId)
+                    .HasColumnName("EmployeeId");
+
+                entity.HasOne(cs => cs.Class)
+                    .WithMany(c => c.Subjects)
+                    .HasForeignKey(cs => cs.ClassId);
+
+                entity.HasOne(cs => cs.Teacher)
+                    .WithMany(e => e.ClassSubjects)
+                    .HasForeignKey(cs => cs.TeacherId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(cs => cs.Subject)
+                    .WithMany(s => s.ClassSubjects)
+                    .HasForeignKey(cs => cs.SubjectId);
+            });
 
 
             base.OnModelCreating(modelBuilder);

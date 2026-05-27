@@ -5,18 +5,21 @@ namespace SchoolManagement.Application.Features.Files.Services
         private readonly ISettingsService _settings;
         private readonly IS3Service _s3Service;
         private readonly IStudentPhotoRepository _studentPhotoRepository;
+        private readonly IEmployeePhotoRepository _employeePhotoRepository;
 
         public PhotoUploadService(
             ISettingsService settings,
             IS3Service s3Service,
-            IStudentPhotoRepository studentPhotoRepository)
+            IStudentPhotoRepository studentPhotoRepository,
+            IEmployeePhotoRepository employeePhotoRepository)
         {
             _settings = settings;
             _s3Service = s3Service;
             _studentPhotoRepository = studentPhotoRepository;
+            _employeePhotoRepository = employeePhotoRepository;
         }
 
-        public async Task<FileObject> UploadStudentPhoto(string path, Candidate student)
+        public async Task<ReturnResponse<FileObject>> UploadStudentPhoto(string path, Candidate student)
         {
             Settings config = _settings.GetAllSettings();
 
@@ -34,39 +37,47 @@ namespace SchoolManagement.Application.Features.Files.Services
 
             File.Copy(path, destination, true);
 
-            StudentPhoto studentPhoto = new()
-            {
-                Student = student,
-                FileStatus = FileStatus.PendingUpload,
-                Key = fileName,
-                LastAttempt = DateTime.UtcNow,
-                LocalPath = destination
-            };
-
             ReturnResponse returnResponse = await _s3Service.UploadFile(destination, config.StudentPhotoFolderBucketPath);
 
-            if (returnResponse.Status == Status.Success)
-            {
-                studentPhoto.FileStatus = FileStatus.Uploaded;
-            }
-            else
-            {
-                studentPhoto.FileStatus = FileStatus.LocalOnly;
-            }
+            FileStatus fileStatus = returnResponse.Status == Status.Success
+                ? FileStatus.Uploaded
+                : FileStatus.LocalOnly;
 
-            if (student.Photo != null)
+            StudentPhoto? existingPhoto = await _studentPhotoRepository.GetByIdAsync(student.Id);
+
+            if (existingPhoto != null)
             {
-                await _studentPhotoRepository.UpdateAsync(studentPhoto);
+                existingPhoto.Key = fileName;
+                existingPhoto.LastAttempt = DateTime.UtcNow;
+                existingPhoto.LocalPath = destination;
+                existingPhoto.FileStatus = fileStatus;
+                await _studentPhotoRepository.UpdateAsync(existingPhoto);
             }
             else
             {
+                StudentPhoto studentPhoto = new()
+                {
+                    Id = student.Id,
+                    Student = student,
+                    FileStatus = fileStatus,
+                    Key = fileName,
+                    LastAttempt = DateTime.UtcNow,
+                    LocalPath = destination
+                };
                 await _studentPhotoRepository.AddAsync(studentPhoto);
             }
 
-            return new FileObject(destination);
+            return new()
+            {
+                Status = returnResponse.Status == Status.Success ? Status.Success : Status.Failed,
+                Message = returnResponse.Status == Status.Success
+                    ? "Photo uploaded successfully"
+                    : $"Photo saved locally. S3 upload failed.\n{returnResponse.Message}",
+                Value = new FileObject(destination)
+            };
         }
 
-        public async Task<FileObject> UploadEmployeePhoto(string path)
+        public async Task<ReturnResponse<FileObject>> UploadEmployeePhoto(string path, Employee employee)
         {
             Settings config = _settings.GetAllSettings();
 
@@ -83,13 +94,45 @@ namespace SchoolManagement.Application.Features.Files.Services
             string destination = Path.Combine(photoDirectory, fileName);
 
             File.Copy(path, destination, true);
+
             ReturnResponse returnResponse = await _s3Service.UploadFile(destination, config.EmployeePhotoFolderBucketPath);
-            if (returnResponse.Status == Status.Failed)
+
+            FileStatus fileStatus = returnResponse.Status == Status.Success
+                ? FileStatus.Uploaded
+                : FileStatus.LocalOnly;
+
+            EmployeePhoto? existingPhoto = await _employeePhotoRepository.GetByIdAsync(employee.Id);
+
+            if (existingPhoto != null)
             {
-                throw new Exception(returnResponse.Message);
+                existingPhoto.Key = fileName;
+                existingPhoto.LastAttempt = DateTime.UtcNow;
+                existingPhoto.LocalPath = destination;
+                existingPhoto.FileStatus = fileStatus;
+                await _employeePhotoRepository.UpdateAsync(existingPhoto);
+            }
+            else
+            {
+                EmployeePhoto employeePhoto = new()
+                {
+                    Id = employee.Id,
+                    Employee = employee,
+                    FileStatus = fileStatus,
+                    Key = fileName,
+                    LastAttempt = DateTime.UtcNow,
+                    LocalPath = destination
+                };
+                await _employeePhotoRepository.AddAsync(employeePhoto);
             }
 
-            return new FileObject(destination);
+            return new()
+            {
+                Status = returnResponse.Status == Status.Success ? Status.Success : Status.Failed,
+                Message = returnResponse.Status == Status.Success
+                    ? "Photo uploaded successfully"
+                    : $"Photo saved locally. S3 upload failed.\n{returnResponse.Message}",
+                Value = new FileObject(destination)
+            };
         }
     }
 }

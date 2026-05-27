@@ -1,20 +1,25 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Diagnostics;
 
 namespace SchoolManagement.Presentation.Shared.Features.Authentication.ViewModels
 {
-    public partial class LoginViewModel : ObservableObject
+    public partial class LoginViewModel : ObservableObject, IViewModel
     {
         private readonly IUserSessionService _userSessionService;
         private readonly IUserValidationService _userValidationService;
         private readonly IMessageService _messageService;
+        private readonly INavigationService _navigationService;
 
-        public LoginViewModel(IUserSessionService userSessionService, IUserValidationService userValidationService, IMessageService messageService)
+        public LoginViewModel(
+            IUserSessionService userSessionService,
+            IUserValidationService userValidationService,
+            IMessageService messageService,
+            INavigationService navigationService)
         {
             _userSessionService = userSessionService;
             _userValidationService = userValidationService;
             _messageService = messageService;
+            _navigationService = navigationService;
         }
 
         // MVVM Bindings
@@ -32,8 +37,8 @@ namespace SchoolManagement.Presentation.Shared.Features.Authentication.ViewModel
 
                 string messageHeader = string.Empty;
 
-                if (response.Status == Status.Failed) messageHeader = "??????????!";
-                else if (response.Status == Status.Rejected) messageHeader = "????????! ???? ?????????!";
+                if (response.Status == Status.Failed) messageHeader = "ចូលមិនបានទេ!";
+                else if (response.Status == Status.Rejected) messageHeader = "មិនអនុញ្ញាតជាដាច់ខាត!";
 
                 if (response.Value == null)
                 {
@@ -41,6 +46,9 @@ namespace SchoolManagement.Presentation.Shared.Features.Authentication.ViewModel
                         MessageButton.OK, MessageIcon.Error);
                     return false;
                 }
+
+
+                _navigationService.ClearCache();
 
                 await _userSessionService.SetSession(response.Value.Id);
                 LoginSucceeded?.Invoke(true);
@@ -53,13 +61,9 @@ namespace SchoolManagement.Presentation.Shared.Features.Authentication.ViewModel
                     "\n1. Error establishing connection with the database" +
                     "\n2. Failed to initialize services" +
                     "\n3. Corrupted program files\n" +
-                    "\n If you see this error, contact the administrator or the developer immediately.", "Critical Error",
+                    "\n If you see this error, contact the administrator or the developer immediately." +
+                    $"\nError message:\n{ex.Message}", "Critical Error",
                     MessageButton.OK, MessageIcon.Error);
-
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine(ex.InnerException?.Message);
-                Debug.WriteLine(ex.StackTrace);
-                Debug.WriteLine(ex.Source);
 
                 LoginSucceeded?.Invoke(false);
 

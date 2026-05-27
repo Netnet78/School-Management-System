@@ -1,3 +1,5 @@
+using SchoolManagement.Core.Features.Accessments.Models;
+
 namespace SchoolManagement.Application.Features.Grades.Authorization
 {
     /// <summary>
@@ -19,11 +21,11 @@ namespace SchoolManagement.Application.Features.Grades.Authorization
             if (resource == null)
                 return true;
 
-            if (resource is not Score score)
+            if (resource is not Assessment score)
                 return false;
 
             // Get the student's class
-            Class? studentClass = score.StudentClass.Class;
+            Class? studentClass = score.StudentClass?.Class;
             if (studentClass == null) return false;
 
             // Head Teachers can manage scores in their department
@@ -33,7 +35,7 @@ namespace SchoolManagement.Application.Features.Grades.Authorization
             }
 
             // Teachers can manage scores for students in their classes
-            bool isTeacherOfClass = user.Employee?.Classes
+            bool isTeacherOfClass = user.Employee?.Classes?
                 .Any(c => c.Id == studentClass.Id) == true;
 
             return isTeacherOfClass;

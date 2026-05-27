@@ -1,11 +1,11 @@
 ﻿using SchoolManagement.Core.Features.Classes.Models;
-using SchoolManagement.Core.Features.Grades.Models;
 using SchoolManagement.Core.Features.Attendances.Models;
 using SchoolManagement.Core.Shared.Contracts;
+using SchoolManagement.Core.Features.Accessments.Models;
 
 namespace SchoolManagement.Core.Features.Students.Models
 {
-    public class StudentClass : IEntity
+    public class StudentClass : IEntity, IAuditableEntity
     {
         public int Id { get; set; }
         public DateOnly StartDate { get; set; }
@@ -16,7 +16,12 @@ namespace SchoolManagement.Core.Features.Students.Models
         public Class Class { get; set; } = null!;
         public bool IsActive { get; set; } = false;
 
-        public ICollection<Score> Scores { get; set; } = [];
+        public ICollection<Assessment> Scores { get; set; } = [];
         public ICollection<Attendance> Attendances { get; set; } = [];
+
+        public string GetAuditName()
+        {
+            return Student != null ? Student.FullName : string.Empty;
+        }
     }
 }

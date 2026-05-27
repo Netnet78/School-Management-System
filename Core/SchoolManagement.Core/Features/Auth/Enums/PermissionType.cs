@@ -16,5 +16,7 @@
         ManageAttendances,
 
         ManageCandidates,
+
+        ManageDepartments
     }
 }

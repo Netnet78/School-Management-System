@@ -55,9 +55,9 @@ namespace CandidateManagement.ViewModels
         private bool _hideStudents = true; // Property for hiding students that don't have enough information
 
         [ObservableProperty]
-        private OrderType _orderBy = OrderType.Descending;
-        public IEnumerable<OrderType> OrderTypeOptions { get; } =
-            Enum.GetValues<OrderType>();
+        private OrderDirection _orderBy = OrderDirection.Descending;
+        public IEnumerable<OrderDirection> OrderTypeOptions { get; } =
+            Enum.GetValues<OrderDirection>();
 
         public ICollectionView AllStudentsView { get; private set; }
 
@@ -159,7 +159,7 @@ namespace CandidateManagement.ViewModels
         {
             CreatedAtStart = null;
             CreatedAtEnd = null;
-            OrderBy = OrderType.Descending;
+            OrderBy = OrderDirection.Descending;
         }
 
         [RelayCommand]
@@ -266,9 +266,10 @@ namespace CandidateManagement.ViewModels
         [RelayCommand]
         public async Task LoadStudentsAsync()
         {
-            StudentFilterOptions options = BuildStudentFilterOptions();
+            List<FilterCondition<Candidate>> filters = BuildFilters();
 
-            IEnumerable<Candidate> students = await _studentRepository.GetCandidatesOnlyPagedAsync(1, 100, options);
+            IEnumerable<Candidate> students = await _studentRepository.GetPagedAsync(1, 100,
+                filters, StudentDataStateFilterOptions.All, null, OrderBy);
 
             // Move heavy grouping to background thread, but NOT CollectionViewSource creation
             var groupedData = students
@@ -323,14 +324,15 @@ namespace CandidateManagement.ViewModels
             OnCurrentTabIndexChanged(CurrentTabIndex);
         }
 
-        private StudentFilterOptions BuildStudentFilterOptions()
+        private List<FilterCondition<Candidate>> BuildFilters()
         {
-            return new StudentFilterOptions
-            {
-                FromDate = CreatedAtStart,
-                ToDate = CreatedAtEnd,
-                OrderBy = OrderBy,
-            };
+            return
+            [
+                new(c => c.CreatedAt, FilterOperator.GreaterThanOrEqual,
+                    CreatedAtStart.HasValue ? CreatedAtStart.Value.Date : null),
+                new(c => c.CreatedAt, FilterOperator.LessThan,
+                    CreatedAtEnd.HasValue ? CreatedAtEnd.Value.Date.AddDays(1) : null),
+            ];
         }
 
         public async Task LoadAsync()

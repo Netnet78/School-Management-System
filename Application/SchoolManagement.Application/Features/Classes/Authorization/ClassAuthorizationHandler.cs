@@ -30,7 +30,7 @@ namespace SchoolManagement.Application.Features.Classes.Authorization
             }
 
             // Teachers can only access classes they teach
-            bool isTeacherOfClass = user.Employee?.Classes
+            bool isTeacherOfClass = user.Employee?.Classes?
                 .Any(c => c.Id == @class.Id) == true;
 
             return isTeacherOfClass;

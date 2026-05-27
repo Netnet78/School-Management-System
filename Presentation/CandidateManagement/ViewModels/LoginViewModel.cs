@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SchoolManagement.Application.Features.Classes.Authorization;
+using SchoolManagement.Core.Features.Auth.Enums;
 using System.Diagnostics;
 
 namespace CandidateManagement.ViewModels
@@ -39,6 +41,16 @@ namespace CandidateManagement.ViewModels
                 {
                     _messageService.Show(response.Message, messageHeader,
                         MessageButton.OK, MessageIcon.Error);
+                    return false;
+                }
+
+                if (response.Status == Status.Success && 
+                    !response.Value.IsValidRole(RoleType.Admin) &&
+                    !response.Value.HasValidPermissions(OperatorMode.AND, PermissionType.ManageCandidates))
+                {
+                    _messageService.Show("អ្នកគ្មានសិទ្ធិក្នុងការប្រើប្រាស់កម្មវិធីនេះទេ! ប្រសិនបើអ្នកជឿជាក់ថាវាជាកំហុសបច្ចេកទេស សូមរាយការណ៍ទៅកាន់អ្នកគ្រប់គ្រងភ្លាម!",
+                        "ឈប់ ឈប់ សិន!",
+                        MessageButton.OK, MessageIcon.Hand);
                     return false;
                 }
 

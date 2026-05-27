@@ -18,7 +18,6 @@ namespace SchoolManagement.Presentation.Shared.Services
         public IViewModel? PreviousViewModel { get; private set; }
 
         public event Action<IViewModel?, IViewModel>? OnViewModelChanged;
-
         public Task NavigateAsync<TViewModel>(INavigationParams? @params = null) where TViewModel : IViewModel
         {
             return NavigateAsync(typeof(TViewModel), @params);
@@ -32,14 +31,14 @@ namespace SchoolManagement.Presentation.Shared.Services
                 _vmCache[viewModelType] = viewmodel;
             }
 
-            if (viewmodel is IAsyncLoadable loadable)
-            {
-                await loadable.LoadAsync();
-            }
-
             if (viewmodel is INavigationAware aware && @params != null)
             {
                 await aware.OnNavigatedToAsync(@params);
+            }
+
+            if (viewmodel is IAsyncLoadable loadable)
+            {
+                await loadable.LoadAsync();
             }
 
             await _dispatcherService.InvokeAsync(async () =>
@@ -50,6 +49,32 @@ namespace SchoolManagement.Presentation.Shared.Services
             });
 
             await Task.CompletedTask;
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool?> OpenDialog<TViewModel, TView>(Type? vm = null)
+            where TViewModel : IViewModel
+            where TView : IDialogWindow
+        {
+            TViewModel viewModel = _serviceProvider.GetRequiredService<TViewModel>();
+            TView view = _serviceProvider.GetRequiredService<TView>();
+
+            try
+            {
+                return view.OpenDialog(viewModel);
+            }
+            finally
+            {
+                if (vm != null)
+                {
+                    await NavigateAsync(vm);
+                }
+            }
+        }
+
+        public void ClearCache()
+        {
+            _vmCache.Clear();
         }
     }
 }

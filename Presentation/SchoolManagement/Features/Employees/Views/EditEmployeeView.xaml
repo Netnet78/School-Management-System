@@ -1,0 +1,239 @@
+<UserControl x:Class="SchoolManagement.Presentation.Features.Employees.Views.EditEmployeeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:conv="clr-namespace:SchoolManagement.Presentation.Shared.XAMLConverters;assembly=SchoolManagement.Presentation.Shared"
+             xmlns:viewmodels="clr-namespace:SchoolManagement.Presentation.Features.Employees.ViewModels"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             d:DataContext="{d:DesignInstance Type=viewmodels:EditEmployeeViewModel}"
+             mc:Ignorable="d"
+             d:DesignHeight="1600"
+             d:DesignWidth="1100">
+    <UserControl.Resources>
+        <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" Collapse="True" />
+        <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverterReversed" Collapse="True" IsReversed="True" />
+        <conv:DateOnlyToDateTimeConverter x:Key="DateOnlyToDateTimeConverter" />
+        <conv:ValidPathToVisibilityConverter x:Key="ValidPathToVisibilityConverter" Reversed="False" />
+        <conv:ValidPathToVisibilityConverter x:Key="ValidPathToVisibilityConverterReversed" Reversed="True" />
+    </UserControl.Resources>
+
+    <Grid Background="White" TextElement.FontFamily="{StaticResource NotoSansKhmer}" TextElement.FontSize="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="20" VerticalAlignment="Center">
+            <Button Command="{Binding CancelCommand}" Background="Transparent" BorderThickness="0" Padding="0" Margin="0,0,10,0">
+                <materialDesign:PackIcon Kind="ArrowLeft" Width="28" Height="28" Foreground="{DynamicResource MaterialDesign.Brush.Secondary}" />
+            </Button>
+            <StackPanel>
+                <TextBlock Text="ទម្រង់​កែប្រែបុគ្គលិក" FontSize="24" FontWeight="Bold" />
+                <TextBlock Text="{Binding EmployeeName, StringFormat='កំពុងកែប្រែ៖ {0}'}" FontSize="16" Opacity=".7" Margin="0,4,0,0" />
+            </StackPanel>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="20,0,20,20">
+            <StackPanel>
+                <Border Background="{DynamicResource MaterialDesign.Brush.Secondary}"
+                        TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"
+                        Padding="15" Margin="20,20" CornerRadius="4">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <materialDesign:PackIcon Kind="Information" Width="20" Height="20" Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" Margin="0,0,8,0" />
+                            <TextBlock Text="ព័ត៌មានមូលដ្ឋាន" FontSize="18" FontWeight="Bold" />
+                        </StackPanel>
+
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" TextElement.FontFamily="{StaticResource NotoSansKhmer}">
+                            <StackPanel Margin="5">
+                                <TextBlock Text="ឈ្មោះពេញ" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}" Padding="8" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="5">
+                                <TextBlock Text="ឈ្មោះឡាតាំង" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding LatinFullName, UpdateSourceTrigger=PropertyChanged}" Padding="8" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Margin="5">
+                                <TextBlock Text="តួនាទី" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding Position, UpdateSourceTrigger=PropertyChanged}" Padding="8" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="5" Visibility="{Binding CanChooseDepartment, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock Text="ផ្នែក" Margin="0,0,0,4" />
+                                <ComboBox ItemsSource="{Binding Departments}"
+                                          SelectedValue="{Binding DepartmentId}"
+                                          SelectedValuePath="Id"
+                                          Padding="8">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock>
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="{Binding KhmerName}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                                                <Setter Property="Text" Value="No department"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Grid.Row="2" Margin="5">
+                                <TextBlock Text="ភេទ" Margin="0,0,0,4" />
+                                <ComboBox ItemsSource="{Binding GenderOptions}"
+                                          SelectedValue="{Binding Gender}"
+                                          SelectedValuePath="Value"
+                                          DisplayMemberPath="Description"
+                                          Padding="8" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="2" Grid.Column="1" Margin="5">
+                                <TextBlock Text="ស្ថានភាព" Margin="0,0,0,4" />
+                                <CheckBox IsChecked="{Binding IsActive}" Content="បុគ្គលិកកំពុងនៅបម្រើ" Padding="8,10,8,8" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="3" Margin="5">
+                                <TextBlock Text="ថ្ងៃចូលបម្រើ" Margin="0,0,0,4" />
+                                <DatePicker SelectedDate="{Binding HiredDate}" Padding="8" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="3" Grid.Column="1" Margin="5">
+                                <TextBlock Text="ថ្ងៃកំណើត" Margin="0,0,0,4" />
+                                <DatePicker SelectedDate="{Binding DateOfBirth}" Padding="8" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="4" Margin="5">
+                                <TextBlock Text="ទីកន្លែងកំណើត" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding PlaceOfBirth, UpdateSourceTrigger=PropertyChanged}" Padding="8" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="4" Grid.Column="1" Margin="5">
+                                <TextBlock Text="លេខទំនាក់ទំនង" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding ContactNumber, UpdateSourceTrigger=PropertyChanged}" Padding="8" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="5" Margin="5">
+                                <TextBlock Text="ស្ថានភាពអាពាហ៍ពិពាហ៍" Margin="0,0,0,4" />
+                                <ComboBox ItemsSource="{Binding MaritalStatusOptions}"
+                                          SelectedValue="{Binding MaritalStatus}"
+                                          SelectedValuePath="Value"
+                                          DisplayMemberPath="Description"
+                                          Padding="8" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="5" Grid.Column="1" Margin="5">
+                                <TextBlock Text="កាលបរិច្ឆេទប្រាក់ខែ" Margin="0,0,0,4" />
+                                <DatePicker SelectedDate="{Binding SalaryDate}" Padding="8" />
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Text="អាសយដ្ឋាន" Margin="5,10,5,4" />
+                        <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}"
+                                 Padding="8"
+                                 Height="70"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 Margin="5,0,5,0" />
+
+                        <Grid Margin="5,12,5,0" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto">
+                            <StackPanel Margin="0,0,8,0">
+                                <TextBlock Text="ប្រាក់ខែមូលដ្ឋាន" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding BaseSalary, UpdateSourceTrigger=PropertyChanged}" Padding="8" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                <TextBlock Text="ប្រាក់បន្ថែម" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding Bonus, UpdateSourceTrigger=PropertyChanged}" Padding="8" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Margin="0,8,8,0">
+                                <TextBlock Text="កាត់ប្រាក់" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding Deduction, UpdateSourceTrigger=PropertyChanged}" Padding="8" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="8,8,0,0">
+                                <TextBlock Text="ពន្ធ" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding Tax, UpdateSourceTrigger=PropertyChanged}" Padding="8" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{DynamicResource MaterialDesign.Brush.Secondary}"
+                        TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"
+                        Padding="15" Margin="20,20" CornerRadius="4">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <materialDesign:PackIcon Kind="PhotoCamera" Width="20" Height="20" Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" Margin="0,0,8,0" />
+                            <TextBlock Text="រូបថត" FontSize="18" FontWeight="Bold" />
+                        </StackPanel>
+
+                        <Border Height="200" BorderBrush="White" BorderThickness="1">
+                            <Grid>
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Visibility="{Binding CurrentPhoto, Converter={StaticResource ValidPathToVisibilityConverterReversed}}">
+                                    <TextBlock Text="មិនទាន់បានជ្រើសរូបថត"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontSize="16"
+                                               Margin="0 20" />
+                                    <Button Command="{Binding UploadPhotoCommand}" 
+                                            Background="{DynamicResource MaterialDesign.Brush.Primary}">
+                                        <TextBlock Text="ជ្រើសរូបថត" FontSize="16" />
+                                    </Button>
+                                </StackPanel>
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Visibility="{Binding CurrentPhoto, Converter={StaticResource ValidPathToVisibilityConverter}}">
+                                    <Border BorderBrush="White"
+                                            Height="125"
+                                            Width="100"
+                                            Margin="0 0 0 10"
+                                            BorderThickness="1">
+                                        <Image RenderOptions.BitmapScalingMode="HighQuality"
+                                               Source="{Binding CurrentPhoto}" />
+                                    </Border>
+                                    <UniformGrid Rows="1" Columns="2">
+                                        <Button Command="{Binding UploadPhotoCommand}" 
+                                                Background="{DynamicResource MaterialDesign.Brush.Primary}"
+                                                Margin="5">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="Edit" />
+                                                <TextBlock Margin="5 0 0 0" Text="ប្តូរ" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Command="{Binding DeletePhotoCommand}" 
+                                                Margin="5"
+                                                Background="{DynamicResource MaterialDesign.Brush.Primary}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="Delete" />
+                                                <TextBlock Margin="5 0 0 0" Text="លុប" />
+                                            </StackPanel>
+                                        </Button>
+                                    </UniformGrid>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid Grid.Row="2" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20">
+                <ProgressBar IsIndeterminate="True" Width="200" Height="20" Background="{DynamicResource MaterialDesign.Brush.Secondary}" />
+                <TextBlock Text="កំពុងរក្សាទុក..." HorizontalAlignment="Center" FontSize="16" Margin="0,5,0,0" />
+            </StackPanel>
+        </Grid>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20"
+                    Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverterReversed}}">
+                    <Button Command="{Binding CancelCommand}" Margin="5" FontSize="16" Background="Red" Foreground="White">
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="Close" Width="18" Height="18" Margin="0,0,5,0" />
+                    <TextBlock Text="បោះបង់" />
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding SaveCommand}" Margin="5" FontSize="16" Background="#4CAF50" Foreground="White">
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="ContentSave" Width="18" Height="18" Margin="0,0,5,0" />
+                    <TextBlock Text="រក្សាទុក" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

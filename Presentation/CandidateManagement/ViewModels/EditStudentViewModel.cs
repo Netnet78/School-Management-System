@@ -94,10 +94,17 @@ namespace CandidateManagement.ViewModels
             {
                 if (_studentPhotoBackup != null)
                 {
-                    FileObject newPhoto = await _photoUploadService.UploadStudentPhoto(_studentPhotoBackup, EditedStudent);
+                    ReturnResponse<FileObject> uploadResponse = await _photoUploadService.UploadStudentPhoto(_studentPhotoBackup, EditedStudent);
 
-                    // delete old photo AFTER success
-                    if (!string.IsNullOrEmpty(EditedStudent.PhotoKey) &&
+                    if (uploadResponse.Status == Status.Failed)
+                    {
+                        _messageService.Show($"{uploadResponse.Message}\n" +
+                            $"Please stay online and the photo will be uploaded!", "Photo Upload Warning", MessageButton.OK, MessageIcon.Hand);
+                    }
+
+                    // delete old photo AFTER upload
+                    if (uploadResponse.Status == Status.Success &&
+                        !string.IsNullOrEmpty(EditedStudent.PhotoKey) &&
                         EditedStudent.Photo != null &&
                         !string.IsNullOrEmpty(EditedStudent.Photo.Key)
                     )
@@ -105,8 +112,10 @@ namespace CandidateManagement.ViewModels
                         await _photoDeleteService.DeleteStudentPhoto(EditedStudent);
                     }
 
-
-                    EditedStudent.Photo!.Key = newPhoto.FileKey;
+                    if (uploadResponse.Value != null)
+                    {
+                        EditedStudent.Photo!.Key = uploadResponse.Value.FileKey;
+                    }
                 }
 
                 await _candidateService.UpdateCandidateAsync(EditedStudent);
@@ -117,8 +126,8 @@ namespace CandidateManagement.ViewModels
             }
             catch (Exception ex)
             {
-                // RequestClose?.Invoke(false);
-                _messageService.Show("??????????????????????????????????? ????????????????????????????????????", "?????????????????", MessageButton.OK, MessageIcon.Error);
+                _messageService.Show("មានកំហុសបច្ចេកទេសមួយអំឡុងពេលដែលកំពុងរក្សាទុកទិន្នន័យនៃសិស្ស!", "មានកំហុសបច្ចេកទេស", 
+                    MessageButton.OK, MessageIcon.Error);
                 _messageService.Show(ex.Message);
             }
         }
@@ -127,8 +136,8 @@ namespace CandidateManagement.ViewModels
         private async Task Cancel()
         {
             MessageResult cancelConfirm = _messageService
-                .Show("???????????????????? ????????????????????????????????????????????????????",
-                "??????!", MessageButton.YesNo, MessageIcon.Question);
+                .Show("តើអ្នកប្រាកដទេថានឹងមិនរក្សាទុកនូវអ្វីៗដែលបានផ្លាស់ប្ដូរសម្រាប់សិស្សនេះ?",
+                "ឈប់សិន!", MessageButton.YesNo, MessageIcon.Question);
 
             if (cancelConfirm != MessageResult.Yes)
                 return;

@@ -1,4 +1,4 @@
-using System.Linq.Expressions;
+using SchoolManagement.Infrastructure.Shared.Contracts;
 
 namespace SchoolManagement.Application.Features.Shared.Services
 {
@@ -12,12 +12,12 @@ namespace SchoolManagement.Application.Features.Shared.Services
             _repository = repository;
         }
 
-        public async Task<ReturnResponse<IEnumerable<TEntity>>> GetAllAsync(
+        public virtual async Task<ReturnResponse<IEnumerable<TEntity>>> GetAllAsync(
             int page = 1,
             int? pageSize = null,
             IEnumerable<FilterCondition<TEntity>>? filters = null,
-            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-            params Expression<Func<TEntity, object?>>[]? includes)
+            IEnumerable<SortCriteria<TEntity>>? orderBy = null,
+            params string[]? includes)
         {
             try
             {
@@ -38,33 +38,7 @@ namespace SchoolManagement.Application.Features.Shared.Services
             }
         }
 
-        public async Task<ReturnResponse<IEnumerable<TEntity>>> GetAllAsync(
-            Expression<Func<TEntity, bool>>? predicate = null,
-            int page = 1,
-            int? pageSize = null,
-            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-            params Expression<Func<TEntity, object?>>[]? includes)
-        {
-            try
-            {
-                IEnumerable<TEntity> entities = await _repository.FindAsync(predicate, page, pageSize, orderBy, includes);
-                return new()
-                {
-                    Status = Status.Success,
-                    Value = entities,
-                };
-            }
-            catch (Exception ex)
-            {
-                return new()
-                {
-                    Status = Status.Failed,
-                    Message = $"Could not retrieve {typeof(TEntity).Name} data.\n{ex.Message}",
-                };
-            }
-        }
-
-        public async Task<ReturnResponse<int>> GetAllCountAsync(
+        public virtual async Task<ReturnResponse<int>> GetAllCountAsync(
             int page = 1,
             int? pageSize = null,
             IEnumerable<FilterCondition<TEntity>>? filters = null)

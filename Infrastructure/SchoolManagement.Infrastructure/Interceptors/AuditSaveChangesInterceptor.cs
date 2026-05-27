@@ -1,17 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
+using SchoolManagement.Core.Shared.Attributes;
+using SchoolManagement.Core.Features.AuditLogs.Enums;
 
 namespace SchoolManagement.Infrastructure.Interceptors
 {
     public class AuditSaveChangesInterceptor : SaveChangesInterceptor
     {
-        private readonly IUserSessionService _userSessionService;
+        private readonly IServiceProvider _serviceProvider;
 
         public AuditSaveChangesInterceptor(
-            IUserSessionService userSessionService)
+            IServiceProvider serviceProvider)
         {
-            _userSessionService = userSessionService;
+            _serviceProvider = serviceProvider;
         }
 
         public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
@@ -24,44 +27,70 @@ namespace SchoolManagement.Infrastructure.Interceptors
             if (context == null)
                 return await base.SavingChangesAsync(eventData, result, cancellationToken);
 
+            IUserSessionService? userSessionService = _serviceProvider.GetService<IUserSessionService>();
             List<AuditLog> logs = [];
 
             foreach (EntityEntry entry in context.ChangeTracker.Entries())
             {
-                if (entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+                if (entry.State is not (EntityState.Added or EntityState.Modified or EntityState.Deleted))
+                    continue;
+
+                Type entityType = entry.Entity.GetType();
+
+                AuditIgnoreTypeAttribute? ignoreAttr = entityType
+                    .GetCustomAttributes(typeof(AuditIgnoreTypeAttribute), inherit: true)
+                    .Cast<AuditIgnoreTypeAttribute>()
+                    .FirstOrDefault();
+
+                if (ignoreAttr?.Operation.HasFlag(AuditOperation.All) == true)
+                    continue;
+
+                AuditOperation operation = entry.State switch
                 {
-                    string? displayName = (entry.Entity as IAuditableEntity)?.GetAuditName();
-                    int? currentUserId = _userSessionService.CurrentUser?.Id;
+                    EntityState.Added => AuditOperation.Insert,
+                    EntityState.Modified => AuditOperation.Update,
+                    EntityState.Deleted => AuditOperation.Delete,
+                    _ => AuditOperation.None,
+                };
 
-                    AuditLog log = new AuditLog()
+                if (ignoreAttr != null && !ignoreAttr.Operation.HasFlag(operation))
+                    continue;
+
+                string? displayName = (entry.Entity as IAuditableEntity)?.GetAuditName();
+                int? currentUserId = userSessionService?.CurrentUser?.Id;
+
+                AuditLog log = new()
+                {
+                    Action = entry.State switch
                     {
-                        Action = entry.State.ToString(),
-                        EntityType = entry.Entity.GetType().Name,
-                        EntityName = displayName,
-                        Timestamp = DateTime.UtcNow,
-                        UserId = currentUserId
-                    };
+                        EntityState.Added => "Inserted",
+                        EntityState.Modified => "Updated",
+                        EntityState.Deleted => "Deleted",
+                        _ => entry.State.ToString(),
+                    },
+                    EntityType = entityType.Name,
+                    EntityName = displayName,
+                    Timestamp = DateTime.UtcNow,
+                    UserId = currentUserId
+                };
 
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            log.NewValues = entry.CurrentValues.SerializeProperties();
-                            break;
-                        case EntityState.Modified:
-                            if (string.IsNullOrWhiteSpace(log.OldValues))
-                                break;
-                            log.OldValues = JsonDataHelper.SerializeModifiedProperties(
-                                entry.OriginalValues, entry.CurrentValues, true);
-                            log.NewValues = JsonDataHelper.SerializeModifiedProperties(
-                                entry.CurrentValues, entry.OriginalValues, true);
-                            break;
-                        case EntityState.Deleted:
-                            log.OldValues = entry.OriginalValues.SerializeProperties();
-                            break;
-                    }
-
-                    logs.Add(log);
+                switch (entry.State)
+                {
+                    case EntityState.Added:
+                        log.NewValues = entry.CurrentValues.SerializeProperties();
+                        break;
+                    case EntityState.Modified:
+                        log.OldValues = JsonDataHelper.SerializeModifiedProperties(
+                            entry.OriginalValues, entry.CurrentValues, true);
+                        log.NewValues = JsonDataHelper.SerializeModifiedProperties(
+                            entry.CurrentValues, entry.OriginalValues, true);
+                        break;
+                    case EntityState.Deleted:
+                        log.OldValues = entry.OriginalValues.SerializeProperties();
+                        break;
                 }
+
+                logs.Add(log);
             }
 
             if (logs.Count > 0)
@@ -73,4 +102,3 @@ namespace SchoolManagement.Infrastructure.Interceptors
         }
     }
 }
-

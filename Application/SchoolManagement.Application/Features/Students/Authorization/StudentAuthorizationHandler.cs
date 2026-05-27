@@ -18,7 +18,7 @@ namespace SchoolManagement.Application.Features.Students.Authorization
             if (resource is not Student student)
                 return false;
 
-            Class? studentClass = student.Classes
+            Class? studentClass = student.Classes?
                 .FirstOrDefault(sc => sc.IsActive)?
                 .Class;
 
@@ -30,7 +30,7 @@ namespace SchoolManagement.Application.Features.Students.Authorization
                     studentClass.Generation.DepartmentId;
             }
 
-            bool isTeacherOfClass = user.Employee?.Classes
+            bool isTeacherOfClass = user.Employee?.Classes?
                 .Any(c => c.Id == studentClass.Id) == true;
 
             return isTeacherOfClass;

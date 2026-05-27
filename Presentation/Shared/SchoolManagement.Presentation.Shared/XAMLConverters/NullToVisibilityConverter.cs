@@ -12,7 +12,7 @@ namespace SchoolManagement.Presentation.Shared.XAMLConverters
         {
             bool isNull = (value == null) || (value is string s && string.IsNullOrWhiteSpace(s));
 
-            if (parameter is string p && p == "IsReversed") isNull = !isNull;
+            if (parameter is string p && p.Equals("isreversed", StringComparison.CurrentCultureIgnoreCase)) isNull = !isNull;
 
             return isNull ? (CollapseWhenNull ? Visibility.Collapsed : Visibility.Hidden) : Visibility.Visible;
         }

@@ -11,7 +11,18 @@ namespace SchoolManagement.Core.Features.Students.Models
         public string QRCodeValue { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
         public Student Student { get; set; } = null!;
-        public DateTime GeneratedAt { get; set; } = DateTime.Now;
+        public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
+
+        public StudentQR()
+        {
+
+        }
+
+        public StudentQR(Student student)
+        {
+            QRCodeValue = Guid.NewGuid().ToString();
+            Student = student;
+        }
     }
 }
 

@@ -18,6 +18,7 @@
         <conv:CountToVisiblityConverter x:Key="CountToVisiblityConverterReversed" IsReversed="True"/>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" Collapse="True" />
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverterReversed" Collapse="True" IsReversed="True"/>
+        <conv:UTCToLocalTimeConverter x:Key="UTCToLocalTimeConverter" />
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -62,27 +63,32 @@
                     <Border CornerRadius="12" Padding="20" Margin="5" Background="{DynamicResource MaterialDesign.Brush.Secondary}">
                         <StackPanel>
                             <TextBlock Text="ចំនួនសិស្សសរុប" Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" FontSize="16" Margin="0 0 0 10"/>
-                            <TextBlock Text="{Binding TotalStudents, StringFormat=0 នាក់}"
+                            <TextBlock Text="{Binding TotalStudents, StringFormat=0 នាក់, UpdateSourceTrigger=PropertyChanged}"
                                    FontSize="28"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"/>
                         </StackPanel>
                     </Border>
 
-                    <Border CornerRadius="12" Padding="20" Margin="5" Background="{DynamicResource MaterialDesign.Brush.Secondary}">
+                    <Border CornerRadius="12" Padding="20" Margin="5" 
+                            Background="{DynamicResource MaterialDesign.Brush.Secondary}">
                         <StackPanel>
                             <TextBlock Text="ថ្នាក់រៀនសរុប" Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" FontSize="16" Margin="0 0 0 10"/>
-                            <TextBlock Text="{Binding TotalClasses, StringFormat=0 បន្ទប់}"
+                            <TextBlock Text="{Binding TotalClasses, StringFormat=0 បន្ទប់, UpdateSourceTrigger=PropertyChanged}"
                                    FontSize="28"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"/>
                         </StackPanel>
                     </Border>
 
-                    <Border CornerRadius="12" Padding="20" Margin="5" Background="{DynamicResource MaterialDesign.Brush.Secondary}">
+                    <Border CornerRadius="12" Padding="20" Margin="5" 
+                            Background="{DynamicResource MaterialDesign.Brush.Secondary}"
+                            Visibility="{Binding IsHeadTeacherOrAdmin, 
+                                Converter={StaticResource BooleanToVisibilityConverter},
+                                UpdateSourceTrigger=PropertyChanged}">
                         <StackPanel>
                             <TextBlock Text="ចំនួនគ្រូបង្រៀន" Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" FontSize="16" Margin="0 0 0 10"/>
-                            <TextBlock Text="{Binding TotalTeachers, StringFormat=0 នាក់}"
+                            <TextBlock Text="{Binding TotalTeachers, StringFormat=0 នាក់, UpdateSourceTrigger=PropertyChanged}"
                                    FontSize="28"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"/>
@@ -92,7 +98,7 @@
                     <Border CornerRadius="12" Padding="20" Margin="5" Background="{DynamicResource MaterialDesign.Brush.Secondary}">
                         <StackPanel>
                             <TextBlock Text="ចំនួនសិស្សស្នាក់ក្នុង" Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" FontSize="16" Margin="0 0 0 10"/>
-                            <TextBlock Text="{Binding TotalStayInStudents, StringFormat=0 នាក់}"
+                            <TextBlock Text="{Binding TotalStayInStudents, StringFormat=0 នាក់, UpdateSourceTrigger=PropertyChanged}"
                                    FontSize="28"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"/>
@@ -111,6 +117,7 @@
                     <lvc:CartesianChart Series="{Binding StudentsPerClassChart.Series}"
                                         XAxes="{Binding StudentsPerClassChart.XAxes}"
                                         YAxes="{Binding StudentsPerClassChart.YAxes}"
+                                        Height="200"
                                         Visibility="{Binding StudentsPerClassChart.IsEmpty,
                                             Converter={StaticResource BooleanToVisibilityConverterReversed}}"/>
 
@@ -180,7 +187,8 @@
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse Width="16" Height="16" Fill="#F155E2" Margin="0 10"/>
-                                <TextBlock Margin="10 0 0 0" Text="{Binding ExcusedCount}"/>
+                                <TextBlock Margin="10 0 0 0" Text="{Binding ExcusedCount}"
+                                           VerticalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse Width="16" Height="16" Fill="#07DF03"/>
@@ -210,18 +218,21 @@
                         <ListBox ItemsSource="{Binding RecentStudents}"
                                  BorderThickness="0"
                                  Background="Transparent"
+                                 HorizontalContentAlignment="Stretch"
                                  Visibility="{Binding RecentStudents, Converter={StaticResource CountToVisiblityConverter}, FallbackValue=Collapsed}">
 
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Margin="0,5">
-                                        <TextBlock Text="{Binding FullName}"
-                                                   FontWeight="Bold"
-                                                   Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"/>
+                                    <Border Background="{DynamicResource MaterialDesign.Brush.Secondary}" 
+                                            Padding="5" CornerRadius="6">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding FullName}"
+                                                       Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"/>
 
-                                        <TextBlock Text="{Binding CreatedDate}"
-                                                   Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" FontSize="16"/>
-                                    </StackPanel>
+                                            <TextBlock Text="{Binding CreatedAt, Converter={StaticResource UTCToLocalTimeConverter}}"
+                                                       Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"/>
+                                        </StackPanel>
+                                    </Border>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
 

@@ -120,13 +120,14 @@
                                 <TextBlock Text="រូបថតសិស្សានុសិស្ស" HorizontalAlignment="Center" Margin="0 0 0 20" FontWeight="Bold"/>
                                 <Image Width="220" Height="220"
                                    Stretch="Uniform"
-                                   Visibility="{Binding CurrentPhoto.FilePath, Converter={StaticResource ValidPathToVisibilityConverter}, FallbackValue='Collapsed'}"
-                                   Source="{Binding CurrentPhoto.FilePath, Converter={StaticResource PhotoPathToImageSourceConverter}}"/>
+                                   Visibility="{Binding CurrentPhoto, Converter={StaticResource ValidPathToVisibilityConverter}, FallbackValue='Collapsed'}"
+                                   Source="{Binding CurrentPhoto, Converter={StaticResource PhotoPathToImageSourceConverter}}"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
 
                                 <Border Width="180" Height="220"
                                     BorderThickness="2"
                                     BorderBrush="{DynamicResource MaterialDesign.Brush.Secondary}"
-                                    Visibility="{Binding CurrentPhoto.FilePath, Converter={StaticResource ValidPathToVisibilityConverterReversed}}">
+                                    Visibility="{Binding CurrentPhoto, Converter={StaticResource ValidPathToVisibilityConverterReversed}}">
                                     <TextBlock Text="?"
                                         FontSize="72"
                                         HorizontalAlignment="Center"

@@ -4,27 +4,25 @@ namespace SchoolManagement.Application.Features.Classes.Authorization
     {
         public static bool IsAdmin(this User user)
         {
-            if (user.Role.Name.Equals(RoleType.Admin.ToString(), StringComparison.CurrentCultureIgnoreCase)) return true;
-            else return false;
+            return user.Role?.Name.Equals(RoleType.Admin.ToString(), StringComparison.OrdinalIgnoreCase) == true;
         }
 
         public static bool IsHeadTeacher(this User user)
         {
-            if (user.Role.Name.Equals(RoleType.HeadTeacher.ToString(), StringComparison.CurrentCultureIgnoreCase)) return true;
-            else return false;
+            return user.Role?.Name.Equals(RoleType.HeadTeacher.ToString(), StringComparison.OrdinalIgnoreCase) == true;
         }
 
         public static bool IsValidRole(this User user, RoleType role)
         {
-            if (user.Role.Name.Equals(role.ToString(), StringComparison.CurrentCultureIgnoreCase)) return true;
-            else return false;
+            return user.Role?.Name.Equals(role.ToString(), StringComparison.OrdinalIgnoreCase) == true;
         }
 
-        public static bool HasValidPermissions(this User user, OperatorMode operatorMode, PermissionType[] requirements)
+        public static bool HasValidPermissions(this User user, OperatorMode operatorMode, params PermissionType[] requirements)
         {
-            HashSet<string> userPermissions = user.Role.Permissions
+            HashSet<string> userPermissions = user.Role?.Permissions?
                 .Select(p => p.Name)
-                .ToHashSet();
+                .ToHashSet(StringComparer.OrdinalIgnoreCase)
+                ?? [];
 
             bool hasAny = false;
 
@@ -45,7 +43,7 @@ namespace SchoolManagement.Application.Features.Classes.Authorization
                 }
             }
 
-            if (!hasAny && operatorMode.Equals(OperatorMode.OR)) return false;
+            if (!hasAny && operatorMode == OperatorMode.OR) return false;
 
             return true;
         }

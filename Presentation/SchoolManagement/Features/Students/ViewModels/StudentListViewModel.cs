@@ -1,6 +1,10 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SchoolManagement.Application.Features.Classes.Authorization;
+using SchoolManagement.Core.Features.Departments.Models;
+using SchoolManagement.Core.Features.Generations.Models;
+using SchoolManagement.Presentation.Shared.Features.Students.Observables;
+using SchoolManagement.Presentation.Shared.Features.Students.Params;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 
@@ -11,7 +15,9 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
         private readonly IStudentService _studentService;
         private readonly IAuthorizationService _authorizationService;
         private readonly IMessageService _messageService;
-        private readonly User _currentUser;
+        private readonly INavigationService _navigationService;
+        private readonly IDepartmentService _departmentService;
+        private readonly IGenerationService _generationService;
 
         private const int DefaultPageSize = 10;
 
@@ -20,31 +26,32 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
         public StudentListViewModel(
             IStudentService studentService,
             IAuthorizationService authorizationService,
-            IMessageService messageService)
+            IMessageService messageService,
+            INavigationService navigationService,
+            IDepartmentService departmentService,
+            IGenerationService generationService)
         {
             _studentService = studentService;
             _authorizationService = authorizationService;
             _messageService = messageService;
+            _navigationService = navigationService;
+            _departmentService = departmentService;
+            _generationService = generationService;
 
-            _currentUser = _authorizationService.CurrentUser;
-
-            Filters = new()
-            {
-                IsActive = true,
-            };
             Students = new();
+            Departments = new();
+            Generations = new();
 
-            Filters.PropertyChanged += OnFiltersUpdated;
+            Filters.PropertyChanged += OnFilterPropertyChanged;
         }
 
-        [ObservableProperty]
-        private StudentFilterObservableModel _filters;
-
-        [ObservableProperty]
-        private bool _showInactiveStudents = false;
+        public StudentFilterObservableModel Filters { get; } = new();
 
         [ObservableProperty]
         private ObservableCollection<Student> _students;
+
+        [ObservableProperty]
+        private Student? _selectedStudent;
 
         [ObservableProperty]
         private bool _isLoading;
@@ -77,21 +84,36 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
         private bool _canDeleteStudents;
 
         [ObservableProperty]
+        private bool _canAssignClass;
+
+        [ObservableProperty]
         private bool _isAdmin;
 
+        [ObservableProperty]
+        private ObservableCollection<Department> _departments;
+
+        [ObservableProperty]
+        private ObservableCollection<Generation> _generations;
+
+        [ObservableProperty]
+        private Department? _selectedDepartment;
+
+        [ObservableProperty]
+        private Generation? _selectedGeneration;
+
+        public bool HasSelectedDepartment => SelectedDepartment != null;
+
         [RelayCommand]
-        private async Task LoadStudents()
+        private async Task LoadStudentsAsync()
         {
             IsLoading = true;
 
             try
             {
-                if (_currentUser.IsAdmin())
-                {
-                    ShowInactiveStudents = true;
-                }
+                List<FilterCondition<Student>> filters = Filters.BuildFilters();
+                IEnumerable<SortCriteria<Student>> order = Filters.BuildOrder();
 
-                var response = await _studentService.GetStudentsAsync(CurrentPage, DefaultPageSize, Filters.ToFilterOptions());
+                var response = await _studentService.GetAllAsync(CurrentPage, DefaultPageSize, filters, order, "Candidate");
 
                 if (response.Status == Status.Success && response.Value != null)
                 {
@@ -101,14 +123,14 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
                         Students.Add(student);
                     }
 
-                    var countResponse = await _studentService.GetStudentsCount(1, int.MaxValue, Filters.ToFilterOptions());
+                    var countResponse = await _studentService.GetAllCountAsync(1, null, filters);
 
                     if (countResponse.Status == Status.Success)
                     {
                         TotalCount = countResponse.Value;
                     }
 
-                    var currentPageCountResponse = await _studentService.GetStudentsCount(CurrentPage, DefaultPageSize, Filters.ToFilterOptions());
+                    var currentPageCountResponse = await _studentService.GetAllCountAsync(CurrentPage, DefaultPageSize, filters);
 
                     if (countResponse.Status == Status.Success)
                     {
@@ -117,7 +139,7 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
 
                     double pages = Math.Ceiling((double)TotalCount / DefaultPageSize);
                     MaxPage = (int)pages;
-                    PageCount = $"??????? {CurrentPage} ?? {pages:F0}";
+                    PageCount = $"ទំព័រទី {CurrentPage} នៃ {pages:F0}";
                 }
                 else
                 {
@@ -127,10 +149,58 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
             catch (Exception ex)
             {
                 _messageService.Show($"An error occurred while loading students: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    _messageService.Show($"{ex.InnerException.Message}");
+                }
             }
             finally
             {
                 IsLoading = false;
+            }
+        }
+
+        [RelayCommand]
+        private async Task AddStudentAsync()
+        {
+            await _navigationService.NavigateAsync<AddStudentOptionViewModel>();
+        }
+
+        [RelayCommand]
+        private async Task AssignClassAsync(Student student)
+        {
+            if (student == null) return;
+
+            await _navigationService.NavigateAsync<AssignStudentClassViewModel>(new AssignStudentClassParams { Student = student });
+        }
+
+        [RelayCommand]
+        private async Task EditStudentAsync(Student student)
+        {
+            await _navigationService.NavigateAsync<EditStudentViewModel>(new EditStudentNavigationParams { Student = student });
+        }
+
+        [RelayCommand]
+        private async Task DeleteStudentAsync(Student student)
+        {
+            MessageResult result = _messageService.Show("តើអ្នកចង់លុបទិន្នន័យសិស្សចេញពី Database ឬក៏បញ្ឈប់សិស្សនិងកំណត់ជាសិស្សត្រូវបានឈប់រៀន?" +
+                "\n1. សូមចុច 'Yes' ដើម្បីលុបទាំងស្រុង" +
+                "\n2. សូមចុច 'No' ដើម្បីដាក់សិស្សជាសិស្សឈប់រៀន (ទិន្នន័យមិនត្រូវលុបទេ)" +
+                "\n3. សូមចុច 'Cancel' ដើម្បីត្រឡប់ទៅក្រោយវិញ", "ឈប់សិន!", MessageButton.YesNoCancel, MessageIcon.Information);
+
+            if (result == MessageResult.Yes)
+            {
+                await _studentService.DeleteAsync(student);
+                await LoadStudentsCommand.ExecuteAsync(null);
+                return;
+            }
+
+            if (result == MessageResult.No)
+            {
+                student.IsActive = false;
+                await _studentService.UpdateAsync(student);
+                await LoadStudentsCommand.ExecuteAsync(null);
+                return;
             }
         }
 
@@ -143,6 +213,7 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
                 CanInsertStudents = (await _authorizationService.AuthorizeAsync(null, PermissionType.InsertStudents)).Status == Status.Success;
                 CanEditStudents = (await _authorizationService.AuthorizeAsync(null, PermissionType.EditStudents)).Status == Status.Success;
                 CanDeleteStudents = (await _authorizationService.AuthorizeAsync(null, PermissionType.DeleteStudents)).Status == Status.Success;
+                CanAssignClass = (await _authorizationService.AuthorizeAsync(null, PermissionType.EditStudents)).Status == Status.Success;
             }
             catch (Exception ex)
             {
@@ -196,26 +267,34 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
             catch (TaskCanceledException) { }
         }
 
-        async partial void OnShowInactiveStudentsChanged(bool value)
+        async partial void OnSelectedDepartmentChanged(Department? value)
         {
-            Filters.IsActive = !value ? true : null;
+            Filters.DepartmentId = value?.Id;
+            Generations.Clear();
+            SelectedGeneration = null;
+            Filters.GenerationId = null;
+            OnPropertyChanged(nameof(HasSelectedDepartment));
+
+            if (value == null) return;
+
+            var response = await _generationService.GetAllAsync(
+                filters: [new FilterCondition<Generation>(g => g.DepartmentId, FilterOperator.Equals, value.Id)],
+                orderBy: [new SortCriteria<Generation>("CohortNumber", OrderDirection.Descending)]);
+            if (response.Status == Status.Success && response.Value != null)
+            {
+                foreach (var gen in response.Value)
+                {
+                    Generations.Add(gen);
+                }
+            }
         }
 
-        [RelayCommand]
-        private async Task ResetFilters()
+        partial void OnSelectedGenerationChanged(Generation? value)
         {
-            Filters = new();
-            await RefreshOnFilterCommand.ExecuteAsync(null);
+            Filters.GenerationId = value?.Id;
         }
 
-        [RelayCommand]
-        private async Task RefreshOnFilterAsync()
-        {
-            CurrentPage = 1;
-            await LoadStudentsCommand.ExecuteAsync(null);
-        }
-
-        private async void OnFiltersUpdated(object? sender, PropertyChangedEventArgs e)
+        private async void OnFilterPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             _cts?.Cancel();
             _cts = new CancellationTokenSource();
@@ -226,25 +305,72 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
                 await Task.Delay(300, token);
                 await RefreshOnFilterCommand.ExecuteAsync(null);
             }
-            catch (TaskCanceledException)
-            {
-            }
+            catch (TaskCanceledException) { }
+        }
+
+        [RelayCommand]
+        private async Task ResetFilters()
+        {
+            Filters.Search = null;
+            Filters.Gender = null;
+            Filters.SortBy = null;
+            Filters.OrderBy = OrderDirection.Descending;
+            Filters.FromDate = null;
+            Filters.ToDate = null;
+            Filters.StayType = null;
+            Filters.DepartmentId = null;
+            Filters.GenerationId = null;
+            SelectedDepartment = null;
+            SelectedGeneration = null;
+            Generations.Clear();
+            await RefreshOnFilterCommand.ExecuteAsync(null);
+        }
+
+        [RelayCommand]
+        private async Task RefreshOnFilterAsync()
+        {
+            CurrentPage = 1;
+            await LoadStudentsCommand.ExecuteAsync(null);
         }
 
         public async Task LoadAsync()
         {
-            IsAdmin = _currentUser.IsAdmin();
+            User? currentUser = _authorizationService.CurrentUser;
+            if (currentUser == null)
+            {
+                _messageService.Show("Unable to determine the current user.", "Error", MessageButton.OK, MessageIcon.Error);
+                return;
+            }
+
+            IsAdmin = currentUser.IsAdmin();
 
             await CheckPermissionsCommand.ExecuteAsync(null);
 
             if (!CanViewStudents)
             {
-                _messageService.Show("You do not have permission to view students");
+                _messageService.Show("អ្នកគ្មានសិទ្ធិមើលទិន្នន័យតារាងសិស្សនោះទេ!", "ឈប់សិន!", MessageButton.OK, MessageIcon.Hand);
                 return;
             }
 
-            await LoadStudentsCommand.ExecuteAsync(null);
+            var deptResponse = await _departmentService.GetAllAsync(1, null);
+            if (deptResponse.Status == Status.Success && deptResponse.Value != null)
+            {
+                Departments.Clear();
+                foreach (var dept in deptResponse.Value)
+                {
+                    Departments.Add(dept);
+                }
+            }
+
+            if (!currentUser.IsAdmin())
+            {
+                var selected = Departments.Where(d => d.Id == currentUser.Employee?.DepartmentId).FirstOrDefault();
+                SelectedDepartment = selected;
+            }
+            else
+            {
+                await LoadStudentsCommand.ExecuteAsync(null);
+            }
         }
     }
 }
-

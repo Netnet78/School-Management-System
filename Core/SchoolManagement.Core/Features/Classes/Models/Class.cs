@@ -17,16 +17,25 @@ namespace SchoolManagement.Core.Features.Classes.Models
         public Department Department => Generation.Department;
         public int? TeacherId { get; set; }
         public Employee? Teacher { get; set; } = null;
-        /// <summary>
-        /// Name of the class with the following format:
-        /// <see cref="Name"/> <see cref="Department.Name"/> <see cref="Generation.CohortNumber"/>
-        /// "[Class name] [Department name] [Generation cohort number]"
-        /// </summary>
-        public string Name => Grade != null ? 
-            $"{Grade.Name} {Generation.Department.Name} ជំនាន់ទី {Generation.CohortNumber}" 
-            : string.Empty;
 
         public ICollection<StudentClass> Students { get; set; } = [];
         public ICollection<ClassSubject> Subjects { get; set; } = [];
+
+        public string KhmerName => GetKhmerName();
+        public string Name => GetName();
+
+        public string GetName()
+        {
+            return Grade != null ?
+            $"{Grade.Name} {Generation.Department.Name} Generation {Generation.CohortNumber}"
+            : string.Empty;
+        }
+
+        public string GetKhmerName()
+        {
+            return Grade != null ?
+            $"{Grade.KhmerName} {Generation.Department.KhmerName} ជំនាន់ទី {Generation.CohortNumber}"
+            : string.Empty;
+        }
     }
 }

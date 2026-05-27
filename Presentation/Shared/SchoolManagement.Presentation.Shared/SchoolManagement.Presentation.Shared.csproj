@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\SchoolManagement.Core\SchoolManagement.Core.csproj" />
     <PackageReference Include="AForge.Video" Version="2.2.5" />
     <PackageReference Include="AForge.Video.DirectShow" Version="2.2.5" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
@@ -29,6 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\SchoolManagement.Core\SchoolManagement.Core.csproj" />
     <ProjectReference Include="..\..\..\Core\SchoolManagement.Core\SchoolManagement.Core.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure\SchoolManagement.Infrastructure\SchoolManagement.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

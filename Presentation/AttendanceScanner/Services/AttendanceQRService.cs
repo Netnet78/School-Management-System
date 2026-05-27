@@ -1,7 +1,5 @@
 ﻿using SchoolManagement.Core.Features.Attendances.Enums;
-using SchoolManagement.Core.Features.Attendances.Contracts;
 using SchoolManagement.Core.Features.Attendances.Models;
-using SchoolManagement.Core.Features.Students.Contracts;
 
 using SchoolManagement.Core.Shared.Time;
 

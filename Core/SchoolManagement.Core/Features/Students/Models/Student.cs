@@ -13,78 +13,77 @@ namespace SchoolManagement.Core.Features.Students.Models
     {
         public int Id { get; set; }
         public DateOnly? EnrollDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
-        public DateTime? CreatedAt { get; set; } = DateTime.Now;
+        public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
 
         // ====== IMPORTANT INFORMATION ======
-        public string FirstName => Candidate.FirstName;
+        public string FirstName => Candidate?.FirstName ?? string.Empty;
 
-        public string LatinFirstName => Candidate.LatinFirstName;
+        public string LatinFirstName => Candidate?.LatinFirstName ?? string.Empty;
 
-        public string LastName => Candidate.LastName;
+        public string LastName => Candidate?.LastName ?? string.Empty;
 
-        public string LatinLastName => Candidate.LatinLastName;
+        public string LatinLastName => Candidate?.LatinLastName ?? string.Empty;
 
-        public string FullName => Candidate.FullName;
+        public string FullName => Candidate?.FullName ?? string.Empty;
 
-        public string LatinFullName => Candidate.LatinFullName;
+        public string LatinFullName => Candidate?.LatinFullName ?? string.Empty;
 
-        public Gender Gender => Candidate.Gender;
+        public Gender Gender => Candidate?.Gender ?? default;
 
-        public DateOnly? DateOfBirth => Candidate.DateOfBirth;
+        public DateOnly? DateOfBirth => Candidate?.DateOfBirth;
 
-        public int? Age => Candidate.Age;
+        public int? Age => Candidate?.Age;
 
-        public int SkillId => Candidate.SkillId;
+        public int SkillId => Candidate?.SkillId ?? default;
 
-        public Skill Skill => Candidate.Skill;
+        public Skill Skill => Candidate?.Skill ?? null!;
 
-        public Department? Department => Classes.Count != 0 ?
-            Classes.First().Class.Department : null;
+        public Department? Department => Classes.FirstOrDefault()?.Class?.Department;
 
         // ====== PERSONAL INFORMATION ======
-        public string BirthVillage => Candidate.BirthVillage;
+        public string BirthVillage => Candidate?.BirthVillage ?? string.Empty;
 
-        public string BirthCommune => Candidate.BirthCommune;
+        public string BirthCommune => Candidate?.BirthCommune ?? string.Empty;
 
-        public string BirthDistrict => Candidate.BirthDistrict;
+        public string BirthDistrict => Candidate?.BirthDistrict ?? string.Empty;
 
-        public string BirthProvince => Candidate.BirthProvince;
+        public string BirthProvince => Candidate?.BirthProvince ?? string.Empty;
 
-        public string FatherName => Candidate.FatherName;
+        public string FatherName => Candidate?.FatherName ?? string.Empty;
 
-        public string MotherName => Candidate.MotherName;
+        public string MotherName => Candidate?.MotherName ?? string.Empty;
 
-        public string FatherOccupation => Candidate.FatherOccupation;
+        public string FatherOccupation => Candidate?.FatherOccupation ?? string.Empty;
 
-        public string MotherOccupation => Candidate.MotherOccupation;
+        public string MotherOccupation => Candidate?.MotherOccupation ?? string.Empty;
 
-        public int SiblingsCount => Candidate.SiblingsCount;
+        public int SiblingsCount => Candidate?.SiblingsCount ?? default;
 
-        public string Religion => Candidate.Religion;
+        public string Religion => Candidate?.Religion ?? string.Empty;
 
-        public StudentPhoto? Photo => Candidate.Photo;
+        public StudentPhoto? Photo => Candidate?.Photo;
 
-        public string PhotoKey => Candidate.PhotoKey;
+        public string PhotoKey => Candidate?.PhotoKey ?? string.Empty;
 
-        public string PhoneNumber => Candidate.PhoneNumber;
+        public string PhoneNumber => Candidate?.PhoneNumber ?? string.Empty;
 
         // ====== EXAM & SCHOOL ======
 
-        public string ExamCenter => Candidate.ExamCenter;
+        public string ExamCenter => Candidate?.ExamCenter ?? string.Empty;
 
-        public DateOnly? ExamDate => Candidate.ExamDate;
+        public DateOnly? ExamDate => Candidate?.ExamDate;
 
-        public int? ExamTable => Candidate.ExamTable;
+        public int? ExamTable => Candidate?.ExamTable;
 
-        public int? ExamRoom => Candidate.ExamRoom;
+        public int? ExamRoom => Candidate?.ExamRoom;
 
-        public string FromSchool => Candidate.FromSchool;
+        public string FromSchool => Candidate?.FromSchool ?? string.Empty;
 
         // ====== OTHER ======
 
-        public StudentStayType StayType => Candidate.StayType;
+        public StudentStayType StayType => Candidate?.StayType ?? default;
 
-        public string OtherInfo => Candidate.OtherInfo;
+        public string OtherInfo => Candidate?.OtherInfo ?? string.Empty;
         public bool IsActive { get; set; } = true;
         public string IsActiveReadable => IsActive ? "នៅរៀន" : "ឈប់រៀន";
         public int CandidateId { get; set; }
@@ -95,7 +94,9 @@ namespace SchoolManagement.Core.Features.Students.Models
 
         public string GetAuditName()
         {
-            return $"{LastName} {FirstName}";
+            return string.IsNullOrWhiteSpace(FullName)
+                ? $"Student #{Id}"
+                : FullName;
         }
     }
 }

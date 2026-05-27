@@ -21,7 +21,7 @@ namespace CandidateManagement.ViewModels
         private int currentStep = 0;
 
         [ObservableProperty]
-        private FileObject? currentPhoto;
+        private string? currentPhoto;
 
         [ObservableProperty]
         private IEnumerable<Skill> skillOptions = [];
@@ -114,7 +114,15 @@ namespace CandidateManagement.ViewModels
                 // Upload photo after add a new student
                 if (CurrentPhoto != null)
                 {
-                    await _photoUploadService.UploadStudentPhoto(CurrentPhoto.FileKey, Data);
+                    ReturnResponse<FileObject> uploadResponse = await _photoUploadService.UploadStudentPhoto(CurrentPhoto, Data);
+
+                    if (uploadResponse.Status == Status.Failed)
+                    {
+                        await _dispatcherService.InvokeAsync(() =>
+                        {
+                            _messageService.Show(uploadResponse.Message, "Photo Upload Warning", MessageButton.OK, MessageIcon.Hand);
+                        });
+                    }
                 }
 
                 await _dispatcherService.InvokeAsync(() =>
@@ -163,22 +171,10 @@ namespace CandidateManagement.ViewModels
 
             if (fileDialog.File != null)
             {
-                string selectedPath = fileDialog.File.FileName;
+                string selectedPath = fileDialog.File.FilePath;
                 FileObject uploadedFile = new(selectedPath);
-                
-                if (Data.Photo != null)
-                {
-                    Data.Photo.Key = uploadedFile.FileKey;
-                }
-                else
-                {
-                    Data.Photo = new()
-                    {
-                        Key = uploadedFile.FileKey
-                    };
-                }
 
-                CurrentPhoto = uploadedFile;
+                CurrentPhoto = uploadedFile.FilePath;
             }
         }
 

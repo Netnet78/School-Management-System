@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using System.Linq.Expressions;
 
 namespace SchoolManagement.Application.Features.Students.Services
@@ -5,21 +6,18 @@ namespace SchoolManagement.Application.Features.Students.Services
     public class StudentService : CrudServiceBase<Student>, IStudentService
     {
         private readonly IStudentRepository _studentRepositoy;
-        private readonly IUserSessionService _userSessionService;
         private readonly IAuthorizationService _authorizationService;
 
         public StudentService(IStudentRepository studentRepository,
-                              IUserSessionService userSessionService,
                               IAuthorizationService authorizationService) : base(studentRepository)
         {
             _studentRepositoy = studentRepository;
-            _userSessionService = userSessionService;
             _authorizationService = authorizationService;
         }
 
         private async Task<bool> CanProceed(Student? student = null, OperatorMode operatorMode = OperatorMode.AND, params PermissionType[] requiredPermissions)
         {
-            User? user = _userSessionService.CurrentUser;
+            User? user = _authorizationService.CurrentUser;
             if (user == null) return false;
 
             ReturnResponse result = await _authorizationService.AuthorizeAsync(student, operatorMode, requiredPermissions);
@@ -27,48 +25,11 @@ namespace SchoolManagement.Application.Features.Students.Services
             return result.Status == Status.Success;
         }
 
-        public async Task<ReturnResponse> DeleteStudentAsync(Student student)
-        {
-            Student? deleting = await _studentRepositoy.GetByIdAsync(student.Id);
-            bool canProceed = await CanProceed(deleting, requiredPermissions: PermissionType.DeleteStudents);
-
-            if (deleting == null)
-            {
-                return new()
-                {
-                    Status = Status.Failed,
-                    Message = $"មិនអាចរកឃើញសិស្សលេខ ID៖ {student.Id} ។",
-                };
-            }
-
-            if (!canProceed)
-            {
-                return new()
-                {
-                    Message = "អ្នកមិនមាន​​ការអនុញ្ញាត​ដើម្បីលុបយកសិស្សនេះ!",
-                    Status = Status.Rejected
-                };
-            }
-
-            try
-            {
-                await _studentRepositoy.DeleteAsync(deleting.Id);
-                return new()
-                {
-                    Status = Status.Success
-                };
-            }
-            catch (Exception ex)
-            {
-                return new()
-                {
-                    Status = Status.Failed,
-                    Message = $"ការលុបព័ត៌មានសិស្សលេខ ID៖ {student.Id} ប្រកបដោយ​បរាជ័យ\n{ex.Message}",
-                };
-            }
-        }
-
-        public async Task<ReturnResponse<IEnumerable<Student>>> GetStudentsAsync(int page, int pageSize, StudentFilterOptions filterOptions)
+        public async override Task<ReturnResponse<IEnumerable<Student>>> GetAllAsync(
+            int page, int? pageSize,
+            IEnumerable<FilterCondition<Student>>? filters,
+            IEnumerable<SortCriteria<Student>>? orderBy = null,
+            params string[]? includes)
         {
             bool canProceed = await CanProceed(requiredPermissions: PermissionType.ViewStudents);
 
@@ -78,7 +39,7 @@ namespace SchoolManagement.Application.Features.Students.Services
                 Status = Status.Rejected
             };
 
-            User user = _authorizationService.CurrentUser;
+            User? user = _authorizationService.CurrentUser;
 
             if (user == null)
             {
@@ -90,23 +51,18 @@ namespace SchoolManagement.Application.Features.Students.Services
                 };
             }
 
-            Expression<Func<Student, bool>> options = BuildFilter(filterOptions);
-            Func<IQueryable<Student>, IOrderedQueryable<Student>> orderBy = BuildOrder(filterOptions);
+            List<FilterCondition<Student>> options = filters?.ToList() ?? [];
 
-            switch (user.Role.Name)
+            Expression<Func<Student, bool>>? extraPredicate = null;
+
+            string? roleName = user.Role?.Name;
+
+            switch (roleName)
             {
-                case nameof(RoleType.HeadTeacher):
-                    int? teacherId = user.Employee?.Id;
+                case nameof(RoleType.Teacher):
+                    int? teacherId = user.EmployeeId;
 
-                    if (teacherId != null)
-                    {
-                        Expression<Func<Student, bool>> teacherFilter =
-                            s => s.Classes
-                                .Any(sc => sc.IsActive && sc.Class.TeacherId == teacherId);
-
-                        options = options.And(teacherFilter);
-                    }
-                    else
+                    if (teacherId == null)
                     {
                         return new()
                         {
@@ -115,17 +71,19 @@ namespace SchoolManagement.Application.Features.Students.Services
                             Status = Status.Rejected,
                         };
                     }
+
+                    extraPredicate = s => s.Classes.Any(sc => sc.Class.TeacherId == teacherId.Value);
                     break;
 
-                case nameof(RoleType.Teacher):
+                case nameof(RoleType.HeadTeacher):
                     int? departmentId = user.Employee?.Department?.Id;
 
                     if (departmentId != null)
                     {
-                        Expression<Func<Student, bool>> headTeacherFilter =
-                            s => s.Department != null && s.Department.Id == departmentId;
-
-                        options = options.And(headTeacherFilter);
+                        options.Add(new(
+                            s => s.Candidate.Skill.Department.Id,
+                            FilterOperator.Equals,
+                            departmentId));
                     }
                     else
                     {
@@ -136,8 +94,8 @@ namespace SchoolManagement.Application.Features.Students.Services
                             Status = Status.Rejected
                         };
                     }
-
                     break;
+
                 default:
                     break;
             }
@@ -145,11 +103,12 @@ namespace SchoolManagement.Application.Features.Students.Services
             try
             {
                 IEnumerable<Student> students = await _studentRepositoy.FindAsync(
-                    options, 
-                    page, 
-                    pageSize, 
-                    orderBy, 
-                    s => s.Candidate, s => s.Candidate.Skill, s => s.Candidate.Photo, s=> s.Classes);
+                    options,
+                    extraPredicate,
+                    page,
+                    pageSize,
+                    orderBy,
+                    "Candidate", "Candidate.Skill", "Candidate.Photo", "Classes");
 
                 return new()
                 {
@@ -163,151 +122,77 @@ namespace SchoolManagement.Application.Features.Students.Services
                 {
                     Status = Status.Failed,
                     Value = null,
-                    Message = $"មានកំហុសក្នុងការទទួលបានរាយនាមសិស្ស៖ \n {ex.Message}"
+                    Message = $"មានកំហុសបច្ចេកទេសក្នុងការទាញយកទិន្នន័យសិស្ស៖ \n {ex.Message}"
                 };
             }
         }
 
-        public async Task<ReturnResponse> InsertStudentAsync(Student student)
+        public async override Task<ReturnResponse<int>> GetAllCountAsync(
+            int page, int? pageSize,
+            IEnumerable<FilterCondition<Student>>? filters)
         {
-            bool canProceed = await CanProceed(requiredPermissions: PermissionType.InsertStudents);
-
-            if (!canProceed) return new()
-            {
-                Message = "អ្នកមិនមានលិខិតឆ្លងដែនដើម្បីបង្កើតសិស្សថ្មី!",
-                Status = Status.Rejected
-            };
-
-            try
-            {
-                await _studentRepositoy.AddAsync(student);
-                return new()
-                {
-                    Status = Status.Success
-                };
-            }
-            catch (Exception ex)
-            {
-                return new()
-                {
-                    Status = Status.Failed,
-                    Message = $"មានកំហុសក្នុងការបង្កើតសិស្ស\n{ex.Message}",
-                };
-            }
-        }
-
-        public async Task<ReturnResponse> UpdateStudentAsync(Student student)
-        {
-
-            Student? updating = await _studentRepositoy.GetByIdAsync(student.Id);
-
-            if (updating == null) return new()
-            {
-                Status = Status.Failed,
-                Message = $"?????????????????? ID: {student.Id} ?????",
-            };
-
-            bool canProceed = await CanProceed(updating, requiredPermissions: PermissionType.EditStudents);
-
-            if (!canProceed)
-            {
-                return new()
-                {
-                    Status = Status.Rejected,
-                    Message = "???????????????????????????????????????????!"
-                };
-            }
-
-            try
-            {
-                await _studentRepositoy.UpdateAsync(student);
-                return new()
-                {
-                    Status = Status.Success,
-                };
-            }
-            catch (Exception ex)
-            {
-                return new()
-                {
-                    Status = Status.Failed,
-                    Message = $"????????????????????????????????? ????????\n{ex.Message}"
-                };
-            }
-        }
-        public async Task<ReturnResponse<int>> GetStudentsCount(int page, int pageSize, StudentFilterOptions filterOptions)
-        {
-            User? user = _userSessionService.CurrentUser;
-
-            if (user == null) return new()
-            {
-                Status = Status.Rejected,
-                Message = "????????????????????????????????? ???????????????????????????????????????????!",
-            };
+            User? user = _authorizationService.CurrentUser;
 
             bool canProceed = await CanProceed(requiredPermissions: PermissionType.ViewStudents);
 
-            if (!canProceed) return new()
+            if (!canProceed || user == null) return new()
             {
-                Message = "????????????????????????????????????????????????????????????!",
+                Message = "អ្នកមិនមាន​​ការអនុញ្ញាតដើម្បីមើលសិស្សនោះទេ!",
                 Status = Status.Rejected
             };
 
-            var options = BuildFilter(filterOptions);
-            var orderBy = BuildOrder(filterOptions);
+            List<FilterCondition<Student>> options = filters?.ToList() ?? [];
 
-            switch (user.Role.Name)
+            Expression<Func<Student, bool>>? extraPredicate = null;
+
+            string? roleName = user.Role?.Name;
+
+            switch (roleName)
             {
-                case nameof(RoleType.HeadTeacher):
+                case nameof(RoleType.Teacher):
                     int? teacherId = user.Employee?.Id;
 
-                    if (teacherId != null)
-                    {
-                        Expression<Func<Student, bool>> teacherFilter =
-                            s => s.Classes
-                                .Any(sc => sc.IsActive && sc.Class.TeacherId == teacherId);
-
-                        options = options.And(teacherFilter);
-                    }
-                    else
+                    if (teacherId == null)
                     {
                         return new()
                         {
-                            Message = "????????????????????????????????????????????? ??????????????????????\n" +
-                            "??????????????????????????????????????????? ???????????????????????????",
+                            Message = "បុគ្គលិកមិនមានព័ត៌មានផ្នែកជំនាញណាមួយនោះទេ! សូមធ្វើការទាក់ទងទៅកាន់អ្នកគ្រប់គ្រងដើម្បីដោះស្រាយបញ្ហានេះ!\n",
                             Status = Status.Rejected,
                         };
                     }
+
+                    options.Add(new(s => s.IsActive, FilterOperator.Equals, true));
+                    extraPredicate = s => s.Classes.Any(sc => sc.Class.TeacherId == teacherId.Value);
                     break;
 
-                case nameof(RoleType.Teacher):
+                case nameof(RoleType.HeadTeacher):
                     int? departmentId = user.Employee?.Department?.Id;
 
                     if (departmentId != null)
                     {
-                        Expression<Func<Student, bool>> headTeacherFilter =
-                            s => s.Department != null && s.Department.Id == departmentId;
-
-                        options = options.And(headTeacherFilter);
+                        options.Add(new(s => s.IsActive, FilterOperator.Equals, true));
+                        options.Add(new(
+                            s => s.Candidate.Skill.Department.Id,
+                            FilterOperator.Equals,
+                            departmentId));
                     }
                     else
                     {
                         return new()
                         {
-                            Message = "????????????????????????????????????????????? ??????????????????????\n" +
-                            "??????????????????????????????????????????? ???????????????????????????",
+                            Message = "បុគ្គលិកមិនមានព័ត៌មាននៅក្នុងថ្នាក់​ណាមួយនោះទេ! សូមធ្វើការទាក់ទងទៅកាន់អ្នកគ្រប់គ្រងដើម្បីដោះស្រាយបញ្ហានេះ",
                             Status = Status.Rejected
                         };
                     }
-
                     break;
+
                 default:
                     break;
             }
 
             try
             {
-                int count = await _studentRepositoy.CountAsync(options, page, pageSize, orderBy);
+                int count = await _studentRepositoy.CountAsync(options, extraPredicate, page, pageSize);
 
                 return new()
                 {
@@ -320,70 +205,9 @@ namespace SchoolManagement.Application.Features.Students.Services
                 return new()
                 {
                     Status = Status.Failed,
-                    Message = $"????????????????????????????? ???????:\n {ex.Message}"
+                    Message = $"មានបញ្ហាបច្ចេកទេស អំឡុងពេលដែលកំពុងរាប់ចំនួនសិស្ស:\n {ex.Message}"
                 };
             }
         }
-
-        private static Expression<Func<Student, bool>> BuildFilter(StudentFilterOptions options)
-        {
-            return student =>
-                (string.IsNullOrEmpty(options.Search)
-                    || student.Candidate.FullName.Contains(options.Search))
-                &&
-                (!options.Gender.HasValue || student.Candidate.Gender == options.Gender)
-                &&
-                (!options.FromDate.HasValue || student.CreatedAt >= options.FromDate)
-                &&
-                (!options.ToDate.HasValue || student.CreatedAt <= options.ToDate)
-                &&
-                (!options.IsActive.HasValue || (student.Candidate.Skill.IsActive && student.IsActive) == options.IsActive)
-                &&
-                (!options.StayType.HasValue || student.Candidate.StayType == options.StayType);
-        }
-
-        private static Func<IQueryable<Student>, IOrderedQueryable<Student>> BuildOrder(StudentFilterOptions options)
-        {
-            if (!Enum.TryParse(typeof(StudentField), options.SortBy, true, out object? sortField))
-            {
-                sortField = StudentField.Id;
-            }
-
-            return query =>
-            {
-                return (StudentField)sortField switch
-                {
-                    StudentField.FullName => options.OrderBy == OrderType.Ascending
-                        ? query.OrderBy(x => x.Candidate.LastName).ThenBy(x => x.Candidate.FirstName).ThenBy(x => x.Candidate.Id)
-                        : query.OrderByDescending(x => x.Candidate.LastName).ThenByDescending(x => x.Candidate.FirstName).ThenByDescending(x => x.Candidate.Id),
-
-                    StudentField.LatinFullName => options.OrderBy == OrderType.Ascending
-                        ? query.OrderBy(x => x.Candidate.LatinLastName).ThenBy(x => x.Candidate.LatinFirstName).ThenBy(x => x.Candidate.Id)
-                        : query.OrderByDescending(x => x.Candidate.LatinLastName).ThenByDescending(x => x.Candidate.LatinFirstName).ThenByDescending(x => x.Candidate.Id),
-
-                    StudentField.CreatedAt => options.OrderBy == OrderType.Ascending
-                        ? query.OrderBy(x => x.Candidate.CreatedAt).ThenBy(x => x.Candidate.Id)
-                        : query.OrderByDescending(x => x.Candidate.CreatedAt).ThenByDescending(x => x.Candidate.Id),
-
-                    StudentField.DateOfBirth => options.OrderBy == OrderType.Ascending
-                        ? query.OrderBy(x => x.Candidate.DateOfBirth).ThenBy(x => x.Candidate.Id)
-                        : query.OrderByDescending(x => x.Candidate.DateOfBirth).ThenByDescending(x => x.Candidate.Id),
-
-                    StudentField.Skill => options.OrderBy == OrderType.Ascending
-                        ? query.OrderBy(x => x.Candidate.Skill.KhmerName).ThenBy(x => x.Candidate.Id)
-                        : query.OrderByDescending(x => x.Candidate.Skill.KhmerName).ThenByDescending(x => x.Candidate.Id),
-
-                    StudentField.Gender => options.OrderBy == OrderType.Ascending
-                        ? query.OrderBy(x => x.Candidate.Gender).ThenBy(x => x.Candidate.Id)
-                        : query.OrderByDescending(x => x.Candidate.Gender).ThenByDescending(x => x.Candidate.Id),
-
-                    _ => options.OrderBy == OrderType.Ascending
-                        ? query.OrderBy(x => x.Candidate.Id)
-                        : query.OrderByDescending(x => x.Candidate.Id),
-                };
-            };
-        }
-
     }
 }
-

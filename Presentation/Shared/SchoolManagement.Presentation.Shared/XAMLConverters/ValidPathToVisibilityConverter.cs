@@ -1,4 +1,5 @@
-﻿using System.Windows.Data;
+﻿using System.Windows;
+using System.Windows.Data;
 
 namespace SchoolManagement.Presentation.Shared.XAMLConverters
 {
@@ -16,11 +17,11 @@ namespace SchoolManagement.Presentation.Shared.XAMLConverters
             if (value is string path && !string.IsNullOrWhiteSpace(path))
             {
                 bool file = System.IO.File.Exists(path);
-                object result = file ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
-                return !Reversed ? result : !file ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+                Visibility result = file ? Visibility.Visible : Visibility.Collapsed;
+                return !Reversed ? result : !file ? Visibility.Visible : Visibility.Collapsed;
             }
             // If the value is not a valid string path, return Collapsed or Visible based on Reversed
-            return !Reversed ? System.Windows.Visibility.Collapsed : System.Windows.Visibility.Visible;
+            return !Reversed ? Visibility.Collapsed : Visibility.Visible;
         }
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {

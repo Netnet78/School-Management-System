@@ -187,13 +187,13 @@
 
                             <!-- Title -->
                             <TextBlock Grid.Row="0"
-                               Text="?????????????????????????!"
+                               Text="=== LOGIN ==="
                                TextWrapping="Wrap"
                                TextAlignment="Center"
                                Style="{StaticResource TitleTextStyle}" />
 
                             <TextBlock Grid.Row="1"
-                               Text="??????????????????????????????????????????????"
+                               Text="សូមធ្វើការបំពេញព័ត៌មានឱ្យបានត្រឹមត្រូវដើម្បីបន្តទៅមុខ"
                                FontSize="14"
                                HorizontalAlignment="Center"
                                Margin="0 0 0 14" />
@@ -265,11 +265,15 @@
 
                             <!-- Small footnote / version -->
                             <TextBlock Grid.Row="4"
-                               Text="??????????????????????? ????????????????????????????"
-                               FontSize="12"
-                               Foreground="#FF666666"
+                               Text="ប្រសិនបើមានបញ្ហាក្នុងការចូលប្រើប្រាស់
+                                       សូមទាក់ទងទៅកាន់អ្នកគ្រប់គ្រងភ្លាមៗ"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"
+                               FontSize="14"
+                               Foreground="#000"
+                               Opacity=".5"
                                HorizontalAlignment="Center"
-                               Margin="0 12 0 0" />
+                               Margin="0 18 0 0" />
                         </Grid>
                     </Border>
                 </Grid>
