@@ -9,7 +9,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
     {
         private readonly IAttendanceRepository _attendanceRepository;
 
-        public string ReportTypeKey => "attendance-report";
+        public ReportTag ReportTypeKey => ReportTag.AttendanceReport;
 
         public AttendanceReportGenerator(IAttendanceRepository attendanceRepository)
         {
@@ -28,33 +28,34 @@ namespace SchoolManagement.Application.Features.Reports.Generators
 
             var filters = new List<FilterCondition<Attendance>>();
 
-            if (attendanceFilter.DateFrom.HasValue)
-                filters.Add(new FilterCondition<Attendance>(a => a.AttendanceDate, FilterOperator.GreaterThanOrEqual, DateOnly.FromDateTime(attendanceFilter.DateFrom.Value)));
+            if (attendanceFilter.DateFrom != null)
+                filters.Add(new FilterCondition<Attendance>(a => a.AttendanceDateTime, FilterOperator.GreaterThanOrEqual, attendanceFilter.DateFrom.Value));
 
-            if (attendanceFilter.DateTo.HasValue)
-                filters.Add(new FilterCondition<Attendance>(a => a.AttendanceDate, FilterOperator.LessThanOrEqual, DateOnly.FromDateTime(attendanceFilter.DateTo.Value)));
+            if (attendanceFilter.DateTo != null)
+                filters.Add(new FilterCondition<Attendance>(a => a.AttendanceDateTime, FilterOperator.LessThanOrEqual, attendanceFilter.DateTo.Value));
 
-            var attendances = await _attendanceRepository.FindAsync(
+            if (!string.IsNullOrWhiteSpace(attendanceFilter.SearchKeyword))
+                filters.Add(new FilterCondition<Attendance>(a => a.StudentClass.Student.Candidate.FullName, FilterOperator.Contains,
+                    attendanceFilter.SearchKeyword));
+
+            if (attendanceFilter.ClassId.HasValue)
+                filters.Add(new FilterCondition<Attendance>(a => a.StudentClass.ClassId, FilterOperator.Equals, attendanceFilter.ClassId.Value));
+
+            IEnumerable<Attendance> attendances = await _attendanceRepository.FindAsync(
                 filters,
                 page: null,
                 pageSize: null,
-                orderBy: new[] { new SortCriteria<Attendance>(a => a.AttendanceDate, OrderDirection.Ascending) },
-                "StudentClass.Student.Candidate", "StudentClass.Class");
+                orderBy: new[] { new SortCriteria<Attendance>(a => a.AttendanceDateTime, OrderDirection.Ascending) },
+                "StudentClass.Student.Candidate", "StudentClass.Class").ConfigureAwait(false);
 
-            // Filter by class after retrieval (can't filter on nested navigation in FilterCondition easily)
-            var filteredAttendances = attendances.AsEnumerable();
-
-            if (attendanceFilter.ClassId.HasValue)
-                filteredAttendances = filteredAttendances.Where(a => a.StudentClass?.ClassId == attendanceFilter.ClassId.Value);
-
-            var attendanceList = filteredAttendances.ToList();
+            int totalCount = await _attendanceRepository.CountAsync(filters, attendanceFilter.Page, attendanceFilter.PageSize);
 
             // Group by student for summary
-            var studentGroups = attendanceList
+            var studentGroups = attendances
                 .GroupBy(a => a.StudentClass?.Student?.Candidate?.FullName ?? "Unknown")
                 .ToList();
 
-            var rows = new List<Dictionary<string, object?>>();
+            var rows = new List<Dictionary<string, ReportCell>>();
 
             foreach (var group in studentGroups)
             {
@@ -62,7 +63,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 var candidate = first.StudentClass?.Student?.Candidate;
                 var @class = first.StudentClass?.Class;
 
-                rows.Add(new Dictionary<string, object?>
+                rows.Add(new Dictionary<string, ReportCell>
                 {
                     ["studentName"] = candidate?.FullName,
                     ["latinName"] = candidate?.LatinFullName,
@@ -78,8 +79,9 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 });
             }
 
-            return new ReportResult
+            return new TableReportResult
             {
+                ReportTag = ReportTag.AttendanceReport,
                 Title = "របាយការណ៍វត្តមានសិស្ស",
                 SubTitle = "Attendance Report",
                 GeneratedDate = DateTime.UtcNow,
@@ -98,9 +100,10 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 Rows = rows,
                 Summary = new Dictionary<string, object>
                 {
-                    ["totalStudents"] = studentGroups.Count,
-                    ["averageRate"] = rows.Count > 0
-                        ? Math.Round(rows.Average(r => Convert.ToDouble(r.GetValueOrDefault("attendanceRate") ?? 0)), 1)
+                    ["__totalCount"] = totalCount,
+                    ["សិស្សសរុប"] = studentGroups.Count,
+                    ["ភាគរយនៃវត្តមានជាមធ្យម"] = rows.Count > 0
+                        ? Math.Round(rows.Average(r => Convert.ToDouble(r.GetValueOrDefault("attendanceRate")?.Value ?? 0d)), 1)
                         : 0.0,
                 }
             };

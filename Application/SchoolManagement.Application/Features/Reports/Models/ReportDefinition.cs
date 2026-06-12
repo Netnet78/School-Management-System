@@ -1,8 +1,10 @@
+using SchoolManagement.Core.Features.Reports.Models;
+
 namespace SchoolManagement.Application.Features.Reports.Models
 {
     public class ReportDefinition
     {
-        public string Key { get; set; } = string.Empty;
+        public ReportTag Key { get; set; }
 
         public string DisplayName { get; set; } = string.Empty;
 
@@ -12,12 +14,6 @@ namespace SchoolManagement.Application.Features.Reports.Models
 
         public string IconKind { get; set; } = "Document";
 
-        public Type GeneratorType { get; set; } = null!;
-
-        public Type FilterViewModelType { get; set; } = null!;
-
         public int SortOrder { get; set; }
-
-        public string? TemplatePath { get; set; }
     }
 }

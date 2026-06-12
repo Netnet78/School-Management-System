@@ -7,9 +7,9 @@
             System.Windows.Application.Current.Dispatcher.Invoke(action);
         }
 
-        public void Invoke<T>(Func<T> function)
+        public T Invoke<T>(Func<T> function)
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(function);
+            return System.Windows.Application.Current.Dispatcher.Invoke(function);
         }
 
         public async Task InvokeAsync(Action action)
@@ -17,9 +17,9 @@
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(action);
         }
 
-        public async Task InvokeAsync<T>(Func<T> function)
+        public async Task<T> InvokeAsync<T>(Func<T> function)
         {
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(function);
+            return await System.Windows.Application.Current.Dispatcher.InvokeAsync(function);
         }
     }
 }

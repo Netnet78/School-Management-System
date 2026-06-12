@@ -42,7 +42,7 @@ namespace SchoolManagement.Presentation.Shared.Components
                 nameof(State),
                 typeof(LoadingState),
                 typeof(LoadingDialog),
-                new(LoadingState.Loading, OnStateChanged)
+                new(LoadingState.None, OnStateChanged)
             );
 
         private static void OnStateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -164,15 +164,9 @@ namespace SchoolManagement.Presentation.Shared.Components
             storyboard.Begin(this, true);
         }
 
-        private async void OKButtonClick(object sender, RoutedEventArgs e)
+        private void OKButtonClick(object sender, RoutedEventArgs e)
         {
-            await Task.Delay(1000);
-            this.Visibility = Visibility.Collapsed;
+            Dispatcher.BeginInvoke(() => Window.GetWindow(this)?.Close());
         }
-
-        //public MessageResult ShowDialog(string? message = null, string? successMessage = null, string? errorMessage = null)
-        //{
-        //    this.ShowDialog();
-        //}
     }
 }

@@ -10,7 +10,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
         private readonly IAccessmentRepository _assessmentRepository;
         private readonly IExamRepository _examRepository;
 
-        public string ReportTypeKey => "score-report";
+        public ReportTag ReportTypeKey => ReportTag.ScoreReport;
 
         public ScoreReportGenerator(
             IAccessmentRepository assessmentRepository,
@@ -31,6 +31,10 @@ namespace SchoolManagement.Application.Features.Reports.Generators
             if (scoreFilter.ExamId.HasValue)
                 filters.Add(new FilterCondition<Assessment>(a => a.ExamId, FilterOperator.Equals, scoreFilter.ExamId.Value));
 
+            if (!string.IsNullOrWhiteSpace(scoreFilter.SearchKeyword))
+                filters.Add(new FilterCondition<Assessment>(a => a.StudentClass.Student.Candidate.FullName, FilterOperator.Contains,
+                    scoreFilter.SearchKeyword));
+
             var assessments = await _assessmentRepository.FindAsync(
                 filters,
                 page: null,
@@ -40,7 +44,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 "ClassSubject.Subject",
                 "ClassSubject.Class",
                 "Exam",
-                "Scores.Component");
+                "Scores.Component").ConfigureAwait(false);
 
             // Filter by class/subject after retrieval
             var filtered = assessments.AsEnumerable();
@@ -52,6 +56,15 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 filtered = filtered.Where(a => a.ClassSubject?.SubjectId == scoreFilter.SubjectId.Value);
 
             var assessmentList = filtered.ToList();
+            int totalCount = assessmentList.Count;
+
+            if (scoreFilter.PageSize.HasValue)
+            {
+                assessmentList = assessmentList
+                    .Skip(scoreFilter.PageSize.Value * (scoreFilter.Page - 1))
+                    .Take(scoreFilter.PageSize.Value)
+                    .ToList();
+            }
 
             // Collect all unique component names across all assessments
             var allComponentKeys = assessmentList
@@ -62,7 +75,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 .Order()
                 .ToList();
 
-            var rows = new List<Dictionary<string, object?>>();
+            var rows = new List<Dictionary<string, ReportCell>>();
 
             foreach (var assessment in assessmentList)
             {
@@ -70,7 +83,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 var subject = assessment.ClassSubject?.Subject;
                 var exam = assessment.Exam;
 
-                var row = new Dictionary<string, object?>
+                var row = new Dictionary<string, ReportCell>
                 {
                     ["studentName"] = candidate?.FullName,
                     ["latinName"] = candidate?.LatinFullName,
@@ -122,8 +135,9 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 Width = 120,
             });
 
-            return new ReportResult
+            return new TableReportResult
             {
+                ReportTag = ReportTag.ScoreReport,
                 Title = "របាយការណ៍ពិន្ទុប្រលង",
                 SubTitle = "Score Report",
                 GeneratedDate = DateTime.UtcNow,
@@ -131,9 +145,10 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 Rows = rows,
                 Summary = new Dictionary<string, object>
                 {
+                    ["__totalCount"] = totalCount,
                     ["totalAssessments"] = rows.Count,
                     ["averageScore"] = rows.Count > 0
-                        ? Math.Round(rows.Average(r => Convert.ToDecimal(r.GetValueOrDefault("totalScore") ?? 0)), 2)
+                        ? Math.Round(rows.Average(r => Convert.ToDecimal(r.GetValueOrDefault("totalScore")?.Value ?? 0m)), 2)
                         : 0m,
                 }
             };

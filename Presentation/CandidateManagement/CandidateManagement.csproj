@@ -8,6 +8,7 @@
     <UseWPF>true</UseWPF>
     <UserSecretsId>08b41a90-f04f-4607-ae4a-c6897de17c00</UserSecretsId>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <ItemGroup>
@@ -43,9 +44,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Sources\Fonts\noto-sans-khmer.ttf" />
-    <None Remove="Sources\Images\Computer_Students.jpg" />
-    <None Remove="Sources\Images\dbslogo_filled.png" />
     <None Remove="Sources\Spreadsheets\candidate_list.xlsx" />
     <None Remove="Sources\Spreadsheets\department_data.xlsm" />
   </ItemGroup>
@@ -54,27 +52,20 @@
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="KhmerCalendar" Version="1.0.0" />
-    <PackageReference Include="LiveChartsCore" Version="2.0.2" />
-    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.2" />
+    <PackageReference Include="LiveChartsCore" Version="2.0.4" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.4" />
     <PackageReference Include="MaterialDesignColors" Version="5.3.2" />
     <PackageReference Include="MaterialDesignThemes" Version="5.3.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.7">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.8">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.7" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.8" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Sources\Fonts\noto-sans-khmer.ttf" />
-    <Resource Include="Sources\Images\Computer_Students.jpg">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Sources\Images\dbslogo_filled.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
     <Content Include="Sources\Spreadsheets\candidate_list.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -85,6 +76,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Application\SchoolManagement.Application\SchoolManagement.Application.csproj" />
+    <ProjectReference Include="..\..\Assets\SchoolManagement.Assets.csproj" />
     <ProjectReference Include="..\..\Core\SchoolManagement.Core\SchoolManagement.Core.csproj" />
     <ProjectReference Include="..\..\Infrastructure\SchoolManagement.Infrastructure\SchoolManagement.Infrastructure.csproj" />
     <ProjectReference Include="..\Shared\SchoolManagement.Presentation.Shared\SchoolManagement.Presentation.Shared.csproj" />

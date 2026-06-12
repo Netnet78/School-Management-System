@@ -81,8 +81,11 @@ namespace SchoolManagement.Infrastructure
             services.AddScoped<IPhotoSyncService, PhotoSyncService>();
 
             // Report renderers
-            services.AddTransient<ExcelTemplateRenderer>();
-            services.AddTransient<ICardRenderer, DefaultCardRenderer>();
+            services.AddTransient<IExcelRenderer, DefaultExcelTemplateRenderer>();
+            services.AddTransient<IExcelRenderer, StudentRosterRenderer>();
+            services.AddTransient<ICardPdfRenderer, StudentCardRenderer>();
+            services.AddTransient<IPdfRenderer, TablePdfRenderer>();
+            services.AddTransient<IPdfRenderer, CardPdfRenderer>();
 
             return services;
         }

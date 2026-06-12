@@ -132,7 +132,7 @@
                         <RotateTransform Angle="0" />
                     </materialDesigns:PackIcon.RenderTransform>
                 </materialDesigns:PackIcon>
-                <Image Source="/Sources/Images/dbslogo_filled.png" 
+                <Image Source="pack://application:,,,/SchoolManagement.Assets;component/Images/dbslogo_filled.png" 
                         Width="64"
                         RenderOptions.BitmapScalingMode="Fant"
                         x:Name="LoadingImage" 
@@ -148,7 +148,7 @@
                 <materialDesigns:PackIcon Kind="Loading" Width="128" Height="128" Visibility="Hidden" />
 
                 <Grid x:Name="DimLayer" Opacity="0.3">
-                    <Image x:Name="DimCenterCog" Source="/Sources/Images/dbslogo_filled.png" 
+                    <Image x:Name="DimCenterCog" Source="pack://application:,,,/SchoolManagement.Assets;component/Images/dbslogo_filled.png" 
                         Width="64"
                         RenderOptions.BitmapScalingMode="Fant" 
                         RenderTransformOrigin="0.5,0.5"
@@ -163,7 +163,7 @@
                         </Image.RenderTransform>
                     </Image>
                     <Image x:Name="DimRightCog"
-                        Source="/Sources/Images/dbslogo_filled.png"
+                        Source="pack://application:,,,/SchoolManagement.Assets;component/Images/dbslogo_filled.png"
                         Width="64"
                         RenderOptions.BitmapScalingMode="Fant" 
                         VerticalAlignment="Center"
@@ -185,7 +185,7 @@
                         </Image.RenderTransform>
                     </Image>
                     <Image x:Name="DimLeftCog"
-                        Source="/Sources/Images/dbslogo_filled.png"
+                        Source="pack://application:,,,/SchoolManagement.Assets;component/Images/dbslogo_filled.png"
                         Width="64"
                         RenderOptions.BitmapScalingMode="Fant" 
                         VerticalAlignment="Center"
@@ -218,7 +218,7 @@
                         </LinearGradientBrush>
                     </Grid.OpacityMask>
 
-                    <Image x:Name="CenterCog" Source="/Sources/Images/dbslogo_filled.png" 
+                    <Image x:Name="CenterCog" Source="pack://application:,,,/SchoolManagement.Assets;component/Images/dbslogo_filled.png" 
                         Width="64"
                         RenderOptions.BitmapScalingMode="Fant" 
                         RenderTransformOrigin="0.5,0.5"
@@ -233,7 +233,7 @@
                         </Image.RenderTransform>
                     </Image>
                     <Image x:Name="RightCog"
-                        Source="/Sources/Images/dbslogo_filled.png"
+                        Source="pack://application:,,,/SchoolManagement.Assets;component/Images/dbslogo_filled.png"
                         Width="64"
                         RenderOptions.BitmapScalingMode="Fant" 
                         VerticalAlignment="Center"
@@ -255,7 +255,7 @@
                         </Image.RenderTransform>
                     </Image>
                     <Image x:Name="LeftCog"
-                        Source="/Sources/Images/dbslogo_filled.png"
+                        Source="pack://application:,,,/SchoolManagement.Assets;component/Images/dbslogo_filled.png"
                         Width="64"
                         RenderOptions.BitmapScalingMode="Fant" 
                         VerticalAlignment="Center"

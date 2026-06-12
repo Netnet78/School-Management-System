@@ -14,8 +14,11 @@ public class StudentQRRepository : BaseRepository<StudentQR>, IStudentQRReposito
     {
         return await Set
             .Include(s => s.Student)
-            .Include(s => s.Student.Candidate)
-            .Include(s => s.Student.Candidate.Skill)
+            .ThenInclude(student => student.Candidate)
+            .ThenInclude(candidate => candidate.Photo)
+            .Include(s => s.Student)
+            .ThenInclude(student => student.Candidate)
+            .ThenInclude(candidate => candidate.Skill)
             .FirstOrDefaultAsync(s => s.QRCodeValue == value);
     }
 }

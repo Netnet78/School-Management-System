@@ -6,14 +6,42 @@
              xmlns:local="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewProviders.StudentCard"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=local:StudentCardFilterViewModel}"
-             d:DesignHeight="80" d:DesignWidth="800">
-    <StackPanel Orientation="Horizontal">
-        <StackPanel Orientation="Horizontal" Margin="0 0 15 0">
+             d:DesignHeight="300" d:DesignWidth="800">
+    <StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="0 0 0 10">
+            <TextBlock Text="ស្វែងរក" VerticalAlignment="Center" Margin="0 0 5 0"/>
+            <TextBox Width="220"
+                     Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged, Delay=400}"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="0 0 0 10">
             <TextBlock Text="ថ្នាក់" VerticalAlignment="Center" Margin="0 0 5 0"/>
-            <ComboBox Width="200"
+            <ComboBox Width="220"
                       ItemsSource="{Binding Classes}"
                       SelectedItem="{Binding SelectedClass}"
                       DisplayMemberPath="KhmerName"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Margin="0 0 0 10">
+            <TextBlock Text="Location" VerticalAlignment="Center" Margin="0 0 5 0"/>
+            <TextBox Width="180"
+                     FontFamily="{StaticResource NotoSansKhmer}"
+                     Text="{Binding Location, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0 0 15 0"/>
+
+            <TextBlock Text="Principal/Admin" VerticalAlignment="Center" Margin="0 0 5 0"/>
+            <TextBox Width="220"
+                     FontFamily="{StaticResource NotoSansKhmer}"
+                     Text="{Binding PrincipalName, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Signature" VerticalAlignment="Center" Margin="0 0 5 0"/>
+            <TextBox Width="340"
+                     FontFamily="{StaticResource NotoSansKhmer}"
+                     Text="{Binding SignaturePath, UpdateSourceTrigger=LostFocus}"
+                     IsReadOnly="True"
+                     Margin="0 0 10 0"/>
+            <Button Command="{Binding BrowseSignatureCommand}" Content="Browse"/>
         </StackPanel>
     </StackPanel>
 </UserControl>

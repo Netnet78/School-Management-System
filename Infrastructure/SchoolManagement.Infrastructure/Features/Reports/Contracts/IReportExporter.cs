@@ -8,8 +8,10 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Contracts
 
         string FileExtension { get; }
 
-        Task<byte[]> ExportAsync(ReportResult data, CancellationToken cancellationToken = default);
+        Task<byte[]> ExportAsync<TReportResult>(TReportResult data, CancellationToken cancellationToken = default)
+            where TReportResult : ReportResult;
 
-        Task ExportToFileAsync(ReportResult data, string filePath, CancellationToken cancellationToken = default);
+        Task ExportToFileAsync<TReportResult>(TReportResult data, string filePath, CancellationToken cancellationToken = default)
+            where TReportResult : ReportResult;
     }
 }

@@ -8,7 +8,7 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Export;
 
 public static class QRCodeExporter
 {
-    public static byte[] GenerateQrPng(string value, int width, int height)
+    public static byte[] GenerateQrPng(string value, string label, int width, int height)
     {
         if (string.IsNullOrWhiteSpace(value)) return [];
 
@@ -66,11 +66,21 @@ public static class QRCodeExporter
                 // White circular background
                 using SKPaint paint = new()
                 {
-                    Color = SKColors.White,
+                    Color = SKColors.Black,
                     IsAntialias = true
                 };
 
                 float radius = logoSize / 2f + 10;
+
+                canvas.DrawText(
+                    label,
+                    width / 2,
+                    height + 20,
+                    SKTextAlign.Center,
+                    new(SKTypeface.FromFile(Path.Combine(ResourcePaths.Fonts, "noto-sans-khmer.ttf"))),
+                    paint);
+
+                paint.Color = SKColors.White;
 
                 canvas.DrawCircle(
                     width / 2f,
@@ -87,5 +97,9 @@ public static class QRCodeExporter
 
             return data.ToArray();
         }
+    }
+    public static byte[] GenerateQrPng(string value, int width, int height)
+    {
+        return GenerateQrPng(value, string.Empty, width, height);
     }
 }

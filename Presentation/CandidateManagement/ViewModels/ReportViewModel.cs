@@ -197,20 +197,6 @@ namespace CandidateManagement.ViewModels
             }
         }
 
-        //private List<Candidate> GetCurrentFilteredStudents()
-        //{
-        //    ICollectionView? activeView = null;
-
-        //    if (StudentTabs != null && CurrentTabIndex >= 0 && CurrentTabIndex < StudentTabs.Count())
-        //    {
-        //        activeView = StudentTabs.ElementAt(CurrentTabIndex).Data;
-        //    }
-
-        //    activeView ??= AllStudentsView;
-
-        //    return activeView?.Cast<Candidate>().ToList() ?? [];
-        //}
-
         private void UpdateCurrentTabStats(int value)
         {
             if (value < 0 || StudentTabs == null || value >= StudentTabs.Count())
@@ -224,7 +210,7 @@ namespace CandidateManagement.ViewModels
 
                 var candidates = view.Cast<Candidate>().ToList();
 
-                var totalCount = candidates.Count().UseKhmerNumbers();
+                var totalCount = candidates.Count.UseKhmerNumbers();
                 var femaleCount = candidates.Count(c => c.Gender == Gender.Female).UseKhmerNumbers();
 
                 // Update UI on main thread

@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SchoolManagement.Core.Features.Candidates.Models;
+using SchoolManagement.Core.Features.Attendances.Models;
 using SchoolManagement.Core.Features.Classes.Models;
-using SchoolManagement.Core.Shared.Extensions;
+using SchoolManagement.Core.Features.Students.Models;
 using SchoolManagement.Infrastructure.Data;
 
 internal class Program
@@ -22,20 +22,15 @@ internal class Program
         //headTeacher.Permissions = permissions;
         //context.Update(headTeacher);
 
-        Candidate[] candidates = await context.Candidates.ToArrayAsync();
+        Attendance[] attendances = context.Attendances.ToArray();
 
-        foreach (Candidate candidate in candidates)
+        foreach (Attendance attendance in attendances)
         {
-            candidate.FirstName = StringExtensions.RemoveHiddenSpaces(candidate.FirstName, true);
-            candidate.LastName = StringExtensions.RemoveHiddenSpaces(candidate.LastName, true);
-            candidate.LatinLastName = StringExtensions.RemoveHiddenSpaces(candidate.LatinLastName, true);
-            candidate.LatinFirstName = StringExtensions.RemoveHiddenSpaces(candidate.LatinFirstName, true);
-
-            Console.WriteLine($"{candidate.Id}. Updated {candidate.LastName} {candidate.FirstName}");
+            context.Remove(attendance);
         }
-
+        
         await context.SaveChangesAsync();
-        Console.WriteLine("Operation is successful");
+        Console.WriteLine("DONE!");
         Console.ReadKey();
     }
 

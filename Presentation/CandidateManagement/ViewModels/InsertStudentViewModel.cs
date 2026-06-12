@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SchoolManagement.Assets;
+using System.IO;
 
 namespace CandidateManagement.ViewModels
 {
@@ -12,7 +14,7 @@ namespace CandidateManagement.ViewModels
         private readonly ISoundService _soundService;
         private readonly IFileDialogService _fileDialogService;
         private readonly IDispatcherService _dispatcherService;
-        private readonly SoundObject _errorSound = new("Sources\\Audio\\sfx\\error-sound.wav");
+        private readonly SoundObject _errorSound = new(Path.Combine(ResourcePaths.Audio, "sfx/error-sound.wav"));
 
         [ObservableProperty]
         private Candidate data;

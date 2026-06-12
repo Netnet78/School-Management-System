@@ -16,7 +16,6 @@
     <UserControl.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" Collapse="True"/>
         <conv:BooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" Collapse="True" IsReversed="True"/>
-        <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" CollapseWhenNull="True"/>
     </UserControl.Resources>
 
     <Grid Margin="20">
@@ -25,6 +24,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -53,7 +53,7 @@
               HorizontalScrollBarVisibility="Disabled"
               Margin="0 0 0 15">
 
-            <ItemsControl ItemsSource="{Binding ReportCards}">
+            <ItemsControl ItemsSource="{Binding VisibleReportCards}">
 
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -88,7 +88,7 @@
 
                                 <TextBlock Text="{Binding DisplayName}"
                                FontSize="14"
-                               FontWeight="SemiBold"
+                               FontWeight="Normal"
                                Foreground="White"
                                TextAlignment="Center"
                                TextWrapping="Wrap"
@@ -111,96 +111,28 @@
 
             </ItemsControl>
         </ScrollViewer>
+
         <!-- Filter Section -->
         <Border Grid.Row="2" Margin="0 0 0 10" Padding="10"
                 BorderBrush="{DynamicResource MaterialDesign.Brush.Primary}"
                 BorderThickness="1" CornerRadius="4"
                 Visibility="{Binding IsFilterVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <ContentControl Content="{Binding CurrentFilterViewModel}"/>
+            <StackPanel>
+                <Button Command="{Binding ClearFiltersCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="FilterOff" />
+                        <TextBlock Margin="10 0 0 0"  Text="លុបនៃការច្រោះទិន្នន័យ / Reset Filters"/>
+                    </StackPanel>
+                </Button>
+                <ContentControl Margin="0 10 0 0" Content="{Binding CurrentFilterViewModel}"/>
+            </StackPanel>
         </Border>
 
-        <!-- Loading Indicator -->
-        <Grid Grid.Row="3" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
-              HorizontalAlignment="Center" VerticalAlignment="Center">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <ProgressBar IsIndeterminate="True" Width="200" Height="20"/>
-                <TextBlock Text="កំពុងដំណើរការ..." FontSize="16" Margin="0 10 0 0"
-                           HorizontalAlignment="Center"/>
-            </StackPanel>
-        </Grid>
-
-        <!-- Card Preview -->
-        <ScrollViewer Grid.Row="3"
-                      Visibility="{Binding HasCardPreview, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <ItemsControl ItemsSource="{Binding CardPreviewGroups}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="{x:Type models:CardPreviewGroup}">
-                        <Border Width="{Binding Width}" Height="{Binding Height}"
-                                Margin="4" Padding="6"
-                                BorderBrush="{DynamicResource MaterialDesign.Brush.Primary}"
-                                BorderThickness="1" CornerRadius="4"
-                                Background="{DynamicResource MaterialDesignPaper}">
-                            <ItemsControl ItemsSource="{Binding Items}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <Canvas/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemContainerStyle>
-                                    <Style>
-                                        <Setter Property="Canvas.Left" Value="{Binding X}"/>
-                                        <Setter Property="Canvas.Top" Value="{Binding Y}"/>
-                                    </Style>
-                                </ItemsControl.ItemContainerStyle>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate DataType="{x:Type models:CardPreviewItem}">
-                                        <Grid>
-                                            <TextBlock Text="{Binding Text}"
-                                                       Visibility="{Binding ImageBytes, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=isreversed}"
-                                                       FontSize="10" TextWrapping="Wrap"/>
-                                            <Image Source="{Binding ImageSource}"
-                                                   Width="50" Height="50"
-                                                   Visibility="{Binding ImageBytes, Converter={StaticResource NullToVisibilityConverter}}"
-                                                   Stretch="Uniform"/>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
-
-        <!-- Preview DataGrid -->
-        <Grid Grid.Row="3"
-              Visibility="{Binding HasData, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <DataGrid ItemsSource="{Binding PreviewTable}"
-                      AutoGenerateColumns="True"
-                      IsReadOnly="True"
-                      CanUserAddRows="False"
-                      CanUserDeleteRows="False"
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Auto"
-                      FontSize="12"
-                      RowHeaderWidth="0"
-                      Background="{DynamicResource MaterialDesignPaper}"
-                      BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}"
-                      BorderThickness="1">
-                <DataGrid.ColumnHeaderStyle>
-                    <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="FontWeight" Value="Bold"/>
-                        <Setter Property="Padding" Value="5"/>
-                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                    </Style>
-                </DataGrid.ColumnHeaderStyle>
-            </DataGrid>
-        </Grid>
+        <!-- Provider Preview -->
+        <ContentControl Grid.Row="3"
+                        Panel.ZIndex="0"
+                        Content="{Binding CurrentPreviewView}"
+                        Visibility="{Binding HasData, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
         <!-- No Data Message -->
         <TextBlock Grid.Row="3"
@@ -210,8 +142,44 @@
                    Visibility="{Binding ShowNoDataMessage, Converter={StaticResource BooleanToVisibilityConverter}}"
                    Opacity="0.5"/>
 
+        <!-- Pagination -->
+        <Border Grid.Row="4" Margin="0 10 0 0" Padding="8">
+            <Grid Visibility="{Binding ShowPageOption, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Items per page:" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                    <ComboBox ItemsSource="{Binding AvailablePageSizes}"
+                              SelectedItem="{Binding PageSize, Mode=TwoWay}"
+                              Width="70"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Command="{Binding GoToPreviousPageCommand}"
+                            Padding="10 5" Margin="0 0 5 0">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ChevronLeft" Width="16" Height="16"/>
+                            <TextBlock Text="Previous" Margin="4 0 0 0"/>
+                        </StackPanel>
+                    </Button>
+                    <TextBlock Text="{Binding PageInfo}" VerticalAlignment="Center" Margin="10 0"/>
+                    <Button Command="{Binding GoToNextPageCommand}"
+                            Padding="10 5" Margin="5 0 0 0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Next" Margin="0 0 4 0"/>
+                            <materialDesign:PackIcon Kind="ChevronRight" Width="16" Height="16"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
         <!-- Summary Row -->
-        <Border Grid.Row="4" Margin="0 10 0 0" Padding="8"
+        <Border Grid.Row="5" Margin="0 10 0 0" Padding="8"
                 Background="{DynamicResource MaterialDesign.Brush.Primary}"
                 Visibility="{Binding HasSummary, Converter={StaticResource BooleanToVisibilityConverter}}">
             <TextBlock Text="{Binding SummaryText}"
@@ -220,9 +188,9 @@
         </Border>
 
         <!-- Export Buttons -->
-        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right"
+        <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right"
                     Margin="0 10 0 0"
-                    Visibility="{Binding HasSummary, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    Visibility="{Binding HasData, Converter={StaticResource BooleanToVisibilityConverter}}">
             <ItemsControl ItemsSource="{Binding Exporters}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

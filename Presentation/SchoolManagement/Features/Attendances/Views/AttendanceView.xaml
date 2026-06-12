@@ -65,7 +65,7 @@
                                                  Width="20"
                                                  Height="20"
                                                  Margin="0,0,5,0" />
-                        <TextBlock Text="សម្អាតតម្រង" />
+                        <TextBlock Text="សម្អាតការច្រោះទិន្នន័យ" />
                     </StackPanel>
                 </Button>
             </StackPanel>
@@ -180,8 +180,8 @@
                                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70" />
                                 <DataGridTextColumn Header="សិស្ស" Binding="{Binding StudentClass.Student.FullName}" Width="180" />
                                 <DataGridTextColumn Header="ថ្នាក់" Binding="{Binding StudentClass.Class.KhmerName}" Width="190" />
-                                <DataGridTextColumn Header="កាលបរិច្ឆេទ" Binding="{Binding AttendanceDate, StringFormat={}{0:dd/MM/yyyy}}" Width="120" />
-                                <DataGridTextColumn Header="ម៉ោង" Binding="{Binding ScanTime, StringFormat={}{0:HH:mm}}" Width="80" />
+                                <DataGridTextColumn Header="កាលបរិច្ឆេទ" Binding="{Binding LocalAttendanceDate, StringFormat={}{0:dd/MM/yyyy}}" Width="120" />
+                                <DataGridTextColumn Header="ម៉ោង" Binding="{Binding LocalScanTime, StringFormat={}{0:HH:mm}}" Width="80" />
                                 <DataGridTextColumn Header="ស្ថានភាព" Binding="{Binding Status, Converter={StaticResource EnumToDescriptionConverter}}" Width="120" />
                                 <DataGridTextColumn Header="កត់ត្រាដោយ" Binding="{Binding MarkedByEmployee.FullName}" Width="150" />
                                 <DataGridTemplateColumn Header="ការកែប្រែ" Width="190">
@@ -212,6 +212,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="ផ្សេងៗ" Binding="{Binding OtherInfo}" Width="600" />
                             </DataGrid.Columns>
                         </DataGrid>
 

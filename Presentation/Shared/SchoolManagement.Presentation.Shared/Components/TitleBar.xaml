@@ -65,7 +65,7 @@
                         <DropShadowEffect BlurRadius="1" ShadowDepth="2"/>
                     </Image.Effect>
                     <Image.Source>
-                        <BitmapImage DecodePixelWidth="32" UriSource="/SchoolManagement.Presentation.Shared;component/Sources/Images/dbslogo_filled.png"/>
+                        <BitmapImage DecodePixelWidth="32" UriSource="pack://application:,,,/SchoolManagement.Assets;component/Images/dbslogo_filled.png"/>
                     </Image.Source>
                 </Image>
 

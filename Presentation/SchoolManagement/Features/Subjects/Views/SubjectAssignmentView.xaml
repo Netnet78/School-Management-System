@@ -61,7 +61,8 @@
                                          DisplayMemberPath="KhmerName"
                                          Height="200"
                                          FontSize="14"
-                                         ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                         Foreground="{DynamicResource MaterialDesign.Brush.Primary.Foreground}"/>
                             </StackPanel>
                         </Border>
 

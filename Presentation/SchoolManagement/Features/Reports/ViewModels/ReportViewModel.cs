@@ -1,29 +1,38 @@
 using System.Collections.ObjectModel;
-using System.Data;
+using System.Windows.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using SchoolManagement.Application.Features.Reports.Contracts;
-using SchoolManagement.Core.Features.Reports.Enums;
+using SchoolManagement.Application.Features.Reports.Models;
 using SchoolManagement.Infrastructure.Features.Reports.Contracts;
 using SchoolManagement.Presentation.Features.Reports.Contracts;
 using SchoolManagement.Presentation.Features.Reports.Models;
-using SchoolManagement.Presentation.Shared.Converters;
 
 namespace SchoolManagement.Presentation.Features.Reports.ViewModels
 {
     public partial class ReportViewModel : ObservableObject, IViewModel, IAsyncLoadable
     {
         private readonly IReportRegistry _registry;
-        private readonly IReportComponentFactory _componentFactory;
-        private readonly IMessageService _messageService;
+        private readonly IEnumerable<IReportViewProvider> _providers;
         private readonly IEnumerable<IReportExporter> _exporters;
+        private readonly IMessageService _messageService;
+        private readonly ILoadingService _loadingService;
 
-        public IEnumerable<IReportExporter> Exporters => _exporters;
+        public IEnumerable<IReportExporter> Exporters =>
+            _currentProvider != null
+                ? _exporters.Where(e => _currentProvider.CanExport(e))
+                : [];
 
-        private IReportGenerator? _currentGenerator;
+        private IReportViewProvider? _currentProvider;
+        private CancellationTokenSource? _previewGenerationCts;
+        private int _previewGenerationId;
+        private int _loadingOperationCount;
+
+        public IEnumerable<ReportCardItem> VisibleReportCards => ReportCards;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(VisibleReportCards))]
         private ObservableCollection<ReportCardItem> _reportCards = [];
 
         [ObservableProperty]
@@ -33,10 +42,9 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewModels
         private IReportFilterViewModel? _currentFilterViewModel;
 
         [ObservableProperty]
-        private DataTable? _previewTable;
+        private UserControl? _currentPreviewView;
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(HasSummary))]
         [NotifyPropertyChangedFor(nameof(ShowNoDataMessage))]
         private bool _hasData;
 
@@ -54,48 +62,79 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewModels
         private string _selectedReportTitle = string.Empty;
 
         [ObservableProperty]
-        private ObservableCollection<CardPreviewGroup>? _cardPreviewGroups;
+        [NotifyPropertyChangedFor(nameof(MaxPage))]
+        [NotifyPropertyChangedFor(nameof(PageInfo))]
+        private int _totalCount;
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(HasSummary))]
-        private bool _hasCardPreview;
+        [NotifyPropertyChangedFor(nameof(MaxPage))]
+        [NotifyPropertyChangedFor(nameof(PageInfo))]
+        private int _currentPage = 1;
 
-        public bool HasSummary => HasData || HasCardPreview;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(MaxPage))]
+        [NotifyPropertyChangedFor(nameof(PageInfo))]
+        private int _pageSize = 10;
 
-        public bool ShowNoDataMessage => !HasData && !HasCardPreview && !IsLoading;
+        [ObservableProperty]
+        private bool _showPageOption = false;
+
+        [ObservableProperty]
+        public bool _hasSummary;
+
+        public int MaxPage => PageSize > 0 ? (int)Math.Ceiling((double)TotalCount / PageSize) : 1;
+
+        public string PageInfo => $"Page {CurrentPage} of {MaxPage} ({TotalCount} items)";
+
+        public List<int> AvailablePageSizes { get; } = [10, 20, 50, 100];
+
+        public bool ShowNoDataMessage => !HasData && !IsLoading;
 
         public ReportViewModel(
             IReportRegistry registry,
-            IReportComponentFactory componentFactory,
+            IEnumerable<IReportViewProvider> providers,
+            IEnumerable<IReportExporter> exporters,
             IMessageService messageService,
-            IEnumerable<IReportExporter> exporters)
+            ILoadingService loadingService)
         {
             _registry = registry;
-            _componentFactory = componentFactory;
-            _messageService = messageService;
+            _providers = providers;
             _exporters = exporters;
+            _messageService = messageService;
+            _loadingService = loadingService;
         }
 
         public async Task LoadAsync()
         {
-            IsLoading = true;
+            BeginLoadingOperation();
 
-            var definitions = _registry.GetAll();
-            var cards = definitions.Select(d => new ReportCardItem(d)).ToList();
-            ReportCards = new ObservableCollection<ReportCardItem>(cards);
-
-            if (cards.Count > 0)
+            try
             {
-                cards[0].IsSelected = true;
-                await SelectReportAsync(cards[0]);
-            }
+                var definitions = _registry.GetAllDescriptors();
+                var cards = definitions.Select(d => new ReportCardItem(d.Definition)).ToList();
+                ReportCards = new ObservableCollection<ReportCardItem>(cards);
 
-            IsLoading = false;
+                if (cards.Count > 0)
+                {
+                    cards[0].IsSelected = true;
+                    await SelectReportAsync(cards[0]);
+                }
+            }
+            catch (Exception ex)
+            {
+                _messageService.Show($"Error loading reports: {ex.Message}", "Error", MessageButton.OK, MessageIcon.Error);
+            }
+            finally
+            {
+                EndLoadingOperation();
+            }
         }
 
         [RelayCommand]
         private async Task SelectReportAsync(ReportCardItem card)
         {
+            BeginLoadingOperation();
+
             try
             {
                 if (SelectedCard != null)
@@ -105,170 +144,165 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewModels
                 card.IsSelected = true;
                 SelectedReportTitle = card.DisplayName;
 
-                var definition = card.Definition;
-
-                // Create generator instance via factory
-                _currentGenerator = _componentFactory.CreateGenerator(definition);
-
-                // Create and load filter VM
-                CurrentFilterViewModel = null;
-                IsFilterVisible = false;
-                HasData = false;
-                HasCardPreview = false;
-                PreviewTable = null;
-                CardPreviewGroups = null;
-
-                var filterVm = _componentFactory.CreateFilterViewModel(definition);
-                filterVm.FilterChanged += OnFilterChanged;
-                CurrentFilterViewModel = filterVm;
-                IsFilterVisible = true;
-
-                if (filterVm is IAsyncLoadable asyncLoadable)
+                // Find provider by key
+                IReportViewProvider? provider = _providers.FirstOrDefault(p => p.ReportTypeKey == card.Key);
+                if (provider == null)
                 {
-                    await asyncLoadable.LoadAsync();
+                    _messageService.Show($"No provider found for report '{card.Key}'", "Error", MessageButton.OK, MessageIcon.Error);
+                    return;
                 }
 
-                // Trigger initial preview
-                await GeneratePreviewAsync();
+                // Clean up previous provider
+                if (CurrentFilterViewModel != null)
+                {
+                    CurrentFilterViewModel.FilterChanged -= OnFilterChanged;
+                }
+
+                _currentProvider = provider;
+                OnPropertyChanged(nameof(Exporters));
+                HasData = false;
+                SummaryText = string.Empty;
+                HasSummary = string.IsNullOrWhiteSpace(_currentProvider.SummaryText) && HasData;
+                CurrentPreviewView = null;
+
+                // Wire filter
+                if (provider.FilterViewModel is { } filterVm)
+                {
+                    filterVm.FilterChanged += OnFilterChanged;
+                    CurrentFilterViewModel = filterVm;
+                    IsFilterVisible = true;
+
+                    if (filterVm is IAsyncLoadable asyncLoadable)
+                    {
+                        await asyncLoadable.LoadAsync();
+                    }
+                }
+                else
+                {
+                    CurrentFilterViewModel = null;
+                    IsFilterVisible = false;
+                }
+
+                CurrentPreviewView = provider.PreviewView;
+
+                CurrentPage = 1;
+
+                // Trigger initial generation
+                var filter = provider.FilterViewModel?.GetFilterData() ?? new object();
+                await GenerateWithProviderAsync(filter);
             }
             catch (Exception ex)
             {
                 _messageService.Show($"Error selecting report: {ex.Message}", "Error", MessageButton.OK, MessageIcon.Error);
-                IsLoading = false;
             }
+            finally
+            {
+                EndLoadingOperation();
+            }
+        }
+
+        [RelayCommand]
+        private async Task ClearFilters()
+        {
+            CurrentFilterViewModel?.ResetFilterData();
+        }
+
+        private async Task OnFilterChangedAsync()
+        {
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => { });
+
+            if (_currentProvider == null || CurrentFilterViewModel == null)
+                return;
+
+            CurrentPage = 1;
+            await GenerateWithProviderAsync(CurrentFilterViewModel.GetFilterData());
         }
 
         private async void OnFilterChanged()
         {
-            await GeneratePreviewAsync();
+            await OnFilterChangedAsync();
         }
 
-        private async Task GeneratePreviewAsync()
+        private async Task GenerateWithProviderAsync(object filter)
         {
-            if (_currentGenerator == null || CurrentFilterViewModel == null)
+            IReportViewProvider? provider = _currentProvider;
+            if (provider == null)
                 return;
 
-            IsLoading = true;
+            if (filter is IPagedFilter paged)
+            {
+                ShowPageOption = true;
+                paged.Page = CurrentPage;
+                paged.PageSize = PageSize;
+            }
+            else
+            {
+                ShowPageOption = false;
+            }
+
+            (int generationId, CancellationToken cancellationToken) = BeginPreviewGeneration();
+            await Task.Yield();
 
             try
             {
-                var filterData = CurrentFilterViewModel.GetFilterData();
-                var result = await _currentGenerator.GenerateAsync(filterData);
+                await _loadingService.ShowLoading("កំពុងដំណើរការ...");
 
-                if (result.Layout == ReportLayout.Card && result.CardGroups is { Count: > 0 })
-                {
-                    // Build card preview
-                    var groups = new ObservableCollection<CardPreviewGroup>();
+                await provider.GenerateAsync(filter, cancellationToken);
 
-                    foreach (var cardGroup in result.CardGroups)
-                    {
-                        var group = new CardPreviewGroup
-                        {
-                            Width = cardGroup.Width,
-                            Height = cardGroup.Height,
-                        };
+                if (cancellationToken.IsCancellationRequested || !IsCurrentPreviewGeneration(generationId))
+                    return;
 
-                        foreach (var item in cardGroup.Items)
-                        {
-                            var previewItem = new CardPreviewItem
-                            {
-                                X = item.XPos,
-                                Y = item.YPos,
-                                Text = item.Value as string,
-                                ImageBytes = item.Value as byte[],
-                            };
-
-                            if (previewItem.ImageBytes != null)
-                            {
-                                previewItem.ImageSource = previewItem.ImageBytes.ConvertToBitmapsource();
-                            }
-
-                            group.Items.Add(previewItem);
-                        }
-
-                        groups.Add(group);
-                    }
-
-                    CardPreviewGroups = groups;
-                    HasCardPreview = groups.Count > 0;
-                    HasData = false;
-                    PreviewTable = null;
-                }
-                else
-                {
-                    // Build DataTable preview (table layout)
-                    var table = new DataTable();
-
-                    foreach (var col in result.Columns)
-                    {
-                        var header = !string.IsNullOrEmpty(col.HeaderKhmer) ? col.HeaderKhmer : col.Header;
-                        table.Columns.Add(col.Key, typeof(string));
-                    }
-
-                    foreach (var row in result.Rows)
-                    {
-                        var dr = table.NewRow();
-                        foreach (var col in result.Columns)
-                        {
-                            dr[col.Key] = row.GetValueOrDefault(col.Key)?.ToString() ?? "";
-                        }
-                        table.Rows.Add(dr);
-                    }
-
-                    PreviewTable = table;
-                    HasData = table.Rows.Count > 0;
-                    HasCardPreview = false;
-                    CardPreviewGroups = null;
-                }
-
-                // Build summary text
-                var summaryParts = new List<string>();
-                if (result.Summary != null)
-                {
-                    foreach (var kvp in result.Summary)
-                    {
-                        summaryParts.Add($"{kvp.Key}: {kvp.Value}");
-                    }
-                }
-                SummaryText = string.Join(" | ", summaryParts);
+                HasData = provider.HasData;
+                SummaryText = provider.SummaryText;
+                HasSummary = !string.IsNullOrWhiteSpace(SummaryText) && HasData;
+                TotalCount = provider.TotalCount;
+            }
+            catch (OperationCanceledException)
+            {
+                return;
             }
             catch (Exception ex)
             {
+                if (cancellationToken.IsCancellationRequested || !IsCurrentPreviewGeneration(generationId))
+                    return;
+
                 _messageService.Show($"Error generating report: {ex.Message}", "Error", MessageButton.OK, MessageIcon.Error);
             }
             finally
             {
-                IsLoading = false;
+                await _loadingService.Hide();
+                EndLoadingOperation();
             }
         }
 
         [RelayCommand]
         private async Task ExportAsync(IReportExporter exporter)
         {
-            if (_currentGenerator == null || CurrentFilterViewModel == null)
+            var provider = _currentProvider;
+            if (provider == null)
                 return;
 
-            IsLoading = true;
+            string extension = exporter.FileExtension;
+            SaveFileDialog saveDialog = new()
+            {
+                Title = "Save Report",
+                Filter = $"{exporter.FormatName} files (*{extension})|*{extension}",
+                FileName = $"report_{DateTime.Now:yyyyMMdd_HHmmss}{extension}",
+            };
+
+            if (saveDialog.ShowDialog() != true)
+                return;
+
+            string filePath = saveDialog.FileName;
+
+            BeginLoadingOperation();
+            await Task.Yield();
 
             try
             {
-                var filterData = CurrentFilterViewModel.GetFilterData();
-                var result = await _currentGenerator.GenerateAsync(filterData);
+                await _loadingService.ShowLoading("កំពុងដំណើរការ...");
 
-                string extension = exporter.FileExtension;
-                var saveDialog = new SaveFileDialog
-                {
-                    Title = "Save Report",
-                    Filter = $"{exporter.FormatName} files (*{extension})|*{extension}",
-                    FileName = $"report_{DateTime.Now:yyyyMMdd_HHmmss}{extension}",
-                };
-
-                if (saveDialog.ShowDialog() != true)
-                    return;
-
-                string filePath = saveDialog.FileName;
-
-                await exporter.ExportToFileAsync(result, filePath);
+                await provider.ExportAsync(exporter, filePath);
 
                 var openResult = _messageService.Show(
                     "Report generated successfully! Do you want to open the file?",
@@ -290,6 +324,81 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewModels
                 _messageService.Show($"Error exporting report: {ex.Message}", "Error", MessageButton.OK, MessageIcon.Error);
             }
             finally
+            {
+                await _loadingService.Hide();
+                EndLoadingOperation();
+            }
+        }
+
+        private (int GenerationId, CancellationToken Token) BeginPreviewGeneration()
+        {
+            var nextCts = new CancellationTokenSource();
+            var previousCts = Interlocked.Exchange(ref _previewGenerationCts, nextCts);
+            previousCts?.Cancel();
+            previousCts?.Dispose();
+
+            int generationId = Interlocked.Increment(ref _previewGenerationId);
+            BeginLoadingOperation();
+            return (generationId, nextCts.Token);
+        }
+
+        private static bool IsCurrentPreviewGeneration(int generationId, int currentGenerationId)
+            => generationId == currentGenerationId;
+
+        private bool IsCurrentPreviewGeneration(int generationId)
+            => IsCurrentPreviewGeneration(generationId, Volatile.Read(ref _previewGenerationId));
+
+        [RelayCommand]
+        private async Task GoToNextPage()
+        {
+            if (CurrentPage < MaxPage)
+            {
+                CurrentPage++;
+                await RegenerateAsync();
+            }
+        }
+
+        [RelayCommand]
+        private async Task GoToPreviousPage()
+        {
+            if (CurrentPage > 1)
+            {
+                CurrentPage--;
+                await RegenerateAsync();
+            }
+        }
+
+        partial void OnPageSizeChanged(int value)
+        {
+            _ = OnPageSizeChangedAsync();
+        }
+
+        private async Task OnPageSizeChangedAsync()
+        {
+            CurrentPage = 1;
+            await RegenerateAsync();
+        }
+
+        private async Task RegenerateAsync()
+        {
+            if (_currentProvider == null)
+                return;
+
+            var filter = CurrentFilterViewModel?.GetFilterData() ?? new object();
+            await GenerateWithProviderAsync(filter);
+        }
+
+        private void BeginLoadingOperation()
+        {
+            if (Interlocked.Increment(ref _loadingOperationCount) == 1)
+            {
+                IsLoading = true;
+            }
+        }
+
+        private void EndLoadingOperation()
+        {
+            if (Interlocked.Decrement(ref _loadingOperationCount) == 0)
             {
                 IsLoading = false;
             }

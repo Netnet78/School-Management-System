@@ -61,7 +61,7 @@
                                     Margin="0 10 0 20" HorizontalAlignment="Center">
                             <Image Width="128">
                                 <Image.Source>
-                                    <BitmapImage DecodePixelWidth="128" UriSource="/SchoolManagement.Presentation.Shared;component/Sources/Images/dbslogo_filled.png"/>
+                                    <BitmapImage DecodePixelWidth="128" UriSource="pack://application:,,,/SchoolManagement.Assets;component/Images/dbslogo_filled.png"/>
                                 </Image.Source>
                             </Image>
                             <TextBlock Margin="0 10 0 0"

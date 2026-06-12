@@ -1,17 +1,18 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using SchoolManagement.Application.Features.Classes.Authorization;
 using SchoolManagement.Application.Features.Reports.Models;
-using SchoolManagement.Core.Features.Classes.Models;
-using SchoolManagement.Infrastructure.Features.Classes.Contracts;
-using SchoolManagement.Infrastructure.Features.Shared.Models;
+using SchoolManagement.Core.Features.Reports.Models;
 using SchoolManagement.Presentation.Features.Reports.Contracts;
 
 namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Attendance
 {
     public partial class AttendanceFilterViewModel : ObservableObject, IReportFilterViewModel, IAsyncLoadable
     {
-        private readonly IClassRepository _classRepository;
+        private readonly IClassService _classService;
+        private readonly IAuthorizationService _authorizationService;
+        private Timer? _searchDebounceTimer;
 
-        public string ReportTypeKey => "attendance-report";
+        public ReportTag ReportTypeKey => ReportTag.AttendanceReport;
 
         public event Action? FilterChanged;
 
@@ -27,9 +28,13 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Attendanc
         [ObservableProperty]
         private DateTime _dateTo = DateTime.UtcNow;
 
-        public AttendanceFilterViewModel(IClassRepository classRepository)
+        [ObservableProperty]
+        private string _searchKeyword = string.Empty;
+
+        public AttendanceFilterViewModel(IClassService classService, IAuthorizationService authorizationService)
         {
-            _classRepository = classRepository;
+            _classService = classService;
+            _authorizationService = authorizationService;
         }
 
         public object GetFilterData()
@@ -39,16 +44,53 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Attendanc
                 ClassId = SelectedClass?.Id,
                 DateFrom = DateFrom,
                 DateTo = DateTo,
+                SearchKeyword = string.IsNullOrWhiteSpace(SearchKeyword) ? null : SearchKeyword.Trim(),
             };
         }
 
         public async Task LoadAsync()
         {
-            Classes = (await _classRepository.GetAllAsync()).ToList();
+            User? user = _authorizationService.CurrentUser;
+            if (user == null) return;
+
+            if (user.IsValidRole(RoleType.Admin))
+            {
+                Classes = (await _classService.GetAllAsync()).Value ?? [];
+            }
+            else if (user.IsValidRole(RoleType.HeadTeacher))
+            {
+                Classes = (await _classService.GetAllAsync(
+                    filters: [new(c => c.Generation.DepartmentId, FilterOperator.Equals, user.Employee?.DepartmentId)],
+                    includes: ["Generation"])).Value ?? [];
+            }
+            else if (user.IsValidRole(RoleType.Teacher))
+            {
+                Classes = (await _classService.GetAllAsync(
+                    filters: [new(c => c.TeacherId, FilterOperator.Equals, user.EmployeeId)],
+                    includes: ["Employee"])).Value ?? [];
+            }
         }
 
         partial void OnSelectedClassChanged(Class? value) => FilterChanged?.Invoke();
         partial void OnDateFromChanged(DateTime value) => FilterChanged?.Invoke();
         partial void OnDateToChanged(DateTime value) => FilterChanged?.Invoke();
+
+        partial void OnSearchKeywordChanged(string value)
+        {
+            _searchDebounceTimer?.Dispose();
+            _searchDebounceTimer = new Timer(
+                async (_) => { FilterChanged?.Invoke(); },
+                null,
+                400,
+                Timeout.Infinite);
+        }
+
+        public void ResetFilterData()
+        {
+            SelectedClass = null;
+            DateFrom = new(DateTime.UtcNow.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            DateTo = DateTime.UtcNow;
+            SearchKeyword = string.Empty;
+        }
     }
 }

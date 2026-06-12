@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SchoolManagement.Application.Features.Reports;
 using SchoolManagement.Application.Features.Reports.Contracts;
-using SchoolManagement.Application.Features.Reports.Generators;
 
 namespace SchoolManagement.Application
 {
@@ -49,12 +48,6 @@ namespace SchoolManagement.Application
 
             // Background workers
             services.AddScoped<FileSyncBackgroundWorker>();
-
-            // Report generators
-            services.AddTransient<IReportGenerator, StudentRosterGenerator>();
-            services.AddTransient<IReportGenerator, AttendanceReportGenerator>();
-            services.AddTransient<IReportGenerator, ScoreReportGenerator>();
-            services.AddTransient<IReportGenerator, StudentCardGenerator>();
 
             // Report registry
             services.AddSingleton<IReportRegistry, ReportRegistry>();

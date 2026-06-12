@@ -1,4 +1,6 @@
-﻿namespace SchoolManagement.Assets
+﻿using System.IO;
+
+namespace SchoolManagement.Assets
 {
     public static class ResourcePaths
     {

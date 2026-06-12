@@ -111,7 +111,7 @@ namespace SchoolManagement.Core.Features.Candidates.Models
         public StudentPhoto? Photo { get; set; }
 
         [Description("រូបភាព")]
-        public string PhotoKey => Photo == null ? string.Empty : Photo.Key ?? string.Empty ;
+        public string PhotoKey => Photo == null ? string.Empty : Photo.Key ?? string.Empty;
 
         [Description("លេខទូរស័ព្ទ")]
         public string PhoneNumber { get; set; } = string.Empty;

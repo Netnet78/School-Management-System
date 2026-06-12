@@ -38,7 +38,7 @@ namespace SchoolManagement.Presentation.Shared.Services
 
             if (viewmodel is IAsyncLoadable loadable)
             {
-                await loadable.LoadAsync();
+                await loadable.LoadAsync().ConfigureAwait(false);
             }
 
             await _dispatcherService.InvokeAsync(async () =>

@@ -9,6 +9,11 @@
              d:DesignHeight="80" d:DesignWidth="800">
     <StackPanel Orientation="Horizontal">
         <StackPanel Orientation="Horizontal" Margin="0 0 15 0">
+            <TextBlock Text="ស្វែងរក" VerticalAlignment="Center" Margin="0 0 5 0"/>
+            <TextBox Width="150"
+                     Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged, Delay=400}"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="0 0 15 0">
             <TextBlock Text="ថ្នាក់" VerticalAlignment="Center" Margin="0 0 5 0"/>
             <ComboBox Width="150"
                       ItemsSource="{Binding Classes}"

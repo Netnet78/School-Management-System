@@ -1,4 +1,9 @@
 <Solution>
+  <Folder Name="/Docs/">
+    <File Path="docs/AGENTS.md" />
+    <File Path="docs/DOCUMENTATION.md" />
+    <File Path="docs/REPORT_FEATURE.md" />
+  </Folder>
   <Folder Name="/Git/">
     <File Path=".gitignore" />
   </Folder>

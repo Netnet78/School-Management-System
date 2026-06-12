@@ -19,7 +19,6 @@ namespace SchoolManagement.Application.Features.Users.Services
 
         public async Task<ReturnResponse<User>> ValidateUserAsync(string username, string password)
         {
-            await Task.Delay(1000);
             User? user = await _repo.GetUserAsync(username);
 
             if (user != null && user.LockedOutEnd != null && user.LockedOutEnd > DateTime.UtcNow)

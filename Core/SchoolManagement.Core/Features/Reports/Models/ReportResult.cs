@@ -1,27 +1,42 @@
-using SchoolManagement.Core.Features.Reports.Enums;
-
 namespace SchoolManagement.Core.Features.Reports.Models
 {
-    public class ReportResult
+    /// <summary>
+    /// A generic abstract class for defining report result.
+    /// </summary>
+    public abstract record ReportResult
     {
-        public string Title { get; set; } = string.Empty;
+        /// <summary>
+        /// Title of the report
+        /// </summary>
+        public string Title { get; init; } = string.Empty;
 
-        public string? SubTitle { get; set; }
+        /// <summary>
+        /// Subtitle of the report
+        /// </summary>
+        public string? SubTitle { get; init; }
 
-        public DateTime GeneratedDate { get; set; } = DateTime.UtcNow;
+        /// <summary>
+        /// Date/time that the report was generated.
+        /// The default value is set to <see cref="DateTime.Now"/>
+        /// </summary>
+        public DateTime GeneratedDate { get; init; } = DateTime.Now;
 
-        public ReportLayout Layout { get; set; } = ReportLayout.Table;
+        /// <summary>
+        /// A custom date/time that can be used to display in the report instead of the 
+        /// <see cref="GeneratedDate"/>
+        /// </summary>
+        public DateTime? ReportDate { get; init; }
 
-        public List<ReportColumn> Columns { get; set; } = [];
+        /// <summary>
+        /// Summary of the report, used to display information such as
+        /// count, date/time, and etc.
+        /// </summary>
+        public Dictionary<string, object>? Summary { get; init; }
 
-        public List<Dictionary<string, object?>> Rows { get; set; } = [];
+        /// <summary>
+        /// The tag of the report that identifies the type of report
+        /// </summary>
+        public required ReportTag? ReportTag { get; set; }
 
-        public Dictionary<string, object>? Summary { get; set; }
-
-        public List<ReportItem>? CardItems { get; set; }
-
-        public List<ReportItemGroup>? CardGroups { get; set; }
-
-        public string? TemplatePath { get; set; }
     }
 }

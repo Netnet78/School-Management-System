@@ -1,6 +1,7 @@
 ﻿using AttendanceScanner.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SchoolManagement.Assets;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Media.Imaging;
@@ -19,17 +20,16 @@ public partial class MainViewModel : ObservableObject, IDisposable, IViewModel
     private readonly IFrameProcessingService _frameService;
     private readonly IQRScannerService _qRScannerService;
     private readonly IDispatcherService _dispatcherService;
-    public ILoadingService LoadingService { get; }
+    private readonly ILoadingService _loadingService;
+
+    private bool _debugMode = false;
 
     // Sound effects
-    private readonly SoundObject _successSound = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sources/Audio/sfx/scan_success.wav"));
-    private readonly SoundObject _errorSound = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sources/Audio/sfx/scan_error.wav"));
+    private readonly SoundObject _successSound = new(Path.Combine(ResourcePaths.Audio, "sfx", "success-sound.wav"));
+    private readonly SoundObject _errorSound = new(Path.Combine(ResourcePaths.Audio, "sfx", "error-sound.wav"));
 
     // Events
     public event Action<ReturnResponse>? OnScanStatusChanged;
-
-    // Boolean
-    private bool _debugMode = true;
 
     // Students Data
     [ObservableProperty]
@@ -85,7 +85,7 @@ public partial class MainViewModel : ObservableObject, IDisposable, IViewModel
         _frameService = frameProcessingService;
         _qRScannerService = qRScannerService;
         _dispatcherService = dispatcherService;
-        LoadingService = loadingService;
+        _loadingService = loadingService;
 
         CurrentPhotoPath = string.Empty;
         CurrentStudent = new();
@@ -159,59 +159,82 @@ public partial class MainViewModel : ObservableObject, IDisposable, IViewModel
 
     private async Task ProcessQRAsync(string value)
     {
-        IsReady = false;
+        await _dispatcherService.InvokeAsync(() =>
+        {
+            IsReady = false;
+        });
+
+        await _loadingService.ShowLoading("សូមប្អូនមេត្តារងចាំ...");
         try
         {
-            StudentQRResponse qrResponse = await _qrService.GetStudentByQRCode(value);
+            StudentQRResponse qrResponse = await _qrService.MarkStudent(value);
             
-            if (qrResponse.Status == Status.Failed || qrResponse.Student == null)
+            if (qrResponse.Status != Status.Success)
             {
                 _soundService.Play(_errorSound);
-                CurrentStudent = new();
-                CurrentPhotoPath = string.Empty;
+                await _dispatcherService.InvokeAsync(() =>
+                {
+                    CurrentStudent = new();
+                    CurrentPhotoPath = string.Empty;
+                });
 
                 await _dispatcherService.InvokeAsync(() =>
                 {
                     _messageService.Show(qrResponse.Message, "Scan Failed", icon: MessageIcon.Error, autoHide: 4);
                 });
-                return;
             }
-
-            _soundService.Play(_successSound);
-            CurrentStudent = qrResponse.Student;
-            OnScanStatusChanged?.Invoke(new()
+            else
             {
-                Status = Status.Success
-            });
-
-            try
-            {
-                FileObject? photoPath = (await _photoFetchService.GetStudentPhoto(CurrentStudent.PhotoKey)).Value;
                 await _dispatcherService.InvokeAsync(() =>
                 {
-                    CurrentPhotoPath = photoPath?.FilePath ?? string.Empty;
-                    if (_debugMode)
-                    {
-                        Debug.WriteLine($"Photo path set to: {CurrentPhotoPath}");
-                        Debug.WriteLine($"Photo exists: {File.Exists(CurrentPhotoPath)}");
-                    }
+                    CurrentStudent = qrResponse.Student!;
                 });
-            }
-            catch (Exception photoEx)
-            {
-                if (_debugMode)
+                OnScanStatusChanged?.Invoke(new()
+                {
+                    Status = Status.Success
+                });
+
+                try
+                {
+                    ReturnResponse<FileObject> photoPath = await _photoFetchService.GetStudentPhoto(CurrentStudent.PhotoKey);
+
+                    if (photoPath.Status != Status.Success)
+                    {
+                        await _dispatcherService.InvokeAsync(() =>
+                        {
+                            _messageService.Show("មិនអាចទាញរកព័ត៌មានរូបភាពនៃសិស្សានុសិស្សនេះទេ!"
+                                , "មិនអាចរកឃើញធនធានទេ!", MessageButton.OK, MessageIcon.Exclamation, 3);
+                        });
+                    }
+
+                    await _dispatcherService.InvokeAsync(() =>
+                    {
+                        if (_debugMode)
+                        {
+                            Debug.WriteLine($"Photo path set to: {CurrentPhotoPath}");
+                            Debug.WriteLine($"Photo exists: {File.Exists(CurrentPhotoPath)}");
+                        }
+                        CurrentPhotoPath = photoPath.Value?.FilePath ?? string.Empty;
+                    });
+                }
+                catch (Exception photoEx)
                 {
                     Debug.WriteLine($"Error fetching photo: {photoEx.GetType().Name}");
                     Debug.WriteLine($"Error message: {photoEx.Message}");
                     Debug.WriteLine($"Stack trace: {photoEx.StackTrace}");
                     Debug.WriteLine($"Inner exception: {photoEx.InnerException?.Message}");
+                    await _dispatcherService.InvokeAsync(() =>
+                    {
+                        CurrentPhotoPath = string.Empty;
+                        _messageService.Show($"Unable to load student photo.\n{photoEx.Message}",
+                                            "Photo Load Error", icon: MessageIcon.Exclamation, autoHide: 3);
+                    });
                 }
-                await _dispatcherService.InvokeAsync(() =>
-                {
-                    CurrentPhotoPath = string.Empty;
-                    _messageService.Show($"Unable to load student photo.\n{photoEx.Message}",
-                                        "Photo Load Error", icon: MessageIcon.Exclamation, autoHide: 3);
-                });
+
+                _soundService.Play(_successSound);
+                await _loadingService.ShowSuccess("វត្តមានរបស់ប្អូនត្រូវបានកត់ត្រាទុកជាការស្រេច! ​សូមប្អូនបន្តទៅរកថ្នាក់របស់ប្អូន");
+                await Task.Delay(3500);
+                await _loadingService.Hide();
             }
         }
         catch (Exception qrEx)
@@ -234,7 +257,11 @@ public partial class MainViewModel : ObservableObject, IDisposable, IViewModel
         }
         finally
         {
-            IsReady = true;
+            await _dispatcherService.InvokeAsync(() =>
+            {
+                IsReady = true;
+            });
+            await _loadingService.Hide();
         }
     }
 
@@ -244,7 +271,7 @@ public partial class MainViewModel : ObservableObject, IDisposable, IViewModel
 
         try
         {
-            string? value = _qRScannerService.Decode(frame);
+            string? value = await Task.Run(() => _qRScannerService.Decode(frame));
 
             if (string.IsNullOrWhiteSpace(value)) return;
 
@@ -274,21 +301,17 @@ public partial class MainViewModel : ObservableObject, IDisposable, IViewModel
 
         try
         {
-            LoadingService.ShowLoading("សូមប្អូនមេត្តារងចាំ...");
-
             if (_debugMode)
             {
+                await _loadingService.ShowLoading("សូមប្អូនមេត្តារងចាំ...");
                 await Task.Delay(1000);
+                await _loadingService.ShowSuccess("វត្តមានរបស់ប្អូនត្រូវបានកត់ត្រាទុកជាការស្រេច! ​សូមប្អូនបន្តទៅរកថ្នាក់របស់ប្អូន");
+                await Task.Delay(3500);
+                await _loadingService.Hide();
+                return;
             }
-            else
-            {
-                
-            }
-            await ProcessQRAsync(value);
 
-            LoadingService.ShowSuccess("វត្តមានរបស់ប្អូនត្រូវបានកត់ត្រាទុកជាការស្រេច! ​សូមប្អូនបន្តទៅរកថ្នាក់របស់ប្អូន");
-            await Task.Delay(3500);
-            LoadingService.Hide();
+            await ProcessQRAsync(value);
 
             _lastScanTime = DateTime.Now;
         }

@@ -9,17 +9,20 @@ namespace SchoolManagement.Presentation.Shared.Features.Authentication.ViewModel
         private readonly IUserValidationService _userValidationService;
         private readonly IMessageService _messageService;
         private readonly INavigationService _navigationService;
+        private readonly IDispatcherService _dispatcherService;
 
         public LoginViewModel(
             IUserSessionService userSessionService,
             IUserValidationService userValidationService,
             IMessageService messageService,
-            INavigationService navigationService)
+            INavigationService navigationService,
+            IDispatcherService dispatcherService)
         {
             _userSessionService = userSessionService;
             _userValidationService = userValidationService;
             _messageService = messageService;
             _navigationService = navigationService;
+            _dispatcherService = dispatcherService;
         }
 
         // MVVM Bindings
@@ -33,26 +36,41 @@ namespace SchoolManagement.Presentation.Shared.Features.Authentication.ViewModel
         {
             try
             {
-                ReturnResponse<User> response = await _userValidationService.ValidateUserAsync(Username, password);
-
-                string messageHeader = string.Empty;
-
-                if (response.Status == Status.Failed) messageHeader = "ចូលមិនបានទេ!";
-                else if (response.Status == Status.Rejected) messageHeader = "មិនអនុញ្ញាតជាដាច់ខាត!";
-
-                if (response.Value == null)
+                bool result = await Task.Run(async () =>
                 {
-                    _messageService.Show(response.Message, messageHeader,
-                        MessageButton.OK, MessageIcon.Error);
-                    return false;
-                }
+                    ReturnResponse<User> response = await _userValidationService.ValidateUserAsync(Username, password);
 
+                    string messageHeader = string.Empty;
 
-                _navigationService.ClearCache();
+                    if (response.Status == Status.Failed) messageHeader = "ចូលមិនបានទេ!";
+                    else if (response.Status == Status.Rejected) messageHeader = "មិនអនុញ្ញាតជាដាច់ខាត!";
 
-                await _userSessionService.SetSession(response.Value.Id);
-                LoginSucceeded?.Invoke(true);
-                return true;
+                    _navigationService.ClearCache();
+
+                    bool returned = await _dispatcherService.InvokeAsync(() =>
+                    {
+                        if (response.Value == null)
+                        {
+                            _messageService.Show(response.Message, messageHeader,
+                                MessageButton.OK, MessageIcon.Error);
+                            return false;
+                        }
+
+                        return true;
+                    });
+
+                    if (returned == true && response.Value != null)
+                    {
+                        await _userSessionService.SetSession(response.Value.Id).ConfigureAwait(false);
+
+                        await _dispatcherService.InvokeAsync(() => LoginSucceeded?.Invoke(true));
+
+                        return true;
+                    }
+                    else return false;
+                });
+
+                return result;
             }
             catch (Exception ex)
             {

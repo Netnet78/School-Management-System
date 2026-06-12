@@ -8,6 +8,7 @@
         xmlns:viewmodels="clr-namespace:CandidateManagement.ViewModels"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:components="clr-namespace:SchoolManagement.Presentation.Shared.Components;assembly=SchoolManagement.Presentation.Shared"
+        xmlns:assets="clr-namespace:SchoolManagement.Assets;assembly=SchoolManagement.Assets"
         d:DataContext="{d:DesignInstance Type=viewmodels:LoginViewModel}"
         mc:Ignorable="d"
         Style="{StaticResource MaterialDesignWindow}"
@@ -151,7 +152,7 @@
                             <TranslateTransform />
                         </TransformGroup>
                     </Border.RenderTransform>
-                    <Image x:Name="image" Source="/Sources/Images/Computer_Students.jpg"
+                    <Image x:Name="image" Source="pack://application:,,,/SchoolManagement.Assets;component/Images/computer_students.jpg"
            Stretch="UniformToFill"
            HorizontalAlignment="Center"
            VerticalAlignment="Center"

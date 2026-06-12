@@ -1,4 +1,5 @@
 using SchoolManagement.Core.Features.Attendances.Models;
+using SchoolManagement.Core.Shared.Time;
 using System.Linq.Expressions;
 
 namespace SchoolManagement.Application.Features.Attendances.Services
@@ -35,12 +36,13 @@ namespace SchoolManagement.Application.Features.Attendances.Services
 
         private async Task<ReturnResponse<int>> GetCountTodayAsync(params AttendanceStatus[] statuses)
         {
-            DateTime now = DateTime.Now;
-            DateOnly today = DateOnly.FromDateTime(now);
+            DateTime startOfToday = DateTime.Today.ToUtcTimeZone();
+            DateTime startOfTomorrow = startOfToday.AddDays(1);
 
             FilterCondition<Attendance>[] filters =
             [
-                new(x => x.AttendanceDate, FilterOperator.Equals, today),
+                new(x => x.AttendanceDateTime, FilterOperator.GreaterThanOrEqual, startOfToday),
+                new(x => x.AttendanceDateTime, FilterOperator.LessThan, startOfTomorrow),
                 new(x => x.Status, FilterOperator.In, statuses.Cast<object>()),
 
             ];

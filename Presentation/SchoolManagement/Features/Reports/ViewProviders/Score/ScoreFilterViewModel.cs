@@ -1,21 +1,21 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using SchoolManagement.Application.Features.Classes.Authorization;
 using SchoolManagement.Application.Features.Reports.Models;
-using SchoolManagement.Core.Features.Classes.Models;
+using SchoolManagement.Core.Features.Reports.Models;
 using SchoolManagement.Core.Features.Exams.Models;
-using SchoolManagement.Infrastructure.Features.Classes.Contracts;
-using SchoolManagement.Infrastructure.Features.Exams.Contracts;
-using SchoolManagement.Infrastructure.Features.Shared.Models;
 using SchoolManagement.Presentation.Features.Reports.Contracts;
 
 namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Score
 {
     public partial class ScoreFilterViewModel : ObservableObject, IReportFilterViewModel, IAsyncLoadable
     {
-        private readonly IClassRepository _classRepository;
-        private readonly IClassSubjectRepository _classSubjectRepository;
-        private readonly IExamRepository _examRepository;
+        private readonly IClassService _classService;
+        private readonly IClassSubjectService _classSubjectService;
+        private readonly IExamService _examService;
+        private readonly IAuthorizationService _authorizationService;
+        private Timer? _searchDebounceTimer;
 
-        public string ReportTypeKey => "score-report";
+        public ReportTag ReportTypeKey => ReportTag.ScoreReport;
 
         public event Action? FilterChanged;
 
@@ -37,14 +37,19 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Score
         [ObservableProperty]
         private Exam? _selectedExam;
 
+        [ObservableProperty]
+        private string _searchKeyword = string.Empty;
+
         public ScoreFilterViewModel(
-            IClassRepository classRepository,
-            IClassSubjectRepository classSubjectRepository,
-            IExamRepository examRepository)
+            IClassService classService,
+            IClassSubjectService classSubjectService,
+            IExamService examService,
+            IAuthorizationService authorizationService)
         {
-            _classRepository = classRepository;
-            _classSubjectRepository = classSubjectRepository;
-            _examRepository = examRepository;
+            _classService = classService;
+            _classSubjectService = classSubjectService;
+            _examService = examService;
+            _authorizationService = authorizationService;
         }
 
         public object GetFilterData()
@@ -54,13 +59,33 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Score
                 ClassId = SelectedClass?.Id,
                 SubjectId = SelectedSubject?.SubjectId,
                 ExamId = SelectedExam?.Id,
+                SearchKeyword = string.IsNullOrWhiteSpace(SearchKeyword) ? null : SearchKeyword.Trim(),
             };
         }
 
         public async Task LoadAsync()
         {
-            Classes = (await _classRepository.GetAllAsync()).ToList();
-            Exams = (await _examRepository.GetAllAsync()).ToList();
+            User? user = _authorizationService.CurrentUser;
+            if (user == null) return;
+
+            Exams = (await _examService.GetAllAsync()).Value ?? [];
+
+            if (user.IsValidRole(RoleType.Admin))
+            {
+                Classes = (await _classService.GetAllAsync()).Value ?? [];
+            }
+            else if (user.IsValidRole(RoleType.HeadTeacher))
+            {
+                Classes = (await _classService.GetAllAsync(
+                    filters: [new(c => c.Generation.DepartmentId, FilterOperator.Equals, user.Employee?.DepartmentId)],
+                    includes: ["Generation"])).Value ?? [];
+            }
+            else if (user.IsValidRole(RoleType.Teacher))
+            {
+                Classes = (await _classService.GetAllAsync(
+                    filters: [new(c => c.TeacherId, FilterOperator.Equals, user.EmployeeId)],
+                    includes: ["Employee"])).Value ?? [];
+            }
         }
 
         partial void OnSelectedClassChanged(Class? value)
@@ -79,19 +104,37 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Score
             FilterChanged?.Invoke();
         }
 
+        partial void OnSearchKeywordChanged(string value)
+        {
+            _searchDebounceTimer?.Dispose();
+            _searchDebounceTimer = new Timer(
+                async (_) => { FilterChanged?.Invoke(); },
+                null,
+                400,
+                Timeout.Infinite);
+        }
+
         private async Task LoadSubjectsAsync(int? classId)
         {
             if (classId.HasValue)
             {
-                var allSubjects = await _classSubjectRepository.FindAsync(
-                    new[] { new FilterCondition<ClassSubject>(cs => cs.ClassId, FilterOperator.Equals, classId.Value) },
-                    includes: "Subject");
-                Subjects = allSubjects.ToList();
+                var response = await _classSubjectService.GetAllAsync(
+                    filters: [new FilterCondition<ClassSubject>(cs => cs.ClassId, FilterOperator.Equals, classId.Value)],
+                    includes: ["Subject"]);
+                Subjects = response.Value ?? [];
             }
             else
             {
                 Subjects = [];
             }
+        }
+
+        public void ResetFilterData()
+        {
+            SelectedClass = null;
+            SelectedSubject = null;
+            SelectedExam = null;
+            SearchKeyword = string.Empty;
         }
     }
 }

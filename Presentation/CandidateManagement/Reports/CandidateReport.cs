@@ -180,7 +180,8 @@ namespace CandidateManagement.Reports
             totalCell.Value = total;
             femaleCell.Value = female;
 
-            string newSummary = $"បញ្ឈប់បញ្ជីត្រឹមឈ្មោះ {student.FullName}   ចំនួនសិស្សសរុប {total}នាក់ នៅក្នុងនោះមានស្រី {female}នាក់។".UseKhmerNumbers();
+            string newSummary = $"បញ្ឈប់បញ្ជីត្រឹមឈ្មោះ {student.FullName}   ចំនួនសិស្សសរុប {total}នាក់ នៅក្នុងនោះមានស្រី {female}នាក់។"
+                .UseKhmerNumbers();
             summaryCell.Value = newSummary;
         }
         private static void UpdateReportDate(IXLWorksheet ws, DateTime date)

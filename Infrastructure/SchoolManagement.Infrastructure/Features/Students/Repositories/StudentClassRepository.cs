@@ -12,7 +12,9 @@ public class StudentClassRepository : BaseRepository<StudentClass>, IStudentClas
 
     public async Task<IEnumerable<StudentClass>?> GetAllFromStudentIdAsync(int studentId)
     {
-        Student? student = await Context.Students.FirstOrDefaultAsync(s => s.Id == studentId);
+        Student? student = await Context.Students
+            .Include(s => s.Classes)
+            .FirstOrDefaultAsync(s => s.Id == studentId);
 
         if (student == null)
         {

@@ -40,11 +40,10 @@ namespace SchoolManagement.Application.Features.Files.Services
             }
 
             Settings config = settingsService.GetAllSettings();
-            string photoDirectory = Path.Combine(config.StudentPhotoFolderPath);
-            string destination = Path.Combine(photoDirectory, existingPhoto.Key);
-            if (Path.Exists(destination))
+
+            if (!string.IsNullOrEmpty(existingPhoto.LocalPath) && Path.Exists(existingPhoto.LocalPath))
             {
-                File.Delete(destination);
+                File.Delete(existingPhoto.LocalPath);
             }
 
             existingPhoto.FileStatus = FileStatus.PendingDelete;
@@ -81,11 +80,10 @@ namespace SchoolManagement.Application.Features.Files.Services
             }
 
             Settings config = settingsService.GetAllSettings();
-            string photoDirectory = Path.Combine(config.EmployeePhotoFolderPath);
-            string destination = Path.Combine(photoDirectory, existingPhoto.Key);
-            if (Path.Exists(destination))
+
+            if (!string.IsNullOrEmpty(existingPhoto.LocalPath) && Path.Exists(existingPhoto.LocalPath))
             {
-                File.Delete(destination);
+                File.Delete(existingPhoto.LocalPath);
             }
 
             existingPhoto.FileStatus = FileStatus.PendingDelete;

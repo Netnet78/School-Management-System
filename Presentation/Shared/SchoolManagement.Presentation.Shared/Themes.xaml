@@ -10,7 +10,7 @@
     </ResourceDictionary.MergedDictionaries>
 
     <FontFamily x:Key="NotoSansKhmer">
-        pack://application:,,,/SchoolManagement.Presentation.Shared;component/Sources/Fonts/#Noto Sans Khmer
+        pack://application:,,,/SchoolManagement.Assets;component/Fonts/#Noto Sans Khmer
     </FontFamily>
     <Style TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource NotoSansKhmer}" />

@@ -7,6 +7,7 @@
         xmlns:viewmodels="clr-namespace:AttendanceScanner.ViewModels"
         xmlns:components="clr-namespace:SchoolManagement.Presentation.Shared.Components;assembly=SchoolManagement.Presentation.Shared"
         xmlns:converters="clr-namespace:SchoolManagement.Presentation.Shared.XAMLConverters;assembly=SchoolManagement.Presentation.Shared"
+        xmlns:assets="clr-namespace:SchoolManagement.Assets;assembly=SchoolManagement.Assets"
         d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
         mc:Ignorable="d"
         Title="Attendance Scanner" Height="580" Width="1020"
@@ -15,14 +16,10 @@
         ResizeMode="CanResize"
         Background="Transparent"
         WindowStartupLocation="CenterScreen"
-        Icon="/Sources/Images/dbslogo_filled.png"
+        Icon="pack://application:,,,/SchoolManagement.Assets;component/Images/dbslogo_filled.png"
         MinWidth="1020"
-        MinHeight="580"
+        MinHeight="680"
         Closing="Window_Closing">
-
-    <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="0" ResizeBorderThickness="5" />
-    </WindowChrome.WindowChrome>
 
     <Window.Resources>
         <converters:ValidPathToVisibilityConverter x:Key="ValidPathToVisibilityConverter" />
@@ -33,233 +30,676 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverterReversed" Collapse="True" IsReversed="True" />
         <converters:BooleanInverseConverter x:Key="BooleanInverseConverter" />
         <converters:BitmapToBitmapSourceConverter x:Key="BitmapToBitmapSourceConverter" />
+
+        <Color x:Key="NeonCyan">#00F0FF</Color>
+        <Color x:Key="NeonMagenta">#F8E602</Color>
+        <Color x:Key="NeonGreen">#00FF66</Color>
+        <Color x:Key="NeonBlue">#0044FF</Color>
+        <Color x:Key="NeonCyanDim">#003D40</Color>
+        <Color x:Key="DarkSurface">#080C1A</Color>
+        <Color x:Key="DarkSurface2">#0D1225</Color>
+
+        <LinearGradientBrush x:Key="SciFiBackground" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#04070F" Offset="0"/>
+            <GradientStop Color="#090E1E" Offset="0.35"/>
+            <GradientStop Color="#0B1125" Offset="0.65"/>
+            <GradientStop Color="#03050A" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="NeonBorderGradient" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#00F0FF" Offset="0"/>
+            <GradientStop Color="#0044FF" Offset="0.5"/>
+            <GradientStop Color="#00F0FF" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="NeonAccentVertical" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#00F0FF" Offset="0"/>
+            <GradientStop Color="#0044FF" Offset="0.5"/>
+            <GradientStop Color="#00F0FF" Offset="1"/>
+        </LinearGradientBrush>
+
+        <DropShadowEffect x:Key="NeonGlowCyan" Color="#00F0FF" BlurRadius="25" ShadowDepth="0" Opacity="0.6"/>
+        <DropShadowEffect x:Key="NeonGlowGreen" Color="#00FF66" BlurRadius="20" ShadowDepth="0" Opacity="0.5"/>
+        <DropShadowEffect x:Key="NeonGlowMagenta" Color="#F8E602" BlurRadius="20" ShadowDepth="0" Opacity="0.5"/>
+        <DropShadowEffect x:Key="NeonGlowSubtle" Color="#00F0FF" BlurRadius="12" ShadowDepth="0" Opacity="0.3"/>
+
+        <Style x:Key="GlassPanel" TargetType="Border">
+            <Setter Property="Background" Value="#0DFFFFFF"/>
+            <Setter Property="BorderBrush" Value="#25FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+        </Style>
+
+        <Style x:Key="NeonButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#00F0FF"/>
+            <Setter Property="BorderBrush" Value="#00F0FF"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="Padding" Value="16 8"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#00F0FF" BlurRadius="8" ShadowDepth="0" Opacity="0.3"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              TextElement.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1500F0FF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#3000F0FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="NeonButtonSecondary" TargetType="Button" BasedOn="{StaticResource NeonButton}">
+            <Setter Property="Foreground" Value="#F8E602"/>
+            <Setter Property="BorderBrush" Value="#F8E602"/>
+        </Style>
+
+        <Style x:Key="NeonComboBox" TargetType="ComboBox">
+            <Setter Property="Background" Value="#0D1225"/>
+            <Setter Property="Foreground" Value="#D0E0FF"/>
+            <Setter Property="BorderBrush" Value="#00F0FF"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="Padding" Value="8 4"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="Border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="4">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#00F0FF" BlurRadius="8" ShadowDepth="0" Opacity="0.2"/>
+                                </Border.Effect>
+                                <Grid>
+                                    <ContentPresenter x:Name="ContentSite"
+                                                      IsHitTestVisible="False"
+                                                      Content="{TemplateBinding SelectionBoxItem}"
+                                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                      ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                                      Margin="{TemplateBinding Padding}"
+                                                      VerticalAlignment="Center"/>
+                                    <TextBox x:Name="PART_EditableTextBox"
+                                             Visibility="Collapsed"
+                                             Background="Transparent"
+                                             Foreground="{TemplateBinding Foreground}"
+                                             IsReadOnly="{TemplateBinding IsReadOnly}"/>
+                                    <ToggleButton x:Name="DropDownToggle"
+                                                  HorizontalAlignment="Right"
+                                                  VerticalAlignment="Center"
+                                                  BorderThickness="0"
+                                                  Cursor="Hand"
+                                                  Opacity="0"
+                                                  IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}">
+                                    </ToggleButton>
+                                    <materialDesigns:PackIcon 
+                                        Margin="0 0 5 0"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Kind="MenuDown" Foreground="#00F0FF" Width="16" Height="16"/>
+                                </Grid>
+                            </Border>
+                            <Popup x:Name="Popup"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   Placement="Bottom"
+                                   Focusable="False"
+                                   AllowsTransparency="True"
+                                   PopupAnimation="Slide">
+                                <Grid MinWidth="{TemplateBinding ActualWidth}">
+                                    <Border Background="#0D1225"
+                                            BorderBrush="#00F0FF"
+                                            BorderThickness="1.5"
+                                            CornerRadius="4"
+                                            Margin="0 2 0 0">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#00F0FF" BlurRadius="15" ShadowDepth="2" Opacity="0.4"/>
+                                        </Border.Effect>
+                                        <ScrollViewer>
+                                            <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"
+                                                            SnapsToDevicePixels="True"/>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#151225"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Storyboard x:Key="ScanLineAnimation" AutoReverse="True" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetProperty="(FrameworkElement.RenderTransform).(TranslateTransform.Y)"
+                             From="0" To="718" Duration="0:0:3" />
+            <DoubleAnimation Storyboard.TargetProperty="(FrameworkElement.RenderTransform).(TranslateTransform.Y)"
+                             From="718" To="0" Duration="0:0:3" />
+        </Storyboard>
+
+        <Storyboard x:Key="PulseAnimation" RepeatBehavior="Forever">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)">
+                <LinearDoubleKeyFrame Value="1" KeyTime="0:0:0"/>
+                <LinearDoubleKeyFrame Value="0.2" KeyTime="0:0:0.8"/>
+                <LinearDoubleKeyFrame Value="1" KeyTime="0:0:1.6"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+
+        <Storyboard x:Key="BorderGlowPulse" RepeatBehavior="Forever">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(Border.Effect).(DropShadowEffect.Opacity)">
+                <LinearDoubleKeyFrame Value="0.4" KeyTime="0:0:0"/>
+                <LinearDoubleKeyFrame Value="0.8" KeyTime="0:0:2"/>
+                <LinearDoubleKeyFrame Value="0.4" KeyTime="0:0:4"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+
+        <Storyboard x:Key="StatusTextPulse" RepeatBehavior="Forever">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)">
+                <LinearDoubleKeyFrame Value="1" KeyTime="0:0:0"/>
+                <LinearDoubleKeyFrame Value="0.3" KeyTime="0:0:1"/>
+                <LinearDoubleKeyFrame Value="1" KeyTime="0:0:2"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
     </Window.Resources>
 
-    <Border CornerRadius="8" BorderBrush="{DynamicResource MaterialDesign.Brush.Primary}" BorderThickness="8" Padding="0">
-        <Grid>
-            <Grid.RowDefinitions>
-                <!--For minimize, close and maximize buttons-->
-                <RowDefinition Height="Auto" />
-                <!--For navigation bar and main content-->
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0" ResizeBorderThickness="5" />
+    </WindowChrome.WindowChrome>
 
-            <components:TitleBar Grid.Row="0" Replace="True" Title="សួស្ដីប្អូនៗ សូមស្វាគមន៍មកកាន់កម្មវិធីស្រង់អវត្តមាន!" />
+    <!-- Outer neon glow border -->
+    <Border CornerRadius="8" BorderThickness="2.5" Padding="0">
+        <Border.BorderBrush>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#00F0FF" Offset="0"/>
+                <GradientStop Color="#0044FF" Offset="0.5"/>
+                <GradientStop Color="#00F0FF" Offset="1"/>
+            </LinearGradientBrush>
+        </Border.BorderBrush>
+        <Border.Effect>
+            <DropShadowEffect Color="#00F0FF" BlurRadius="35" ShadowDepth="0" Opacity="0.5"/>
+        </Border.Effect>
 
-            <!--Main content-->
-            <Grid Background="White" Grid.Row="1" TextElement.Foreground="White">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="0*" x:Name="MainContentFirstGridDefinition"/>
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
+        <Border Name="WindowBorder" CornerRadius="6" BorderThickness="0" Background="#080C1A">
+            <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="50" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <!--Left Side Header-->
-                <Border x:Name="LeftSideHeader"
-                        Padding="10"
-                        BorderBrush="White"
-                        BorderThickness="0 0 0 2"
-                        DockPanel.Dock="Top" Grid.Row="0"
-                        Background="{DynamicResource MaterialDesign.Brush.Secondary}">
-                    <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Center"
-                                TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}">
-                        <materialDesigns:PackIcon Kind="UserCheck"
-                                                  VerticalAlignment="Center"
-                                                  Width="24" Height="24" Margin="0 0 10 0" />
-                        <TextBlock Text="ព័ត៌មានសិស្សដែលបានស្កេន" FontSize="18" VerticalAlignment="Center" FontWeight="Bold" Margin="0 0 10 0" />
-                    </StackPanel>
-                </Border>
-                <!--Left Side Content Container-->
-                <Grid x:Name="LeftSideContentContainer" Background="{DynamicResource MaterialDesign.Brush.Secondary}" Grid.Row="1">
+                <components:TitleBar Grid.Row="0" Replace="True"
+                                     Title="សួស្ដីប្អូនៗ សូមស្វាគមន៍មកកាន់កម្មវិធីស្រង់អវត្តមាន!" />
+
+                <!-- Main content -->
+                <Grid Background="{StaticResource SciFiBackground}"
+                      Grid.Row="1" TextElement.Foreground="#D0E0FF">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="0*" x:Name="MainContentFirstGridDefinition"/>
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <!--Left Section-->
-                    <Viewbox Stretch="Uniform">
-                        <Border Grid.Column="0" Padding="10" TextElement.FontSize="18">
-                            <StackPanel>
-                                <StackPanel Orientation="Vertical">
-                                    <TextBlock Text="+ ឈ្មោះសិស្ស៖" Margin="0 0 7 5" />
-                                    <TextBlock TextDecorations="Underline" Text="{Binding CurrentStudent.Candidate.FullName, FallbackValue=''}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Vertical" Margin="0 10 0 0">
-                                    <TextBlock Text="+ ឈ្មោះសិស្សជាឡាតាំង៖" Margin="0 0 7 5" />
-                                    <TextBlock TextDecorations="Underline" Text="{Binding CurrentStudent.Candidate.LatinFullName}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Vertical" Margin="0 10 0 0">
-                                    <TextBlock Text="+ ភេទ៖" Margin="0 0 7 5" />
-                                    <TextBlock TextDecorations="Underline" Text="{Binding CurrentStudent.Candidate.Gender, Converter={StaticResource EnumToDescriptionConverter}}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Vertical" Margin="0 10 0 0">
-                                    <TextBlock Text="+ អាយុ៖" Margin="0 0 7 5" />
-                                    <TextBlock TextDecorations="Underline" Text="{Binding CurrentStudent.Candidate.Age, StringFormat=0 ឆ្នាំ}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Vertical" Margin="0 10 0 0">
-                                    <TextBlock Text="+ ជំនាញ៖" Margin="0 0 7 5" />
-                                    <TextBlock TextDecorations="Underline" Text="{Binding CurrentStudent.Candidate.Skill.Name}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Vertical" Margin="0 10 0 0">
-                                    <!--<TextBlock Text="+ កម្រិត៖" Margin="0 0 7 5" />
-                    <TextBlock TextDecorations="Underline" Text="{Binding CurrentStudent}" />-->
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
-                    </Viewbox>
-
-                    <!--Right Section-->
-                    <Viewbox Stretch="Uniform" Grid.Column="1" VerticalAlignment="Top">
-                        <Border Padding="20 20 20 0">
-                            <StackPanel>
-                                <StackPanel HorizontalAlignment="Center">
-                                    <!--<TextBlock Text="រូបថតសិស្សានុសិស្ស" HorizontalAlignment="Center" FontWeight="Bold" FontSize="18" />-->
-                                    <Image Width="120" Height="180"
-                                       Stretch="Uniform"
-                                       Visibility="{Binding CurrentPhotoPath, Converter={StaticResource ValidPathToVisibilityConverter}, FallbackValue=Collapsed}"
-                                       Source="{Binding CurrentPhotoPath, Converter={StaticResource PhotoPathToImageSourceConverter}}" />
-
-                                    <Border Width="120" Height="180"
-                                        Margin="0 5"
-                                        BorderThickness="2"
-                                        BorderBrush="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"
-                                        Visibility="{Binding CurrentPhotoPath, Converter={StaticResource ValidPathToVisibilityConverterReversed}}">
-                                        <TextBlock Text="?"
-                                           FontSize="72"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center" />
-                                    </Border>
-                                </StackPanel>
-
-                                <StackPanel TextElement.FontSize="18" Orientation="Vertical" HorizontalAlignment="Center" Margin="0 0 0 0">
-                                    <TextBlock Text="{Binding CurrentStudent.Candidate.FullName}" HorizontalAlignment="Center" />
-                                    <TextBlock TextDecorations="Underline" HorizontalAlignment="Center" Text="{Binding CurrentStudent.Id, StringFormat=SDBS\{0:0000\}}" />
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
-                    </Viewbox>
-                </Grid>
-
-                <!--Right Side Header-->
-                <Border Padding="10"
-                        Grid.Row="0" Grid.Column="1"
-                        Background="{DynamicResource MaterialDesign.Brush.Secondary}">
-                    <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Center"
-                                TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesigns:PackIcon Kind="Camera"
-                                                  VerticalAlignment="Center"
-                                                  Width="24" Height="24" Margin="0 0 10 0" />
-                            <TextBlock Text="ឧបករណ៍កាមេរ៉ា" FontSize="18" VerticalAlignment="Center" FontWeight="Bold" />
-                        </StackPanel>
-                        <Border BorderBrush="White" BorderThickness="2" Margin="10 0 0 0" VerticalAlignment="Center">
-                            <ComboBox Width="200" Padding="0 0 10 0"
-                                      ItemsSource="{Binding AvailableDevices}"
-                                      SelectedItem="{Binding SelectedDevice}"
-                                      DisplayMemberPath="Name"
-                                      x:Name="DeviceSelector"
-                                      IsEnabled="{Binding IsLive, FallbackValue=True, Converter={StaticResource BooleanInverseConverter}}"/>
-                        </Border>
-                    </StackPanel>
-                </Border>
-
-                <!--Right Side Content Container-->
-                <Grid Grid.Column="1" Grid.Row="1">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="3*" />
+                        <RowDefinition Height="50" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Viewbox Stretch="Uniform">
+                    <!-- Subtle grid pattern -->
+                    <Rectangle Grid.ColumnSpan="2" Grid.RowSpan="2" IsHitTestVisible="False" Opacity="0.03">
+                        <Rectangle.Fill>
+                            <DrawingBrush Viewport="0,0,40,40" ViewportUnits="Absolute" TileMode="Tile">
+                                <DrawingBrush.Drawing>
+                                    <DrawingGroup>
+                                        <GeometryDrawing Geometry="M0,0 L0,40 M0,0 L40,0">
+                                            <GeometryDrawing.Pen>
+                                                <Pen Brush="White" Thickness="0.5"/>
+                                            </GeometryDrawing.Pen>
+                                        </GeometryDrawing>
+                                    </DrawingGroup>
+                                </DrawingBrush.Drawing>
+                            </DrawingBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+
+                    <!-- LEFT PANEL HEADER -->
+                    <Border Padding="10" Grid.Row="0"
+                            BorderThickness="0 0 0 1.5"
+                            Background="#0D1225">
+                        <Border.BorderBrush>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#00F0FF" Offset="0"/>
+                                <GradientStop Color="#0044FF" Offset="0.5"/>
+                                <GradientStop Color="#00F0FF" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.BorderBrush>
                         <Grid>
-                            <Border x:Name="VideoOutputContainer" Grid.Row="0" BorderBrush="{DynamicResource MaterialDesign.Brush.Secondary}"
-                                Width="1280" Height="720"
-                                BorderThickness="5 0 5 5" Background="AliceBlue" Visibility="{Binding IsLive, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Visible}">
-                                <Grid>
-                                    <Image x:Name="CameraOutput"
-                                           Source="{Binding FrameSource}"
-                                           SnapsToDevicePixels="True"
-                                           Stretch="Uniform"
-                                           RenderTransformOrigin="0.5,0.5">
-                                        <Image.RenderTransform>
-                                            <ScaleTransform ScaleX="-1" />
-                                        </Image.RenderTransform>
-                                    </Image>
-
-                                    <components:LoadingDialog DataContext="{Binding LoadingService}"
-                                            LoadingText="{Binding Message}"
-                                            ProgressValue="{Binding Progress}"
-                                            State="{Binding State}"/>
-
-                                    <!--Camera initialization loading panel-->
-                                    <components:LoadingPanel IsLoading="{Binding IsCameraInitialized, Converter={StaticResource BooleanInverseConverter}}" />
-                                    <Grid Background="{DynamicResource MaterialDesign.Brush.Primary}" Panel.ZIndex="-1"/>
-
-                                </Grid>
-                            </Border>
-
-                            <Border Grid.Row="0" BorderBrush="{DynamicResource MaterialDesign.Brush.Secondary}"
-                                    Width="1280"
-                                    Height="720"
-                                    BorderThickness="5" Background="AliceBlue" Visibility="{Binding IsLive, Converter={StaticResource BooleanToVisibilityConverterReversed}, FallbackValue=Collapsed}">
-                                <materialDesigns:PackIcon
-                                    Kind="VideoOff" Width="128" Height="128"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
-                            </Border>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                <materialDesigns:PackIcon Kind="UserCheck"
+                                                          VerticalAlignment="Center"
+                                                          Foreground="#00F0FF"
+                                                          Width="22" Height="22" Margin="0 0 10 0"/>
+                                <TextBlock Text="ព័ត៌មានសិស្សដែលបានស្កេន"
+                                           FontSize="16" VerticalAlignment="Center" FontWeight="Bold"
+                                           Foreground="#00F0FF">
+                                    <TextBlock.Effect>
+                                        <DropShadowEffect Color="#00F0FF" BlurRadius="6" ShadowDepth="0" Opacity="0.4"/>
+                                    </TextBlock.Effect>
+                                </TextBlock>
+                            </StackPanel>
+                            <!-- Corner accents -->
+                            <Path Data="M0,30 L0,0 L30,0" Stroke="#00F0FF" StrokeThickness="1.5"
+                                  HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0.4" Width="30" Height="30"/>
+                            <Path Data="M0,0 L0,30 L30,30" Stroke="#00F0FF" StrokeThickness="1.5"
+                                  HorizontalAlignment="Left" VerticalAlignment="Bottom" Opacity="0.4" Width="30" Height="30"/>
+                            <Path Data="M30,30 L30,0 L0,0"
+                                  Stroke="#00F0FF"
+                                  StrokeThickness="1.5"
+                                  HorizontalAlignment="Right"
+                                  VerticalAlignment="Top"
+                                  Opacity="0.4"
+                                  Width="30"
+                                  Height="30"/>
+                            <Path Data="M30,0 L30,30 L0,30"
+                                Stroke="#00F0FF"
+                                StrokeThickness="1.5"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Opacity="0.4"
+                                Width="30"
+                                Height="30"/>
                         </Grid>
-                    </Viewbox>
+                    </Border>
 
-                    <StackPanel Orientation="Vertical"
-                                Grid.Row="1"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center"
-                                TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Secondary}">
-                        <TextBlock HorizontalAlignment="Center" Text="Scanner is Ready!" FontSize="24" FontWeight="Bold"
-                                   Visibility="{Binding IsReady, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Visible}" />
-                        <TextBlock HorizontalAlignment="Center" Text="Scanner is Busy... Please wait..." FontSize="24" FontWeight="Bold"
-                                   Visibility="{Binding IsReady, Converter={StaticResource BooleanToVisibilityConverterReversed}, FallbackValue=Collapsed}" />
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 5 0 0">
-                            <StackPanel VerticalAlignment="Center">
-                                <Button
-                                Width="200"
-                                Command="{Binding StopScanCommand}"
-                                Visibility="{Binding IsLive, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}">
+                    <!-- LEFT PANEL CONTENT -->
+                    <Grid Grid.Row="1" Background="#0A0E1E">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Vertical neon accent line -->
+                        <Rectangle Grid.ColumnSpan="2" Width="3" HorizontalAlignment="Left"
+                                   Fill="{StaticResource NeonAccentVertical}" Opacity="0.6" Margin="0 5 0 5"/>
+
+                        <!-- Student Info -->
+                        <Viewbox Grid.Column="0" Margin="8 5 4 5">
+                            <Border Style="{StaticResource GlassPanel}" Margin="0">
+                                <StackPanel Margin="8">
+                                    <StackPanel Margin="0 5">
+                                        <Border BorderThickness="0 0 0 1" BorderBrush="#15FFFFFF" Margin="0 0 0 8" Padding="0 0 0 4">
+                                            <TextBlock Text="+ ឈ្មោះសិស្ស" Foreground="#008088" FontWeight="SemiBold" FontSize="12"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding CurrentStudent.Candidate.FullName, FallbackValue='—'}"
+                                                   Foreground="#E0F0FF" FontSize="14" FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <StackPanel Margin="0 12 0 0">
+                                        <Border BorderThickness="0 0 0 1" BorderBrush="#15FFFFFF" Margin="0 0 0 8" Padding="0 0 0 4">
+                                            <TextBlock Text="+ ឈ្មោះសិស្សជាឡាតាំង" Foreground="#008088" FontWeight="SemiBold" FontSize="12"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding CurrentStudent.Candidate.LatinFullName}"
+                                                   Foreground="#E0F0FF" FontSize="14" FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <StackPanel Margin="0 12 0 0">
+                                        <Border BorderThickness="0 0 0 1" BorderBrush="#15FFFFFF" Margin="0 0 0 8" Padding="0 0 0 4">
+                                            <TextBlock Text="+ ភេទ" Foreground="#008088" FontWeight="SemiBold" FontSize="12"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding CurrentStudent.Candidate.Gender, Converter={StaticResource EnumToDescriptionConverter}}"
+                                                   Foreground="#E0F0FF" FontSize="14" FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <StackPanel Margin="0 12 0 0">
+                                        <Border BorderThickness="0 0 0 1" BorderBrush="#15FFFFFF" Margin="0 0 0 8" Padding="0 0 0 4">
+                                            <TextBlock Text="+ អាយុ" Foreground="#008088" FontWeight="SemiBold" FontSize="12"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding CurrentStudent.Candidate.Age, StringFormat={}{0} ឆ្នាំ}"
+                                                   Foreground="#E0F0FF" FontSize="14" FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <StackPanel Margin="0 12 0 0">
+                                        <Border BorderThickness="0 0 0 1" BorderBrush="#15FFFFFF" Margin="0 0 0 8" Padding="0 0 0 4">
+                                            <TextBlock Text="+ ជំនាញ" Foreground="#008088" FontWeight="SemiBold" FontSize="12"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding CurrentStudent.Candidate.Skill.Name}"
+                                                   Foreground="#E0F0FF" FontSize="14" FontWeight="Bold"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </Viewbox>
+
+                        <!-- Photo & ID -->
+                        <Viewbox Grid.Column="1" Margin="4 5 8 5">
+                            <Grid Margin="4 5 8 5">
+                                <Border Style="{StaticResource GlassPanel}" Padding="12 15">
+                                    <StackPanel VerticalAlignment="Top" HorizontalAlignment="Center">
+                                        <Border CornerRadius="6" Padding="3"
+                                            BorderBrush="#00F0FF" BorderThickness="1.5"
+                                            HorizontalAlignment="Center">
+                                            <Border.Effect>
+                                                <DropShadowEffect Color="#00F0FF" BlurRadius="12" ShadowDepth="0" Opacity="0.3"/>
+                                            </Border.Effect>
+                                            <Grid>
+                                                <Image Width="140" Height="190"
+                                                   Stretch="Uniform"
+                                                   Visibility="{Binding CurrentPhotoPath, Converter={StaticResource ValidPathToVisibilityConverter}}"
+                                                   Source="{Binding CurrentPhotoPath, Converter={StaticResource PhotoPathToImageSourceConverter}}"/>
+                                                <Border Width="150" Height="200"
+                                                    Background="#0A0E1E"
+                                                    BorderThickness="1"
+                                                    BorderBrush="#30FFFFFF"
+                                                    Visibility="{Binding CurrentPhotoPath, Converter={StaticResource ValidPathToVisibilityConverterReversed}}">
+                                                    <TextBlock Text="?" FontSize="64" Foreground="#00F0FF"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                        <TextBlock.Effect>
+                                                            <DropShadowEffect Color="#00F0FF" BlurRadius="10" ShadowDepth="0" Opacity="0.4"/>
+                                                        </TextBlock.Effect>
+                                                    </TextBlock>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                        <StackPanel Margin="0 12 0 0" HorizontalAlignment="Center">
+                                            <TextBlock Text="{Binding CurrentStudent.Candidate.FullName}"
+                                                   Foreground="#00F0FF" FontWeight="Bold" FontSize="13"
+                                                   HorizontalAlignment="Center">
+                                                <TextBlock.Effect>
+                                                    <DropShadowEffect Color="#00F0FF" BlurRadius="5" ShadowDepth="0" Opacity="0.3"/>
+                                                </TextBlock.Effect>
+                                            </TextBlock>
+                                            <TextBlock HorizontalAlignment="Center"
+                                                   Foreground="#008088" FontSize="11"
+                                                   Text="{Binding CurrentStudent.Id, StringFormat=SDBS\{0:0000\}}"
+                                                   FontFamily="Consolas"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Viewbox>
+                    </Grid>
+
+                    <!-- RIGHT PANEL HEADER -->
+                    <Border Padding="10" Grid.Row="0" Grid.Column="1"
+                            Background="#0D1225" BorderThickness="0 0 0 1.5">
+                        <Border.BorderBrush>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#00F0FF" Offset="0"/>
+                                <GradientStop Color="#0044FF" Offset="0.5"/>
+                                <GradientStop Color="#00F0FF" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.BorderBrush>
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesigns:PackIcon Kind="Camera" VerticalAlignment="Center"
+                                                          Foreground="#00F0FF" Width="22" Height="22" Margin="0 0 10 0"/>
+                                <TextBlock Text="ឧបករណ៍កាមេរ៉ា" FontSize="16" VerticalAlignment="Center"
+                                           FontWeight="Bold" Foreground="#00F0FF" Margin="0 0 10 0">
+                                    <TextBlock.Effect>
+                                        <DropShadowEffect Color="#00F0FF" BlurRadius="6" ShadowDepth="0" Opacity="0.4"/>
+                                    </TextBlock.Effect>
+                                </TextBlock>
+                                <ComboBox Width="200" Padding="6 2 8 2"
+                                          ItemsSource="{Binding AvailableDevices}"
+                                          SelectedItem="{Binding SelectedDevice}"
+                                          DisplayMemberPath="Name"
+                                          x:Name="DeviceSelector"
+                                          Style="{StaticResource NeonComboBox}"
+                                          IsEnabled="{Binding IsLive, FallbackValue=True, Converter={StaticResource BooleanInverseConverter}}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- RIGHT PANEL CONTENT -->
+                    <Grid Grid.Column="1" Grid.Row="1" Margin="10 60 10 0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="3*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Camera Container -->
+                        <Viewbox Stretch="Uniform">
+                            <Grid Width="1280" Height="720">
+                                <Border x:Name="VideoOutputContainer"
+                                        BorderThickness="2" CornerRadius="4">
+                                    <Border.BorderBrush>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#00F0FF" Offset="0"/>
+                                            <GradientStop Color="#0044FF" Offset="0.5"/>
+                                            <GradientStop Color="#00F0FF" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.BorderBrush>
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="#00F0FF" BlurRadius="25" ShadowDepth="0" Opacity="0.4"/>
+                                    </Border.Effect>
+                                    <Grid>
+                                        <!-- Live camera view -->
+                                        <Grid Background="#060810"
+                                              Visibility="{Binding IsLive, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <Image x:Name="CameraOutput"
+                                                   Source="{Binding FrameSource}"
+                                                   SnapsToDevicePixels="True"
+                                                   Stretch="Uniform"
+                                                   RenderTransformOrigin="0.5,0.5">
+                                                <Image.RenderTransform>
+                                                    <ScaleTransform ScaleX="-1" />
+                                                </Image.RenderTransform>
+                                            </Image>
+
+                                            <!-- Scan line overlay -->
+                                            <Rectangle x:Name="ScanLine" IsHitTestVisible="False"
+                                                       Height="3" HorizontalAlignment="Stretch"
+                                                       Margin="10 0 10 0" VerticalAlignment="Top"
+                                                       Opacity="0.8" RenderTransformOrigin="0,0">
+                                                <Rectangle.Style>
+                                                    <Style TargetType="Rectangle">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsLive}" Value="True">
+                                                                <DataTrigger.EnterActions>
+                                                                    <BeginStoryboard Storyboard="{StaticResource ScanLineAnimation}"/>
+                                                                </DataTrigger.EnterActions>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Rectangle.Style>
+                                                <Rectangle.RenderTransform>
+                                                    <TranslateTransform/>
+                                                </Rectangle.RenderTransform>
+                                                <Rectangle.Fill>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                        <GradientStop Color="Transparent" Offset="0"/>
+                                                        <GradientStop Color="#00FF66" Offset="0.2"/>
+                                                        <GradientStop Color="#00FF66" Offset="0.8"/>
+                                                        <GradientStop Color="Transparent" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Rectangle.Fill>
+                                                <Rectangle.Effect>
+                                                    <DropShadowEffect Color="#00FF66" BlurRadius="15" ShadowDepth="0" Opacity="0.9"/>
+                                                </Rectangle.Effect>
+                                            </Rectangle>
+
+                                            <!-- Scan corner brackets -->
+                                            <Path Data="M0,40 L40,40 L40,0" Stroke="#00F0FF" StrokeThickness="3"
+                                                  HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0.7" Width="40" Height="40"
+                                                  RenderTransformOrigin="0,0">
+                                                <Path.RenderTransform>
+                                                    <ScaleTransform ScaleX="-1" ScaleY="-1"/>
+                                                </Path.RenderTransform>
+                                            </Path>
+                                            <Path Data="M0,0 L0,40 L40,40" Stroke="#00F0FF" StrokeThickness="3"
+                                                  HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0.7" Width="40" Height="40"
+                                                  RenderTransformOrigin="1,0">
+                                                <Path.RenderTransform><ScaleTransform ScaleX="-1" ScaleY="-1"/></Path.RenderTransform>
+                                            </Path>
+                                            <Path Data="M0,0 L40,0 L40,40" Stroke="#00F0FF" StrokeThickness="3"
+                                                  HorizontalAlignment="Left" VerticalAlignment="Bottom" Opacity="0.7" Width="40" Height="40"
+                                                  RenderTransformOrigin="0,1">
+                                                <Path.RenderTransform>
+                                                    <ScaleTransform ScaleX="-1" ScaleY="-1"/>
+                                                </Path.RenderTransform>
+
+                                            </Path>
+                                            <Path Data="M40,0 L0,0 L0,40" Stroke="#00F0FF" StrokeThickness="3"
+                                                  HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.7" Width="40" Height="40"
+                                                  RenderTransformOrigin="1,1">
+                                                <Path.RenderTransform><ScaleTransform ScaleX="-1" ScaleY="-1"/></Path.RenderTransform>
+                                            </Path>
+                                        </Grid>
+
+                                        <!-- Loading panel -->
+                                        <components:LoadingPanel
+                                            IsLoading="{Binding IsCameraInitialized, Converter={StaticResource BooleanInverseConverter}}"/>
+
+                                        <!-- Camera off state -->
+                                        <Border BorderBrush="#00F0FF" BorderThickness="2"
+                                                Background="#0A0515"
+                                                Visibility="{Binding IsLive, Converter={StaticResource BooleanToVisibilityConverterReversed}}">
+                                            <Border.Effect>
+                                                <DropShadowEffect Color="#00F0FF" BlurRadius="20" ShadowDepth="0" Opacity="0.3"/>
+                                            </Border.Effect>
+                                            <Grid>
+                                                <materialDesigns:PackIcon Kind="VideoOff" Width="80" Height="80"
+                                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                    Foreground="#00F0FF" Opacity="0.6"/>
+                                                <TextBlock Text="CAMERA OFFLINE" Foreground="#00F0FF"
+                                                           FontWeight="Bold" FontSize="14"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                           Margin="0 80 0 0" Opacity="0.5">
+                                                    <TextBlock.Effect>
+                                                        <DropShadowEffect Color="#00F0FF" BlurRadius="6" ShadowDepth="0" Opacity="0.3"/>
+                                                    </TextBlock.Effect>
+                                                </TextBlock>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Viewbox>
+
+                        <!-- Status & Controls -->
+                        <StackPanel Grid.Row="1" Orientation="Vertical"
+                                    VerticalAlignment="Center" HorizontalAlignment="Center"
+                                    TextElement.Foreground="#00F0FF">
+                            <TextBlock HorizontalAlignment="Center"
+                                       Text="&#x25C9; SCANNER READY" FontSize="20" FontWeight="Bold"
+                                       Foreground="#00FF66"
+                                       Visibility="{Binding IsReady, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock.Effect>
+                                    <DropShadowEffect Color="#00FF66" BlurRadius="10" ShadowDepth="0" Opacity="0.5"/>
+                                </TextBlock.Effect>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsReady}" Value="True">
+                                                <DataTrigger.EnterActions>
+                                                    <BeginStoryboard Storyboard="{StaticResource StatusTextPulse}"/>
+                                                </DataTrigger.EnterActions>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock HorizontalAlignment="Center"
+                                       Text="&#x25C9; SCANNER BUSY — សូមមេត្តារងចាំ" FontSize="20" FontWeight="Bold"
+                                       Foreground="#F8E602"
+                                       FontFamily="{StaticResource NotoSansKhmer}"
+                                       Visibility="{Binding IsReady, Converter={StaticResource BooleanToVisibilityConverterReversed}}">
+                                <TextBlock.Effect>
+                                    <DropShadowEffect Color="#F8E602" BlurRadius="10" ShadowDepth="0" Opacity="0.5"/>
+                                </TextBlock.Effect>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsReady}" Value="False">
+                                                <DataTrigger.EnterActions>
+                                                    <BeginStoryboard Storyboard="{StaticResource StatusTextPulse}"/>
+                                                </DataTrigger.EnterActions>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 8 0 0">
+                                <Button Style="{StaticResource NeonButton}" Width="200"
+                                        Command="{Binding StopScanCommand}"
+                                        Visibility="{Binding IsLive, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <StackPanel Orientation="Horizontal">
-                                        <Ellipse x:Name="Indicator" Width="14" Height="14"
-                                         Fill="Red" Margin="0 0 15 0"
-                                         VerticalAlignment="Center" />
-                                        <TextBlock x:Name="IndicatorText" Text="Scanning..." VerticalAlignment="Bottom" />
+                                        <Ellipse x:Name="Indicator" Width="12" Height="12"
+                                                 Fill="#FF0044" Margin="0 0 12 0" VerticalAlignment="Center">
+                                            <Ellipse.Effect>
+                                                <DropShadowEffect x:Name="IndicatorEffect"
+                                                    Color="#FF0044" BlurRadius="10" ShadowDepth="0" Opacity="0.8"/>
+                                            </Ellipse.Effect>
+                                            <Ellipse.Style>
+                                                <Style TargetType="Ellipse">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsLive}" Value="True">
+                                                            <DataTrigger.EnterActions>
+                                                                <BeginStoryboard Storyboard="{StaticResource PulseAnimation}"/>
+                                                            </DataTrigger.EnterActions>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Ellipse.Style>
+                                        </Ellipse>
+                                        <TextBlock Text="SCANNING" FontWeight="Bold" VerticalAlignment="Center" Foreground="#00F0FF"/>
                                     </StackPanel>
                                 </Button>
-                                <Button
-                                Width="200"
-                                Command="{Binding StartScanCommand}"
-                                Visibility="{Binding IsLive, Converter={StaticResource BooleanToVisibilityConverterReversed}, FallbackValue=Visible}">
+
+                                <Button Style="{StaticResource NeonButton}" Width="200"
+                                        Command="{Binding StartScanCommand}"
+                                        Visibility="{Binding IsLive, Converter={StaticResource BooleanToVisibilityConverterReversed}}">
                                     <StackPanel Orientation="Horizontal">
-                                        <Ellipse Width="14" Height="14"
-                                         Fill="Red" Margin="0 0 15 0"
-                                         VerticalAlignment="Center" />
-                                        <TextBlock Text="Start LIVE" VerticalAlignment="Bottom" />
+                                        <Ellipse Width="12" Height="12" Fill="#00FF66" Margin="0 0 12 0" VerticalAlignment="Center">
+                                            <Ellipse.Effect>
+                                                <DropShadowEffect Color="#00FF66" BlurRadius="10" ShadowDepth="0" Opacity="0.8"/>
+                                            </Ellipse.Effect>
+                                        </Ellipse>
+                                        <TextBlock Text="START LIVE" FontWeight="Bold" VerticalAlignment="Center" Foreground="#00F0FF"/>
                                     </StackPanel>
+                                </Button>
+
+                                <Button Style="{StaticResource NeonButtonSecondary}" Margin="10 0 0 0"
+                                        VerticalAlignment="Center"
+                                        Command="{Binding RefreshValueCommand}">
+                                    <materialDesigns:PackIcon Kind="Refresh" Foreground="#F8E602"/>
                                 </Button>
                             </StackPanel>
-                            <Button Margin="10 0 0 0"
-                                    VerticalAlignment="Center"
-                                    Command="{Binding RefreshValueCommand}">
-                                <materialDesigns:PackIcon Kind="Refresh" />
-                            </Button>
                         </StackPanel>
-                    </StackPanel>
+                    </Grid>
                 </Grid>
             </Grid>
-        </Grid>
+        </Border>
+
+        <!-- Glow animation trigger -->
+        <Border.Style>
+            <Style TargetType="Border">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsLive}" Value="True">
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard Storyboard="{StaticResource BorderGlowPulse}"/>
+                        </DataTrigger.EnterActions>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
     </Border>
 </Window>

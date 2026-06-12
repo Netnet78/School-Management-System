@@ -1,6 +1,6 @@
 ﻿using SchoolManagement.Core.Features.Attendances.Enums;
 using SchoolManagement.Core.Features.Attendances.Models;
-
+using SchoolManagement.Core.Shared.Extensions;
 using SchoolManagement.Core.Shared.Time;
 
 
@@ -8,7 +8,7 @@ namespace AttendanceScanner.Services
 {
     public interface IAttendanceQRService
     {
-        Task<StudentQRResponse> GetStudentByQRCode(string code);
+        Task<StudentQRResponse> MarkStudent(string code);
     }
 
     public class AttendanceQRService : IAttendanceQRService
@@ -24,7 +24,7 @@ namespace AttendanceScanner.Services
             _studentClassRepository = scr;
         }
 
-        public async Task<StudentQRResponse> GetStudentByQRCode(string code)
+        public async Task<StudentQRResponse> MarkStudent(string code)
         {
             try
             {
@@ -39,7 +39,7 @@ namespace AttendanceScanner.Services
                 {
                     return new()
                     {
-                        Status = Status.Failed,
+                        Status = Status.Rejected,
                         Message = "ប្អូនមិនអាចស្កេនវត្តមាននៅពេលវេលាម៉ោងនេះទេ! សូមព្យាយាមនៅពេលក្រោយ!",
                         Student = null
                     };
@@ -49,7 +49,7 @@ namespace AttendanceScanner.Services
                 {
                     return new()
                     {
-                        Status = Status.Failed,
+                        Status = Status.Rejected,
                         Message = "QR Code cannot be null or empty!",
                         Student = null
                     };
@@ -61,8 +61,8 @@ namespace AttendanceScanner.Services
                 {
                     return new()
                     {
-                        Status = Status.Failed,
-                        Message = "គ្មាន​ទិន្នន័យសិស្សនៃ QR Code មួយនេះទេ! សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ!",
+                        Status = Status.Rejected,
+                        Message = "គ្មាន​ទិន្នន័យសិស្សនៅក្នុង QR Code មួយនេះទេ! សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ!",
                         Student = null
                     };
                 }
@@ -71,21 +71,24 @@ namespace AttendanceScanner.Services
                 {
                     return new()
                     {
-                        Status = Status.Failed,
+                        Status = Status.Rejected,
                         Message = "ទិន្នន័យ QR នៃកាតមួយនេះត្រូវបានបិទ! ប្រសិនបើប្អូនគិតថា វាជាកំហុសបច្ចេកទេស, សូមប្អូនជូនដំណឹងទៅកាន់លោកគ្រូអ្នកគ្រូភ្លាមៗ!",
                         Student = null
                     };
                 }
 
-                IEnumerable<Attendance> studentAttendances = await _attendanceRepository.GetAllFromStudentId(studentQR.Student.Id);
-                Attendance? latestAttendance = studentAttendances.OrderByDescending(sa => new DateTime(sa.AttendanceDate, sa.ScanTime)).FirstOrDefault();
+                DateTime today = new(utcNow.Year, utcNow.Month, utcNow.Day, 0, 0, 0, DateTimeKind.Utc);
 
-                if (latestAttendance != null && DateOnly.FromDateTime(cambodiaNow) == latestAttendance.AttendanceDate)
+                IEnumerable<Attendance> studentAttendances = await _attendanceRepository.FindAsync(
+                    [new(a => a.AttendanceDateTime, FilterOperator.GreaterThanOrEqual, today)]);
+
+                if (studentAttendances.Any())
                 {
                     return new()
                     {
-                        Status = Status.Failed,
-                        Message = "ប្អូនមិនអាចស្កេនលើសពីពីរដងក្នុងមួយថ្ងៃបានទេ!",
+                        Status = Status.Rejected,
+                        Message = $"ព័ត៌មានវត្តមានរបស់ប្អូនត្រូវបានកាត់ជា \"{studentAttendances.First().Status.GetDescription()}\" " +
+                        $"រួចរាល់មកហើយ! សូមប្អូនធ្វើការបន្តទៅមុខ ។",
                         Student = null
                     };
                 }
@@ -104,17 +107,27 @@ namespace AttendanceScanner.Services
                     attendanceStatus = AttendanceStatus.Absent;
                 }
 
-                StudentClass latestStudentClass = (await _studentClassRepository.GetAllFromStudentIdAsync(studentQR!.Student.Id))!.OrderByDescending(sc => sc.EndDate).FirstOrDefault()!;
+                StudentClass? latestStudentClass = (await _studentClassRepository.GetAllFromStudentIdAsync(studentQR.Student.Id))?.OrderByDescending(sc => sc.EndDate).FirstOrDefault()!;
+
+                if (latestStudentClass == null)
+                {
+                    return new()
+                    {
+                        Status = Status.Rejected,
+                        Message = $"ទិន្នន័យសិស្សឈ្មោះ \"{studentQR.Student.FullName}\" គ្មានទិន្នន័យ​​ថ្នាក់រៀន" +
+                        $"នៅក្នុងមូលដ្ឋានទិន្នន័យទេ! សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ!",
+                    };
+                }
 
                 Attendance attendance = new()
                 {
                     StudentClassId = latestStudentClass.Id,
-                    AttendanceDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                    ScanTime = TimeOnly.FromTimeSpan(DateTime.UtcNow.TimeOfDay),
+                    AttendanceDateTime = DateTime.UtcNow,
                     MarkedByEmployeeId = null,
                     Status = attendanceStatus,
                     OtherInfo = "This attendance was auto-marked by the Attendance Management System",
                 };
+
                 await _attendanceRepository.AddAsync(attendance);
 
                 return new()

@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="KhmerCalendar" Version="1.0.0" />
     <ProjectReference Include="..\..\Core\SchoolManagement.Core\SchoolManagement.Core.csproj" />
     <ProjectReference Include="..\..\Infrastructure\SchoolManagement.Infrastructure\SchoolManagement.Infrastructure.csproj" />
   </ItemGroup>

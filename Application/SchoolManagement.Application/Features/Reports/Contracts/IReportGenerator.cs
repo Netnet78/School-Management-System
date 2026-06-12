@@ -4,7 +4,7 @@ namespace SchoolManagement.Application.Features.Reports.Contracts
 {
     public interface IReportGenerator
     {
-        string ReportTypeKey { get; }
+        ReportTag ReportTypeKey { get; }
 
         object CreateDefaultFilter();
 

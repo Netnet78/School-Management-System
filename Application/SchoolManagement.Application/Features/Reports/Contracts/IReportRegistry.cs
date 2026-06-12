@@ -1,11 +1,12 @@
-using SchoolManagement.Application.Features.Reports.Models;
+using SchoolManagement.Application.Features.Reports.Descriptor;
+using SchoolManagement.Core.Features.Reports.Models;
 
 namespace SchoolManagement.Application.Features.Reports.Contracts
 {
     public interface IReportRegistry
     {
-        IReadOnlyList<ReportDefinition> GetAll();
+        ReportTypeDescriptor? GetDescriptor(ReportTag key);
 
-        ReportDefinition? GetByKey(string key);
+        IReadOnlyList<ReportTypeDescriptor> GetAllDescriptors();
     }
 }

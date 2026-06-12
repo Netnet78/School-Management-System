@@ -1,11 +1,15 @@
+using SchoolManagement.Core.Features.Reports.Models;
+
 namespace SchoolManagement.Presentation.Features.Reports.Contracts
 {
     public interface IReportFilterViewModel : IViewModel
     {
-        string ReportTypeKey { get; }
+        ReportTag ReportTypeKey { get; }
 
         event Action? FilterChanged;
 
         object GetFilterData();
+
+        void ResetFilterData();
     }
 }

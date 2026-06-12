@@ -91,10 +91,6 @@ namespace AttendanceScanner
                     AddAnimationToStoryboard(storyboard, openingAnimation, MainContentFirstGridDefinition, ColumnDefinition.WidthProperty);
                     AddAnimationToStoryboard(storyboard, closingAnimation, MainContentFirstGridDefinition, ColumnDefinition.WidthProperty);
                 }
-                else if (response.Status == Status.Pending)
-                {
-                    StartLoadingAnimation();
-                }
 
                 storyboard.Begin();
             });
@@ -116,22 +112,14 @@ namespace AttendanceScanner
             if (isRed)
             {
                 Indicator.Fill = Brushes.White;
+                IndicatorEffect.Color = Colors.White;
             }
             else
             {
                 Indicator.Fill = Brushes.Red;
+                IndicatorEffect.Color = Colors.Red;
             }
             isRed = !isRed;
-        }
-
-        private void StartLoadingAnimation()
-        {
-            // Loading service
-        }
-
-        private void StopLoadingAnimation()
-        {
-            
         }
 
         private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

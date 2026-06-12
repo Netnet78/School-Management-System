@@ -59,16 +59,17 @@ namespace AttendanceScanner
             services.AddSingleton<IQRScannerService, QRScannerService>();
             services.AddSingleton<IDispatcherService, DispatcherService>();
             services.AddSingleton<ILoadingService, LoadingService>();
+            services.AddSingleton<INavigationService, NavigationService>();
 
             // Project services
             services.AddSingleton<IAttendanceQRService, AttendanceQRService>();
 
             // Project view models
-            services.AddSingleton<MainViewModel>();
-            services.AddSingleton<LoginViewModel>();
+            services.AddTransient<MainViewModel>();
+            services.AddTransient<LoginViewModel>();
 
             // Project views
-            services.AddTransient<MainWindow>();
+            services.AddSingleton<MainWindow>();
             services.AddTransient<LoginViewWindow>();
 
             ServiceProvider = services.BuildServiceProvider();

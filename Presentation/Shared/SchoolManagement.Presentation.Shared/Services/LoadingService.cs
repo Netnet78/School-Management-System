@@ -1,57 +1,79 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using SchoolManagement.Presentation.Shared.Components;
+using System.Windows;
 
 namespace SchoolManagement.Presentation.Shared.Services
 {
-    public partial class LoadingService : ObservableObject, ILoadingService
+    public class LoadingService : ILoadingService
     {
-        [ObservableProperty]
-        private LoadingState state = LoadingState.None;
+        private LoadingWindow? _window;
 
-        [ObservableProperty]
-        private double progress;
-
-        [ObservableProperty]
-        private string message = string.Empty;
-
-        [ObservableProperty]
-        private bool isVisible;
-
-        public void Hide()
+        public async Task ShowLoading(string? message = null)
         {
-            IsVisible = false;
-            State = LoadingState.None;
-            Progress = 0.0;
+            await EnsureWindow();
+            await Application.Current.Dispatcher.InvokeAsync(() => 
+            {
+                if (!_window!.IsVisible)
+                    _window.Show();
+                _window!.SetState(LoadingState.Loading, message ?? "Loading...");
+            });
         }
 
-        public void ShowError(string? message = null)
+        public async Task ShowProgress(double value, string? message = null)
         {
-            State = LoadingState.Error;
-            Message = message ?? "Error!";
-            Progress = 0.0;
+            await EnsureWindow();
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                if (!_window!.IsVisible)
+                    _window.Show();
+                _window!.SetProgress(value, message);
+            });
         }
 
-        public void ShowLoading(string? message = null)
+        public async Task ShowSuccess(string? message = null)
         {
-            State = LoadingState.Loading;
-            Message = message ?? "Loading...";
-            Progress = 0.0;
-            IsVisible = true;
+            await EnsureWindow();
+            await Application.Current.Dispatcher.InvokeAsync(() => 
+            {
+                if (!_window!.IsVisible)
+                    _window.Show();
+                _window!.SetState(LoadingState.Success, message ?? "Success!");
+            });
         }
 
-        public void ShowProgress(double value, string? message = null)
+        public async Task ShowError(string? message = null)
         {
-            State = LoadingState.Progress;
-            Progress = value;
-            if (message != null)
-                Message = message;
-
-            IsVisible = true;
+            await EnsureWindow();
+            await Application.Current.Dispatcher.InvokeAsync(() => 
+            {
+                if (!_window!.IsVisible)
+                    _window.Show();
+                _window!.SetState(LoadingState.Error, message ?? "Error!");
+            });
         }
 
-        public void ShowSuccess(string? message = null)
+        public async Task Hide()
         {
-            State = LoadingState.Success;
-            Message = message ?? "Success!";
+            if (_window != null || _window?.IsVisible == true)
+            {
+                await Application.Current.Dispatcher.InvokeAsync(_window.Close);
+            }
+        }
+
+        private async Task EnsureWindow()
+        {
+            if (_window == null || !_window.IsVisible)
+            {
+                await Application.Current.Dispatcher.Invoke(async() =>
+                {
+                    _window?.Close();
+                    _window = new LoadingWindow
+                    {
+                        Owner = Application.Current.MainWindow,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner
+                    };
+                    _window.Closed += (s, e) => _window = null;
+                });
+            }
         }
     }
 }

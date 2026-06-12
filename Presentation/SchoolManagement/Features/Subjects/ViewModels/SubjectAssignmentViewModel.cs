@@ -182,15 +182,7 @@ namespace SchoolManagement.Presentation.Features.Subjects.ViewModels
 
         private async Task GoBack()
         {
-            IViewModel? previous = _navigationService.PreviousViewModel;
-            if (previous != null)
-            {
-                await _navigationService.NavigateAsync(previous.GetType());
-            }
-            else
-            {
-                await _navigationService.NavigateAsync<ClassViewModel>();
-            }
+            await _navigationService.NavigateAsync<ClassViewModel>();
         }
     }
 }

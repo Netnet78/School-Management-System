@@ -15,8 +15,8 @@ namespace SchoolManagement.Presentation.Features.Attendances.ViewModels
         private readonly IAuthorizationService _authorizationService;
         private readonly IMessageService _messageService;
         private readonly INavigationService _navigationService;
-        private ObservableCollection<Attendance> _allAttendances = [];
         private CancellationTokenSource? _cts;
+        private bool _isLoadingAttendances;
 
         [ObservableProperty]
         private ObservableCollection<Attendance> _attendances = [];
@@ -60,9 +60,9 @@ namespace SchoolManagement.Presentation.Features.Attendances.ViewModels
         [ObservableProperty]
         private string _pageCount = string.Empty;
 
-public IEnumerable<object> StatusOptions { get; } = Enum.GetValues<AttendanceStatus>()
-    .Select(s => new { Value = (AttendanceStatus?)s, Description = s.GetDescription() })
-    .Prepend(new { Value = (AttendanceStatus?)null, Description = "ទាំងអស់" });
+        public IEnumerable<object> StatusOptions { get; } = Enum.GetValues<AttendanceStatus>()
+            .Select(s => new { Value = (AttendanceStatus?)s, Description = s.GetDescription() })
+            .Prepend(new { Value = (AttendanceStatus?)null, Description = "ទាំងអស់" });
 
         public AttendanceViewModel(
             IAttendanceService attendanceService,
@@ -91,12 +91,14 @@ public IEnumerable<object> StatusOptions { get; } = Enum.GetValues<AttendanceSta
             CanManageAttendances = true;
 
             await LoadClassesAsync();
+            CurrentPage = 1;
             await LoadAttendancesAsync();
         }
 
         [RelayCommand]
         private async Task RefreshAsync()
         {
+            CurrentPage = 1;
             await LoadAttendancesAsync();
         }
 
@@ -151,8 +153,7 @@ public IEnumerable<object> StatusOptions { get; } = Enum.GetValues<AttendanceSta
 
                 if (response.Status == Status.Success)
                 {
-                    _allAttendances.Remove(attendance);
-                    ApplyFiltersAndPaging();
+                    await LoadAttendancesAsync();
                     _messageService.Show("Attendance deleted successfully.", "Success", MessageButton.OK, MessageIcon.Success);
                 }
                 else
@@ -179,7 +180,6 @@ public IEnumerable<object> StatusOptions { get; } = Enum.GetValues<AttendanceSta
             DateFromFilter = null;
             DateToFilter = null;
             CurrentPage = 1;
-            ApplyFiltersAndPaging();
         }
 
         async partial void OnSearchTextChanged(string value)
@@ -191,7 +191,7 @@ public IEnumerable<object> StatusOptions { get; } = Enum.GetValues<AttendanceSta
             try
             {
                 await Task.Delay(300, token);
-                await RefreshOnFilterAsync();
+                CurrentPage = 1;
             }
             catch (TaskCanceledException) { }
         }
@@ -199,30 +199,26 @@ public IEnumerable<object> StatusOptions { get; } = Enum.GetValues<AttendanceSta
         partial void OnClassFilterIdChanged(int? value)
         {
             CurrentPage = 1;
-            ApplyFiltersAndPaging();
         }
 
         partial void OnStatusFilterChanged(AttendanceStatus? value)
         {
             CurrentPage = 1;
-            ApplyFiltersAndPaging();
         }
 
         partial void OnDateFromFilterChanged(DateTime? value)
         {
             CurrentPage = 1;
-            ApplyFiltersAndPaging();
         }
 
         partial void OnDateToFilterChanged(DateTime? value)
         {
             CurrentPage = 1;
-            ApplyFiltersAndPaging();
         }
 
         partial void OnCurrentPageChanged(int oldValue, int newValue)
         {
-            if (IsLoading)
+            if (_isLoadingAttendances)
             {
                 return;
             }
@@ -239,7 +235,7 @@ public IEnumerable<object> StatusOptions { get; } = Enum.GetValues<AttendanceSta
                 return;
             }
 
-            ApplyFiltersAndPaging();
+            _ = LoadAttendancesAsync();
         }
 
         private async Task LoadClassesAsync()
@@ -270,15 +266,39 @@ public IEnumerable<object> StatusOptions { get; } = Enum.GetValues<AttendanceSta
 
         private async Task LoadAttendancesAsync()
         {
+            if (_isLoadingAttendances)
+            {
+                return;
+            }
+
             IsLoading = true;
+            _isLoadingAttendances = true;
 
             try
             {
+                List<FilterCondition<Attendance>> filters = BuildFilters();
+
+                ReturnResponse<int> countResponse = await _attendanceService.GetAllCountAsync(filters: filters);
+
+                if (countResponse.Status != Status.Success)
+                {
+                    _messageService.Show(countResponse.Message ?? "Unable to load attendances.", "Error", MessageButton.OK, MessageIcon.Error);
+                    return;
+                }
+
+                int totalCount = countResponse.Value;
+                int maxPage = Math.Max(1, (int)Math.Ceiling((double)totalCount / DefaultPageSize));
+
+                MaxPage = maxPage;
+                TotalCount = totalCount;
+
+                int page = Math.Min(CurrentPage, maxPage);
+
                 ReturnResponse<IEnumerable<Attendance>> response = await _attendanceService.GetAllAsync(
-                    filters: null,
-                    page: 1,
-                    pageSize: int.MaxValue,
-                    orderBy: [new SortCriteria<Attendance>("AttendanceDate", OrderDirection.Descending), new SortCriteria<Attendance>("ScanTime", OrderDirection.Descending)],
+                    filters: filters,
+                    page: page,
+                    pageSize: DefaultPageSize,
+                    orderBy: [new SortCriteria<Attendance>("AttendanceDateTime", OrderDirection.Descending)],
                     includes: ["StudentClass", "StudentClass.Student", "StudentClass.Student.Candidate", "StudentClass.Class", "MarkedByEmployee"]);
 
                 if (response.Status != Status.Success || response.Value == null)
@@ -287,9 +307,19 @@ public IEnumerable<object> StatusOptions { get; } = Enum.GetValues<AttendanceSta
                     return;
                 }
 
-                _allAttendances = new ObservableCollection<Attendance>(response.Value);
-                CurrentPage = 1;
-                ApplyFiltersAndPaging();
+                Attendances.Clear();
+                foreach (Attendance attendance in response.Value)
+                {
+                    Attendances.Add(attendance);
+                }
+
+                CurrentPageTotalCount = Attendances.Count;
+                PageCount = $"ទំព័រ {page} នៃ {maxPage}";
+
+                if (CurrentPage != page)
+                {
+                    CurrentPage = page;
+                }
             }
             catch (Exception ex)
             {
@@ -298,69 +328,55 @@ public IEnumerable<object> StatusOptions { get; } = Enum.GetValues<AttendanceSta
             finally
             {
                 IsLoading = false;
+                _isLoadingAttendances = false;
             }
         }
 
-        private void ApplyFiltersAndPaging()
+        private List<FilterCondition<Attendance>> BuildFilters()
         {
-            IEnumerable<Attendance> query = _allAttendances;
+            var filters = new List<FilterCondition<Attendance>>();
 
             if (!string.IsNullOrWhiteSpace(SearchText))
             {
-                string search = SearchText.Trim();
-                query = query.Where(a =>
-                    a.StudentClass?.Student?.FullName?.Contains(search, StringComparison.OrdinalIgnoreCase) == true ||
-                    a.StudentClass?.Student?.LatinFullName?.Contains(search, StringComparison.OrdinalIgnoreCase) == true);
+                filters.Add(new FilterCondition<Attendance>(
+                    "StudentClass.Student.FullName",
+                    FilterOperator.Contains,
+                    SearchText.Trim()));
             }
 
             if (ClassFilterId.HasValue)
             {
-                query = query.Where(a => a.StudentClass?.ClassId == ClassFilterId.Value);
+                filters.Add(new FilterCondition<Attendance>(
+                    "StudentClass.ClassId",
+                    FilterOperator.Equals,
+                    ClassFilterId.Value));
             }
 
             if (StatusFilter.HasValue)
             {
-                query = query.Where(a => a.Status == StatusFilter.Value);
+                filters.Add(new FilterCondition<Attendance>(
+                    "Status",
+                    FilterOperator.Equals,
+                    StatusFilter.Value));
             }
 
             if (DateFromFilter.HasValue)
             {
-                DateOnly from = DateOnly.FromDateTime(DateFromFilter.Value);
-                query = query.Where(a => a.AttendanceDate >= from);
+                filters.Add(new FilterCondition<Attendance>(
+                    "AttendanceDateTime",
+                    FilterOperator.GreaterThanOrEqual,
+                    DateFromFilter.Value));
             }
 
             if (DateToFilter.HasValue)
             {
-                DateOnly to = DateOnly.FromDateTime(DateToFilter.Value);
-                query = query.Where(a => a.AttendanceDate <= to);
+                filters.Add(new FilterCondition<Attendance>(
+                    "AttendanceDateTime",
+                    FilterOperator.LessThanOrEqual,
+                    DateToFilter.Value));
             }
 
-            List<Attendance> filteredAttendances = query
-                .OrderByDescending(a => a.AttendanceDate)
-                .ThenByDescending(a => a.ScanTime)
-                .ToList();
-
-            TotalCount = filteredAttendances.Count;
-            MaxPage = Math.Max(1, (int)Math.Ceiling((double)TotalCount / DefaultPageSize));
-
-            if (CurrentPage > MaxPage)
-            {
-                CurrentPage = MaxPage;
-                return;
-            }
-
-            IEnumerable<Attendance> pageAttendances = filteredAttendances
-                .Skip((CurrentPage - 1) * DefaultPageSize)
-                .Take(DefaultPageSize);
-
-            Attendances.Clear();
-            foreach (Attendance attendance in pageAttendances)
-            {
-                Attendances.Add(attendance);
-            }
-
-            CurrentPageTotalCount = Attendances.Count;
-            PageCount = $"ទំព័រ {CurrentPage} នៃ {MaxPage}";
+            return filters;
         }
 
         [RelayCommand]
@@ -379,13 +395,6 @@ public IEnumerable<object> StatusOptions { get; } = Enum.GetValues<AttendanceSta
             {
                 CurrentPage--;
             }
-        }
-
-        [RelayCommand]
-        private async Task RefreshOnFilterAsync()
-        {
-            CurrentPage = 1;
-            ApplyFiltersAndPaging();
         }
     }
 }

@@ -1,16 +1,23 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using SchoolManagement.Application.Features.Classes.Authorization;
 using SchoolManagement.Application.Features.Reports.Models;
-using SchoolManagement.Core.Features.Classes.Models;
-using SchoolManagement.Infrastructure.Features.Classes.Contracts;
+using SchoolManagement.Core.Features.Reports.Models;
+using SchoolManagement.Core.Shared.Attributes;
 using SchoolManagement.Presentation.Features.Reports.Contracts;
 
 namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.StudentCard
 {
     public partial class StudentCardFilterViewModel : ObservableObject, IReportFilterViewModel, IAsyncLoadable
     {
-        private readonly IClassRepository _classRepository;
+        private readonly IClassService _classService;
+        private readonly IFileDialogService _fileDialogService;
+        private readonly IAuthorizationService _authorizationService;
 
-        public string ReportTypeKey => "student-card";
+        private const int SearchDebounceDelayMs = 500;
+        private Timer? _searchDebounceTimer;
+
+        public ReportTag ReportTypeKey => ReportTag.StudentCard;
 
         public event Action? FilterChanged;
 
@@ -20,9 +27,45 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.StudentCa
         [ObservableProperty]
         private Class? _selectedClass;
 
-        public StudentCardFilterViewModel(IClassRepository classRepository)
+        [FilterIgnore]
+        [ObservableProperty]
+        private string _principalName = string.Empty;
+
+        [FilterIgnore]
+        [ObservableProperty]
+        private string _signaturePath = string.Empty;
+
+        [FilterIgnore]
+        [ObservableProperty]
+        private string _location = "វិ.ច.ប.ឯ.ដប.ប៉ប៉";
+
+        [ObservableProperty]
+        private string _searchKeyword = string.Empty;
+
+        partial void OnPrincipalNameChanged(string value) => ScheduleDebouncedFilter();
+
+        partial void OnLocationChanged(string value) => ScheduleDebouncedFilter();
+
+        partial void OnSignaturePathChanged(string value) => ScheduleDebouncedFilter();
+
+        public StudentCardFilterViewModel(
+            IClassService classService,
+            IFileDialogService fileDialogService,
+            IAuthorizationService authorizationService)
         {
-            _classRepository = classRepository;
+            _classService = classService;
+            _fileDialogService = fileDialogService;
+            _authorizationService = authorizationService;
+        }
+
+        partial void OnSelectedClassChanged(Class? value)
+        {
+            ScheduleDebouncedFilter();
+        }
+
+        partial void OnSearchKeywordChanged(string value)
+        {
+            ScheduleDebouncedFilter();
         }
 
         public object GetFilterData()
@@ -30,17 +73,77 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.StudentCa
             return new StudentCardFilter
             {
                 ClassId = SelectedClass?.Id,
+                PrincipalName = PrincipalName,
+                SignaturePath = SignaturePath,
+                Location = Location,
+                SearchKeyword = string.IsNullOrWhiteSpace(SearchKeyword) ? null : SearchKeyword.Trim(),
             };
         }
 
         public async Task LoadAsync()
         {
-            Classes = (await _classRepository.GetAllAsync()).ToList();
+            User? user = _authorizationService.CurrentUser;
+
+            if (user == null) return;
+
+            if (user.IsValidRole(RoleType.Admin))
+            {
+                Classes = (await _classService.GetAllAsync()).Value ?? [];
+            }
+            else if (user.IsValidRole(RoleType.HeadTeacher))
+            {
+                Classes = (await _classService.GetAllAsync(1, null,
+                [new(c => c.Generation.DepartmentId, FilterOperator.Equals, user.Employee?.DepartmentId)],
+                includes: ["Generation"])).Value ?? [];
+            }
+            else if (user.IsValidRole(RoleType.Teacher))
+            {
+                Classes = (await _classService.GetAllAsync(1, null,
+                [new(c => c.TeacherId, FilterOperator.Equals, user.EmployeeId)],
+                includes: ["Employee"])).Value ?? [];
+            }
         }
 
-        partial void OnSelectedClassChanged(Class? value)
+        private void ScheduleDebouncedFilter()
         {
-            FilterChanged?.Invoke();
+            _searchDebounceTimer?.Dispose();
+            _searchDebounceTimer = new Timer(
+                async (_) =>
+                {
+                    FilterChanged?.Invoke();
+                },
+                null,
+                SearchDebounceDelayMs,
+                Timeout.Infinite);
+        }
+
+        [RelayCommand]
+        private void BrowseSignature()
+        {
+            var fileDialog = _fileDialogService.ShowDialog(
+                "Select principal/admin signature",
+                false,
+                "Image files",
+                "png",
+                "jpg",
+                "jpeg",
+                "bmp");
+
+            if (fileDialog.File == null)
+            {
+                return;
+            }
+
+            SignaturePath = fileDialog.File.FilePath;
+        }
+
+        public void ResetFilterData()
+        {
+            SelectedClass = null;
+            PrincipalName = string.Empty;
+            SignaturePath = string.Empty;
+            Location = "វិ.ច.ប.ឯ.ដប.ប៉ប៉";
+            SearchKeyword = string.Empty;
         }
     }
 }
