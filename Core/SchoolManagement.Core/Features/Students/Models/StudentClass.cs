@@ -2,9 +2,11 @@
 using SchoolManagement.Core.Features.Attendances.Models;
 using SchoolManagement.Core.Shared.Contracts;
 using SchoolManagement.Core.Features.Accessments.Models;
+using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Students.Models
 {
+    [Description("ថ្នាក់រៀនសិស្ស")]
     public class StudentClass : IEntity, IAuditableEntity
     {
         public int Id { get; set; }
@@ -19,7 +21,13 @@ namespace SchoolManagement.Core.Features.Students.Models
         public ICollection<Assessment> Scores { get; set; } = [];
         public ICollection<Attendance> Attendances { get; set; } = [];
 
-        public string GetAuditName()
+        public string CustomAuditDescription()
+        {
+            return $"{Student.FullName} " +
+                $"ត្រូវបានដាក់ចូលទៅក្នុង{Class.KhmerName}";
+        }
+
+        public string CustomAuditName()
         {
             return Student != null ? Student.FullName : string.Empty;
         }

@@ -1,18 +1,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using SchoolManagement.Application.Features.Reports.Models;
-using SchoolManagement.Core.Features.Reports.Models;
-using SchoolManagement.Presentation.Features.Reports.Contracts;
 
 namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.StudentRoster
 {
-    public partial class StudentRosterFilterViewModel : ObservableObject, IReportFilterViewModel, IAsyncLoadable
+    public partial class StudentRosterFilterViewModel : ReportFilterViewModelBase<StudentRosterFilter>
     {
         private readonly IAuthorizationService _authorizationService;
-        private Timer? _searchDebounceTimer;
 
-        public ReportTag ReportTypeKey => ReportTag.StudentRoster;
-
-        public event Action? FilterChanged;
+        public override string ReportTypeKey => "student-roster";
 
         [ObservableProperty]
         private bool _includeInactive;
@@ -41,9 +36,9 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.StudentRo
             _authorizationService = authorizationService;
         }
 
-        public object GetFilterData()
+        public override StudentRosterFilter GetFilterData()
         {
-            return new StudentRosterFilter
+            return new()
             {
                 IsActive = IncludeInactive ? null : true,
                 SearchKeyword = string.IsNullOrWhiteSpace(SearchKeyword) ? null : SearchKeyword.Trim(),
@@ -55,42 +50,18 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.StudentRo
             };
         }
 
-        public async Task LoadAsync()
+        public override async Task LoadAsync()
         {
             await Task.CompletedTask;
         }
 
-        partial void OnIncludeInactiveChanged(bool value)
-        {
-            FilterChanged?.Invoke();
-        }
+        partial void OnIncludeInactiveChanged(bool value) => OnFilterChanged();
+        partial void OnEnrollDateFromChanged(DateTime? value) => OnFilterChanged();
+        partial void OnEnrollDateToChanged(DateTime? value) => OnFilterChanged();
+        partial void OnReportDateChanged(DateTime value) => OnFilterChanged();
+        partial void OnSearchKeywordChanged(string value) => ScheduleDebouncedFilter();
 
-        partial void OnEnrollDateFromChanged(DateTime? value)
-        {
-            FilterChanged?.Invoke();
-        }
-
-        partial void OnEnrollDateToChanged(DateTime? value)
-        {
-            FilterChanged?.Invoke();
-        }
-
-        partial void OnReportDateChanged(DateTime value)
-        {
-            FilterChanged?.Invoke();
-        }
-
-        partial void OnSearchKeywordChanged(string value)
-        {
-            _searchDebounceTimer?.Dispose();
-            _searchDebounceTimer = new Timer(
-                async (_) => { FilterChanged?.Invoke(); },
-                null,
-                400,
-                Timeout.Infinite);
-        }
-
-        public void ResetFilterData()
+        public override void ResetFilterData()
         {
             IncludeInactive = false;
             SearchKeyword = string.Empty;

@@ -1,9 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SchoolManagement.Application;
-using SchoolManagement.Application.Features.Reports.Generators;
-using SchoolManagement.Core.Features.Reports.Models;
-using SchoolManagement.Assets;
 using SchoolManagement.Infrastructure;
 using SchoolManagement.Presentation.Features.Attendances.ViewModels;
 using SchoolManagement.Presentation.Features.Attendances.Views;
@@ -16,7 +13,7 @@ using SchoolManagement.Presentation.Features.Dashboard.Views;
 using SchoolManagement.Presentation.Features.Departments.Views;
 using SchoolManagement.Presentation.Features.Employees.ViewModels;
 using SchoolManagement.Presentation.Features.Employees.Views;
-using SchoolManagement.Presentation.Features.Reports.Contracts;
+using SchoolManagement.Application.Features.Reports.Contracts;
 using SchoolManagement.Presentation.Features.Reports.ViewModels;
 using SchoolManagement.Presentation.Features.Reports.Views;
 using SchoolManagement.Presentation.Features.Reports.ViewProviders.Attendance;
@@ -67,36 +64,8 @@ namespace SchoolManagement.Presentation
                     services.AddTransient<AssignStudentClassViewModel>();
                     services.AddTransient<ReportViewModel>();
 
-                    // Report type registrations (generator, filter, provider, descriptor)
-                    services.AddReportType<StudentRosterGenerator, StudentRosterFilterViewModel>(b => b
-                        .WithKey(ReportTag.StudentRoster)
-                        .WithDisplayName("Student Roster", "បញ្ជីឈ្មោះសិស្ស")
-                        .WithDescription("View and export student roster with class, grade, and skill details")
-                        .WithIcon("AccountGroup")
-                        .WithOrder(1)
-                        .AsGroupedReport());
-
-                    services.AddReportType<AttendanceReportGenerator, AttendanceFilterViewModel>(b => b
-                        .WithKey(ReportTag.AttendanceReport)
-                        .WithDisplayName("Attendance Report", "របាយការណ៍វត្តមាន")
-                        .WithDescription("View and export attendance summaries by student and class")
-                        .WithIcon("ClipboardCheck")
-                        .WithOrder(2));
-
-                    services.AddReportType<ScoreReportGenerator, ScoreFilterViewModel>(b => b
-                        .WithKey(ReportTag.ScoreReport)
-                        .WithDisplayName("Score Report", "របាយការណ៍ពិន្ទុ")
-                        .WithDescription("View and export assessment scores by class, subject, and exam")
-                        .WithIcon("Scoreboard")
-                        .WithOrder(3));
-
-                    services.AddReportType<StudentCardGenerator, StudentCardFilterViewModel>(b => b
-                        .WithKey(ReportTag.StudentCard)
-                        .WithDisplayName("Student Name Cards", "ប័ណ្ណសិស្ស")
-                        .WithDescription("Generate printable student name cards with photo, seal overlay, and editable signature")
-                        .WithIcon("CardAccountDetails")
-                        .WithOrder(4)
-                        .AsCardReport());
+                    // Auto-discover report types from [ReportType] attribute on generators
+                    services.AddReportTypesFromAssembly(typeof(IReportGenerator).Assembly);
 
                     services.AddTransient<EmployeeViewModel>();
                     services.AddTransient<AddEmployeeViewModel>();
@@ -111,6 +80,8 @@ namespace SchoolManagement.Presentation
                     services.AddTransient<SubjectAssignmentViewModel>();
                     services.AddTransient<AddStudentOptionViewModel>();
                     services.AddTransient<AssignCandidateViewModel>();
+                    services.AddTransient<StudentCardOptionsViewModel>();
+                    services.AddTransient<AddStudentsToClassViewModel>();
 
                     // Register Views
                     services.AddTransient<MainWindow>();
@@ -130,6 +101,8 @@ namespace SchoolManagement.Presentation
                     services.AddTransient<AttendanceFilterView>();
                     services.AddTransient<ScoreFilterView>();
                     services.AddTransient<StudentCardFilterView>();
+                    services.AddTransient<StudentCardOptionsView>();
+                    services.AddTransient<AddStudentsToClassView>();
 
                     // Report preview views
                     services.AddTransient<ReportTablePreviewView>();

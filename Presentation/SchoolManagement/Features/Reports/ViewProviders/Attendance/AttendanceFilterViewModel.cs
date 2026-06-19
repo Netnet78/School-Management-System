@@ -1,20 +1,15 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using SchoolManagement.Application.Features.Classes.Authorization;
 using SchoolManagement.Application.Features.Reports.Models;
-using SchoolManagement.Core.Features.Reports.Models;
-using SchoolManagement.Presentation.Features.Reports.Contracts;
 
 namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Attendance
 {
-    public partial class AttendanceFilterViewModel : ObservableObject, IReportFilterViewModel, IAsyncLoadable
+    public partial class AttendanceFilterViewModel : ReportFilterViewModelBase<AttendanceReportFilter>
     {
         private readonly IClassService _classService;
         private readonly IAuthorizationService _authorizationService;
-        private Timer? _searchDebounceTimer;
 
-        public ReportTag ReportTypeKey => ReportTag.AttendanceReport;
-
-        public event Action? FilterChanged;
+        public override string ReportTypeKey => "attendance-report";
 
         [ObservableProperty]
         private IEnumerable<Class> _classes = [];
@@ -37,9 +32,9 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Attendanc
             _authorizationService = authorizationService;
         }
 
-        public object GetFilterData()
+        public override AttendanceReportFilter GetFilterData()
         {
-            return new AttendanceReportFilter
+            return new()
             {
                 ClassId = SelectedClass?.Id,
                 DateFrom = DateFrom,
@@ -48,7 +43,7 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Attendanc
             };
         }
 
-        public async Task LoadAsync()
+        public override async Task LoadAsync()
         {
             User? user = _authorizationService.CurrentUser;
             if (user == null) return;
@@ -71,21 +66,12 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Attendanc
             }
         }
 
-        partial void OnSelectedClassChanged(Class? value) => FilterChanged?.Invoke();
-        partial void OnDateFromChanged(DateTime value) => FilterChanged?.Invoke();
-        partial void OnDateToChanged(DateTime value) => FilterChanged?.Invoke();
+        partial void OnSelectedClassChanged(Class? value) => OnFilterChanged();
+        partial void OnDateFromChanged(DateTime value) => OnFilterChanged();
+        partial void OnDateToChanged(DateTime value) => OnFilterChanged();
+        partial void OnSearchKeywordChanged(string value) => ScheduleDebouncedFilter();
 
-        partial void OnSearchKeywordChanged(string value)
-        {
-            _searchDebounceTimer?.Dispose();
-            _searchDebounceTimer = new Timer(
-                async (_) => { FilterChanged?.Invoke(); },
-                null,
-                400,
-                Timeout.Infinite);
-        }
-
-        public void ResetFilterData()
+        public override void ResetFilterData()
         {
             SelectedClass = null;
             DateFrom = new(DateTime.UtcNow.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);

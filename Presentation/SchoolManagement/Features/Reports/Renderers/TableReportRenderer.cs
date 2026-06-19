@@ -1,4 +1,4 @@
-using SchoolManagement.Application.Features.Reports.Contracts;
+using SchoolManagement.Presentation.Features.Reports.Contracts;
 using SchoolManagement.Core.Features.Reports.Models;
 using SchoolManagement.Presentation.Features.Reports.Models;
 

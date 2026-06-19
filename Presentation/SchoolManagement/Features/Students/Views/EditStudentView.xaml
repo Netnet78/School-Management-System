@@ -74,7 +74,10 @@
                             </StackPanel>
                             <StackPanel Grid.Row="2" Grid.Column="1" Margin="5">
                                 <TextBlock Text="ថ្ងៃខែឆ្នាំកំណើត" FontSize="16" Margin="0,0,0,3"/>
-                                <DatePicker SelectedDate="{Binding StudentForm.DateOfBirth}" Padding="8" FontSize="16"/>
+                                <DatePicker SelectedDate="{Binding StudentForm.DateOfBirth, 
+                                    Converter={StaticResource DateOnlyToDateTimeConverter}}"
+                                            SelectedDateFormat="Long"
+                                            Padding="8" FontSize="16"/>
                             </StackPanel>
                             <StackPanel Grid.Row="3" Margin="5" Visibility="{Binding CanSetSkill}">
                                 <TextBlock Text="ជំនាញ" FontSize="16" Margin="0,0,0,3"/>
@@ -223,7 +226,7 @@
                                         <Border BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="8,6">
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                 <CheckBox IsChecked="{Binding IsChecked}" VerticalAlignment="Center" Margin="0,0,10,0" 
-                                                          Background="{DynamicResource MaterialDesign.Brush.Secondary}" />
+                                                          Background="{DynamicResource MaterialDesign.Brush.Primary}" />
                                                 <StackPanel>
                                                     <TextBlock Text="{Binding Class.Name}" FontSize="15" FontWeight="SemiBold" />
                                                     <StackPanel Orientation="Horizontal" TextElement.FontSize="13" TextElement.Foreground="#CCC">

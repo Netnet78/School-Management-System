@@ -7,6 +7,7 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Contracts
     public interface ICardPdfRenderer
     {
         bool CanRender(ReportResult result);
-        void Render(IContainer container, ReportItemGroup cardGroup, CardRenderContext? context = null);
+        void Render(IContainer container, CardDefinition cardGroup, CardRenderContext context);
+        byte[] RenderToBytes(CardDefinition cardGroup, CardRenderContext context);
     }
 }

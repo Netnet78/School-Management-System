@@ -3,6 +3,7 @@ using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Auth.Models
 {
+    [Description("តួនាទី")]
     public class Role : IEntity
     {
         [Description("លេខសម្គាល់")]

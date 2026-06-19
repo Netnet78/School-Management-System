@@ -2,19 +2,23 @@ using System.Collections.ObjectModel;
 using System.Windows.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using SchoolManagement.Application.Features.Reports.Contracts;
+using SchoolManagement.Presentation.Features.Reports.Contracts;
 using SchoolManagement.Core.Features.Reports.Models;
 using SchoolManagement.Infrastructure.Features.Reports.Contracts;
-using SchoolManagement.Presentation.Features.Reports.Contracts;
 using SchoolManagement.Presentation.Features.Reports.Models;
 using SchoolManagement.Presentation.Features.Reports.Views;
 
 namespace SchoolManagement.Presentation.Features.Reports.Providers
 {
-    public partial class GroupedTableViewProvider : ObservableObject, IReportViewProvider, IGroupedReportTablePreviewProvider
+    public partial class GroupedTableReportProvider : ObservableObject, IReportViewProvider, IGroupedReportTablePreviewProvider
     {
-        public ReportTag ReportTypeKey { get; }
+        public string ReportTypeKey { get; }
 
         public IReportFilterViewModel? FilterViewModel { get; }
+
+        public IReportOptionsViewModel? OptionsViewModel => null;
+
+        public string[] SupportedExportFormats => ["Excel"];
 
         private readonly IReportGenerator _generator;
 
@@ -35,8 +39,8 @@ namespace SchoolManagement.Presentation.Features.Reports.Providers
         private object? _lastFilter;
         private int _generationId;
 
-        public GroupedTableViewProvider(
-            ReportTag reportTypeKey,
+        public GroupedTableReportProvider(
+            string reportTypeKey,
             IReportGenerator generator,
             IReportFilterViewModel? filterVm)
         {
@@ -93,11 +97,9 @@ namespace SchoolManagement.Presentation.Features.Reports.Providers
             }
         }
 
-        public bool CanExport(IReportExporter exporter) => exporter.FormatName == "Excel";
-
         public async Task ExportAsync(IReportExporter exporter, string filePath, CancellationToken cancellationToken = default)
         {
-            if (!CanExport(exporter))
+            if (!SupportedExportFormats.Contains(exporter.FormatName))
                 throw new InvalidOperationException($"Table reports do not support {exporter.FormatName} export.");
 
             if (_lastFilter != null)
@@ -136,11 +138,7 @@ namespace SchoolManagement.Presentation.Features.Reports.Providers
                     Header = group.KhmerName ?? group.Name,
                     Columns = columns,
                     Rows = rows,
-                    Summary =
-                    {
-                        ["ចំនួនសិស្សសរុប"] = group.Rows.Count,
-                        ["ចំនួនសិស្សស្រីសរុប"] = group.Rows.Count(r => (string?)r["gender"].Value == "Female"),
-                    }
+                    Summary = result.Summary
                 });
             }
 

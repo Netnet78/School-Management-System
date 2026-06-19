@@ -27,7 +27,7 @@ namespace SchoolManagement.Presentation.Shared.Converters
             }
         }
 
-        public static CameraFrame ConvertToCameraFrame(this Bitmap bitmap)
+        public static BitmapInfo ConvertToCameraFrame(this Bitmap bitmap)
         {
             Rectangle rect = new(0, 0, bitmap.Width, bitmap.Height);
             BitmapData data = bitmap.LockBits(rect, ImageLockMode.ReadOnly, bitmap.PixelFormat);

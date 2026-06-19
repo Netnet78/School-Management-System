@@ -2,9 +2,11 @@
 using SchoolManagement.Core.Features.Exams.Models;
 using SchoolManagement.Core.Features.Students.Models;
 using SchoolManagement.Core.Shared.Contracts;
+using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Accessments.Models
 {
+    [Description("លទ្ធផលសមត្ថភាព")]
     public class Assessment : IEntity
     {
         public int Id { get; set; }

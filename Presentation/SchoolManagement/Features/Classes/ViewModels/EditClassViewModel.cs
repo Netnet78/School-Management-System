@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SchoolManagement.Application.Features.Classes.Authorization;
 using SchoolManagement.Core.Features.Departments.Models;
 using SchoolManagement.Core.Features.Generations.Models;
 using SchoolManagement.Core.Features.Grades.Models;
@@ -13,7 +12,6 @@ namespace SchoolManagement.Presentation.Features.Classes.ViewModels
     public partial class EditClassViewModel : ObservableObject, IViewModel, IAsyncLoadable, INavigationAware
     {
         private readonly IClassService _classService;
-        private readonly IAuthorizationService _authorizationService;
         private readonly IMessageService _messageService;
         private readonly INavigationService _navigationService;
         private readonly IDepartmentService _departmentService;
@@ -71,7 +69,6 @@ namespace SchoolManagement.Presentation.Features.Classes.ViewModels
 
         public EditClassViewModel(
             IClassService classService,
-            IAuthorizationService authorizationService,
             IMessageService messageService,
             INavigationService navigationService,
             IDepartmentService departmentService,
@@ -80,7 +77,6 @@ namespace SchoolManagement.Presentation.Features.Classes.ViewModels
             IEmployeeService employeeService)
         {
             _classService = classService;
-            _authorizationService = authorizationService;
             _messageService = messageService;
             _navigationService = navigationService;
             _departmentService = departmentService;
@@ -123,13 +119,14 @@ namespace SchoolManagement.Presentation.Features.Classes.ViewModels
                 Class cls = _class;
                 ClassName = cls.GetKhmerName();
 
-                User? user = _authorizationService.CurrentUser;
+                var permissions = await _classService.GetPermissionsAsync();
+                User? user = permissions.CurrentUser;
                 if (user == null)
                 {
                     _messageService.Show("Current user session hasn't been set!", "Error", MessageButton.OK, MessageIcon.Error);
                     return;
                 }
-                IsAdmin = user.IsAdmin();
+                IsAdmin = permissions.CanManageDepartments;
 
                 var gradesResponse = await _gradeService.GetAllAsync(1);
                 if (gradesResponse.Status == Status.Success && gradesResponse.Value != null)
@@ -297,7 +294,8 @@ namespace SchoolManagement.Presentation.Features.Classes.ViewModels
             }
             else
             {
-                User? user = _authorizationService.CurrentUser;
+                var permissions = await _classService.GetPermissionsAsync();
+                User? user = permissions.CurrentUser;
                 if (user == null)
                 {
                     _messageService.Show("Current user session hasn't been set!", "Error", MessageButton.OK, MessageIcon.Error);

@@ -5,7 +5,7 @@ namespace SchoolManagement.Application.Features.Reports.Contracts
 {
     public interface IReportRegistry
     {
-        ReportTypeDescriptor? GetDescriptor(ReportTag key);
+        ReportTypeDescriptor? GetDescriptor(string key);
 
         IReadOnlyList<ReportTypeDescriptor> GetAllDescriptors();
     }

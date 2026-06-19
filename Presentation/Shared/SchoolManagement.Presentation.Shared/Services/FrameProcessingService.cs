@@ -10,7 +10,7 @@ namespace SchoolManagement.Presentation.Shared.Services
         private WriteableBitmap? _wb;
         private byte[] _buffer = [];
 
-        public object ProcessFrame(CameraFrame frame)
+        public object ProcessFrame(BitmapInfo frame)
         {
             try
             {
@@ -23,12 +23,12 @@ namespace SchoolManagement.Presentation.Shared.Services
             }
         }
 
-        private void InitializeWb(CameraFrame frame)
+        private void InitializeWb(BitmapInfo frame)
         {
             _wb = new(frame.Width, frame.Height, 96, 96, PixelFormats.Bgr24, null);
         }
 
-        private WriteableBitmap RenderFrame(CameraFrame frame)
+        private WriteableBitmap RenderFrame(BitmapInfo frame)
         {
             if (_wb == null ||
                 _wb.PixelWidth != frame.Width ||

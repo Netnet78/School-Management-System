@@ -2,12 +2,15 @@ using SchoolManagement.Application.Features.Reports.Contracts;
 using SchoolManagement.Application.Features.Reports.Helpers;
 using SchoolManagement.Application.Features.Reports.Models;
 using SchoolManagement.Assets;
-using SchoolManagement.Core.Features.Reports.Models;
+using SchoolManagement.Core.Features.Reports.Attributes;
 using SchoolManagement.Core.Features.Reports.Enums;
-using KhmerCalendar;
+using SchoolManagement.Core.Features.Reports.Models;
 
 namespace SchoolManagement.Application.Features.Reports.Generators
 {
+    [ReportType(Key = "student-card", DisplayName = "Student Name Cards", DisplayNameKhmer = "ប័ណ្ណសិស្ស",
+        Description = "Generate printable student name cards with photo, seal overlay, and editable signature", IconKind = "CardAccountDetails", SortOrder = 4, ReportStyle = ReportStyle.Card,
+        SupportedExportFormats = new[] { "PDF" })]
     public class StudentCardGenerator : IReportGenerator
     {
         private const int CardWidth = 709;
@@ -22,7 +25,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
 
         private readonly string _templatePath = Path.Combine(ResourcePaths.Images, "name_card_template.png");
 
-        private static readonly string SealPath = Path.Combine(
+        private static readonly string _sealPath = Path.Combine(
             ResourcePaths.Images,
             "dbs_red.png");
 
@@ -30,36 +33,38 @@ namespace SchoolManagement.Application.Features.Reports.Generators
 
         private readonly IStudentClassRepository _studentClassRepository;
         private readonly IPhotoFetchService _photoFetchService;
+        private readonly IAuthorizationService _authorizationService;
 
-        public ReportTag ReportTypeKey => ReportTag.StudentCard;
+        public string ReportTypeKey => "student-card";
 
         public StudentCardGenerator(
             IStudentClassRepository studentClassRepository,
-            IPhotoFetchService photoFetchService)
+            IPhotoFetchService photoFetchService,
+            IAuthorizationService authorizationService)
         {
             _studentClassRepository = studentClassRepository;
             _photoFetchService = photoFetchService;
-
-            ConfigureFonts();
+            _authorizationService = authorizationService;
         }
 
-        public static void ConfigureFonts()
+        public object CreateDefaultRequest() => new StudentCardReportRequest()
         {
-            QuestPDF.Settings.FontDiscoveryPaths.Clear();
-            QuestPDF.Settings.FontDiscoveryPaths.Add(ResourcePaths.Fonts);
-        }
-
-        public object CreateDefaultFilter() => new StudentCardFilter
-        {
-            Location = "វិ.ច.ប.ឯ.ដប.ប៉ប៉",
+            Options = new StudentCardOptions
+            {
+                Location = "វិ.ច.ប.ឯ.ដប.ប៉ប៉",
+                PrincipalName = "សយ ថាត",
+                ReportDate = DateTime.Now
+            },
         };
 
-        public async Task<ReportResult> GenerateAsync(object filter, CancellationToken cancellationToken = default)
+        public async Task<ReportResult> GenerateAsync(object request, CancellationToken cancellationToken = default)
         {
-            var cardFilter = (StudentCardFilter)filter;
-            string location = NormalizeLocation(cardFilter.Location);
+            StudentCardReportRequest cardRequest = (StudentCardReportRequest)request;
+            StudentCardFilter cardFilter = cardRequest.Filter;
+            StudentCardOptions cardOptions = cardRequest.Options;
+            string location = NormalizeLocation(cardOptions.Location);
 
-            var filters = new List<FilterCondition<StudentClass>>();
+            List<FilterCondition<StudentClass>> filters = [];
 
             if (cardFilter.ManualSelectEnabled)
             {
@@ -77,8 +82,19 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                         Title = "ប័ណ្ណសម្គាល់សិស្ស",
                         SubTitle = "Student Name Cards",
                         GeneratedDate = DateTime.Now,
-                        ReportTag = ReportTag.StudentCard,
+                        ReportTag = "student-card",
                         CardGroups = [],
+                        Columns =
+                        [
+                            new() { Key = "Photo", Header = "Photo", HeaderKhmer = "រូបថត", Width = 80 },
+                            new() { Key = "StudentId", Header = "ID", HeaderKhmer = "លេខសម្គាល់", Width = 130 },
+                            new() { Key = "FullName", Header = "Full Name", HeaderKhmer = "ឈ្មោះពេញ", Width = 260 },
+                            new() { Key = "Gender", Header = "Gender", HeaderKhmer = "ភេទ", Width = 80 },
+                            new() { Key = "DateOfBirth", Header = "DOB", HeaderKhmer = "ថ្ងៃខែឆ្នាំកំណើត", Width = 160 },
+                            new() { Key = "Class", Header = "Class", HeaderKhmer = "ឆ្នាំទី/កម្រិតទី", Width = 160 },
+                            new() { Key = "Department", Header = "Department", HeaderKhmer = "ផ្នែក", Width = 190 },
+                            new() { Key = "AcademicYear", Header = "Academic Year", HeaderKhmer = "ឆ្នាំសិក្សា", Width = 170 },
+                        ],
                         Layout = new CardSheetLayout
                         {
                             PageSize = "A4",
@@ -99,22 +115,15 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                     };
                 }
             }
-
-            if (cardFilter.ClassId.HasValue)
-                filters.Add(new FilterCondition<StudentClass>(
-                    sc => sc.ClassId, FilterOperator.Equals, cardFilter.ClassId.Value));
-
-            if (!string.IsNullOrWhiteSpace(cardFilter.SearchKeyword))
-                filters.Add(new FilterCondition<StudentClass>(
-                    sc => sc.Student.Candidate.FullName, FilterOperator.Contains, cardFilter.SearchKeyword));
-
-            int? page = null;
-            int? pageSize = null;
+            else
+            {
+                filters = BuildFilters(cardFilter);
+            }
 
             var studentClasses = (await _studentClassRepository.FindAsync(
                 filters,
-                page: page,
-                pageSize: pageSize,
+                page: cardFilter.Page,
+                pageSize: cardFilter.PageSize,
                 orderBy: [new SortCriteria<StudentClass>(sc => sc.Student.Candidate.FullName, OrderDirection.Ascending)],
                 "Student.Candidate",
                 "Student.Candidate.Photo",
@@ -122,14 +131,14 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 "Class.Grade",
                 "Class.Generation.Department").ConfigureAwait(false)).ToList();
 
-            int totalCount = pageSize.HasValue
+            int totalCount = cardFilter.PageSize.HasValue
                 ? await _studentClassRepository.CountAsync(filters).ConfigureAwait(false)
                 : studentClasses.Count;
 
             byte[]? sealBytes = GetSealBytes();
-            byte[]? signatureBytes = await ReadBytesIfExistsAsync(cardFilter.SignaturePath, cancellationToken).ConfigureAwait(false);
+            byte[]? signatureBytes = await ReadBytesIfExistsAsync(cardOptions.SignaturePath, cancellationToken).ConfigureAwait(false);
 
-            var photoTasks = studentClasses
+            IEnumerable<Task<(int Id, byte[]? Bytes)>> photoTasks = studentClasses
                 .Where(sc => sc.Student != null && !string.IsNullOrWhiteSpace(sc.Student.PhotoKey))
                 .Select(async sc =>
                 {
@@ -137,26 +146,38 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                         sc.Student.PhotoKey,
                         cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                    if (result.Status == Status.Success && result.Value != null && File.Exists(result.Value.FilePath))
+                    try
                     {
-                        var bytes = await File.ReadAllBytesAsync(result.Value.FilePath, cancellationToken).ConfigureAwait(false);
-                        return (Id: sc.Student.Id, Bytes: bytes);
+                        if (result.Status == Status.Success && result.Value != null)
+                        {
+                            byte[] bytes = await File.ReadAllBytesAsync(result.Value.FilePath, cancellationToken).ConfigureAwait(false);
+                            return (Id: sc.Student.Id, Bytes: bytes);
+                        }
+                        return (Id: sc.Student.Id, Bytes: (byte[]?)null);
                     }
-                    return (Id: sc.Student.Id, Bytes: (byte[]?)null);
+                    catch (FileNotFoundException)
+                    {
+                        return (Id: sc.StudentId, Bytes: null);
+                    }
+                    catch (IOException)
+                    {
+                        return (Id: sc.StudentId, Bytes: null);
+                    }
+                    catch (Exception) { throw; }
                 });
 
-            var photoResults = await Task.WhenAll(photoTasks).ConfigureAwait(false);
-            var photoMap = new Dictionary<int, byte[]?>(studentClasses.Count);
+            (int Id, byte[]? Bytes)[] photoResults = await Task.WhenAll(photoTasks).ConfigureAwait(false);
+            Dictionary<int, byte[]?> photoMap = new(studentClasses.Count);
             foreach (var (id, bytes) in photoResults)
                 photoMap[id] = bytes;
 
-            var cardGroups = new List<ReportItemGroup>();
+            List<CardDefinition> cardGroups = new();
 
-            foreach (var studentClass in studentClasses)
+            foreach (StudentClass studentClass in studentClasses)
             {
-                var student = studentClass.Student;
-                var candidate = student?.Candidate;
-                var @class = studentClass.Class;
+                Student student = studentClass.Student;
+                Candidate candidate = student.Candidate;
+                Class @class = studentClass.Class;
 
                 if (student == null || candidate == null || @class == null)
                 {
@@ -174,7 +195,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 string firstName = SafeText(candidate.FirstName);
                 string gender = SafeText(candidate.Gender.GetDescription());
                 string national = "ខ្មែរ";
-                string studentId = $"SDBS{student.Id:0000}";
+                string studentId = $"SDB{student.CandidateId:0000000}";
                 string dateOfBirth = candidate.DateOfBirth.HasValue
                     ? ReportDateHelper.FormatDateOfBirth(candidate.DateOfBirth.Value)
                     : "-";
@@ -183,17 +204,17 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 string motherName = SafeText(candidate.MotherName);
                 string grade = SafeText($"{@class.Grade.KhmerName.Last()}");
                 string department = SafeText(@class.Generation.Department?.KhmerName ?? @class.Generation.Department?.Name);
-                string lunarDate = ReportDateHelper.FormatKhmerLunarDate(DateTime.Now);
-                string gregorianDate = ReportDateHelper.FormatGregorianDateLine(location, DateTime.Now);
+                string lunarDate = ReportDateHelper.FormatKhmerLunarDate(cardOptions.ReportDate);
+                string gregorianDate = ReportDateHelper.FormatGregorianDateLine(location, cardOptions.ReportDate);
 
                 var items = new List<CardItem>();
 
-                AddText(items, 351, 330, academicYear, 23.75f, false, AccentBlue, null, null, KhmerOSMuolLight, TextAlignment.Center, "AcademicYear");
+                AddText(items, 352, 330, academicYear, 23.75f, false, AccentBlue, null, null, KhmerOSMuolLight, TextAlignment.Center, "AcademicYear");
                 AddText(items, 286, 395, fullName, 27.08f, false, AccentRed, null, textAlignment: TextAlignment.Left, fieldName: "FullName", fontFamily: KhmerOSMuolLight);
 
                 AddText(items, 109, 460, gender, 25f, false, AccentBlue, 60, fieldName: "Gender");
-                AddText(items, 286, 460, national, 25f, false, AccentBlue, 60);
-                AddText(items, 514, 460, studentId, 26.25f, false, null, 100, null, TimesNewRoman, fieldName: "StudentId");
+                AddText(items, 286, 460, national, 25f, false, "#000", 60);
+                AddText(items, 510, 460, studentId, 26.25f, false, AccentBlue, 100, null, TimesNewRoman, fieldName: "StudentId");
 
                 AddText(items, 380, 520, dateOfBirth, 25f, false, null, 130, textAlignment: TextAlignment.Center, fieldName: "DateOfBirth");
 
@@ -215,10 +236,10 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                     {
                         XPos = 56,
                         YPos = 738,
-                        Value = photoBytes,
                         Width = 139,
                         Height = 180,
                         FieldName = "Photo",
+                        Value = new BitmapInfo(photoBytes),
                     });
                 }
 
@@ -228,7 +249,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                     {
                         XPos = 155,
                         YPos = 670,
-                        Value = sealBytes,
+                        Value = new BitmapInfo(sealBytes),
                     });
                 }
 
@@ -238,18 +259,18 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                     {
                         XPos = 358,
                         YPos = 842,
-                        Value = signatureBytes,
-                        Height = 72,
+                        Value = new BitmapInfo(signatureBytes),
+                        Height = 68,
                     });
                 }
 
-                if (!string.IsNullOrWhiteSpace(cardFilter.PrincipalName))
+                if (!string.IsNullOrWhiteSpace(cardOptions.PrincipalName))
                 {
                     AddText(
                         items,
-                        487,
-                        875,
-                        cardFilter.PrincipalName.Trim(),
+                        485,
+                        895,
+                        cardOptions.PrincipalName.Trim(),
                         25f,
                         false,
                         AccentRed,
@@ -258,11 +279,17 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                         KhmerOSMuol);
                 }
 
-                cardGroups.Add(new ReportItemGroup
+                items.Add(new CardItem
+                {
+                    FieldName = "__rawId",
+                    Value = student.Id,
+                });
+
+                cardGroups.Add(new CardDefinition
                 {
                     Width = CardWidth,
                     Height = CardHeight,
-                    TemplateFileFilePath = _templatePath,
+                    TemplateFilePath = _templatePath,
                     Items = items,
                 });
             }
@@ -272,8 +299,19 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 Title = "ប័ណ្ណសម្គាល់សិស្ស",
                 SubTitle = "Student Name Cards",
                 GeneratedDate = DateTime.Now,
-                ReportTag = ReportTag.StudentCard,
+                ReportTag = "student-card",
                 CardGroups = cardGroups,
+                Columns =
+                [
+                    new() { Key = "Photo", Header = "Photo", HeaderKhmer = "រូបថត", Width = 80 },
+                    new() { Key = "StudentId", Header = "ID", HeaderKhmer = "លេខសម្គាល់", Width = 130 },
+                    new() { Key = "FullName", Header = "Full Name", HeaderKhmer = "ឈ្មោះពេញ", Width = 260 },
+                    new() { Key = "Gender", Header = "Gender", HeaderKhmer = "ភេទ", Width = 80 },
+                    new() { Key = "DateOfBirth", Header = "DOB", HeaderKhmer = "ថ្ងៃខែឆ្នាំកំណើត", Width = 160 },
+                    new() { Key = "Class", Header = "Class", HeaderKhmer = "ឆ្នាំទី/កម្រិតទី", Width = 160 },
+                    new() { Key = "Department", Header = "Department", HeaderKhmer = "ផ្នែក", Width = 150 },
+                    new() { Key = "AcademicYear", Header = "Academic Year", HeaderKhmer = "ឆ្នាំសិក្សា", Width = 190 },
+                ],
                 Layout = new CardSheetLayout
                 {
                     PageSize = "A4",
@@ -292,6 +330,41 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                     ["ចំនួនសិស្សសរុប"] = studentClasses.Count,
                 },
             };
+        }
+
+        public async Task<List<int>> GetMatchingStudentIdsAsync(StudentCardFilter cardFilter)
+        {
+            var filters = BuildFilters(cardFilter);
+            var studentClasses = await _studentClassRepository.FindAsync(
+                filters, page: null, pageSize: null).ConfigureAwait(false);
+            return studentClasses.Select(sc => sc.StudentId).Distinct().ToList();
+        }
+
+        private List<FilterCondition<StudentClass>> BuildFilters(StudentCardFilter cardFilter)
+        {
+            List<FilterCondition<StudentClass>> filters = [];
+
+            if (cardFilter.ClassId.HasValue)
+                filters.Add(new FilterCondition<StudentClass>(
+                    sc => sc.ClassId, FilterOperator.Equals, cardFilter.ClassId.Value));
+
+            if (!string.IsNullOrWhiteSpace(cardFilter.SearchKeyword))
+                filters.Add(new FilterCondition<StudentClass>(
+                    sc => sc.Student.Candidate.FullName, FilterOperator.Contains, cardFilter.SearchKeyword));
+
+            User? user = _authorizationService.CurrentUser;
+
+            if (user?.IsHeadTeacher() == true)
+            {
+                filters.Add(new FilterCondition<StudentClass>(sc => sc.Student.Candidate.SkillId, FilterOperator.Equals,
+                    user.Employee?.DepartmentId));
+            }
+            else if (user?.IsValidRole(RoleType.Teacher) is true)
+            {
+                filters.Add(new FilterCondition<StudentClass>(sc => sc.Class.TeacherId, FilterOperator.Equals, user.EmployeeId));
+            }
+
+            return filters;
         }
 
         private static void AddText(
@@ -338,18 +411,25 @@ namespace SchoolManagement.Application.Features.Reports.Generators
 
         private static byte[]? GetSealBytes()
         {
-            if (_sealBytes != null)
+            try
             {
+                if (_sealBytes != null)
+                {
+                    return _sealBytes;
+                }
+
+                _sealBytes = File.ReadAllBytes(_sealPath);
                 return _sealBytes;
             }
-
-            if (!File.Exists(SealPath))
+            catch (FileNotFoundException)
             {
                 return null;
             }
-
-            _sealBytes = File.ReadAllBytes(SealPath);
-            return _sealBytes;
+            catch (IOException)
+            {
+                return null;
+            }
+            catch (Exception) { throw; }
         }
 
         private static async Task<byte[]?> ReadBytesIfExistsAsync(string? filePath, CancellationToken cancellationToken)

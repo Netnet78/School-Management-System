@@ -1,4 +1,5 @@
 using Moq;
+using SchoolManagement.Application.Features.Auth.Contracts;
 using SchoolManagement.Application.Features.Files.Contracts;
 using SchoolManagement.Application.Features.Reports.Generators;
 using SchoolManagement.Application.Features.Reports.Models;
@@ -17,21 +18,30 @@ namespace SchoolManagement.Tests.Features.Reports
             studentClassRepository
                 .Setup(r => r.FindAsync(
                     It.IsAny<IEnumerable<FilterCondition<StudentClass>>?>(),
-                    null,
-                    null,
+                    1,
+                    10,
                     It.IsAny<IEnumerable<SortCriteria<StudentClass>>?>(),
                     It.IsAny<string[]?>()))
                 .ReturnsAsync(Enumerable.Empty<StudentClass>());
 
+            studentClassRepository
+                .Setup(r => r.CountAsync(
+                    It.IsAny<IEnumerable<FilterCondition<StudentClass>>?>(),
+                    null,
+                    null))
+                .ReturnsAsync(0);
+
             var photoFetchService = new Mock<IPhotoFetchService>();
+            var authorizationService = new Mock<IAuthorizationService>();
             var generator = new StudentCardGenerator(
                 studentClassRepository.Object,
-                photoFetchService.Object);
+                photoFetchService.Object,
+                authorizationService.Object);
 
-            var result = await generator.GenerateAsync(new StudentCardFilter());
+            var result = await generator.GenerateAsync(new StudentCardReportRequest());
 
             var cardResult = Assert.IsType<CardReportResult>(result);
-            Assert.Equal(ReportTag.StudentCard, cardResult.ReportTag);
+            Assert.Equal("student-card", cardResult.ReportTag);
             Assert.Empty(cardResult.CardGroups ?? []);
         }
     }

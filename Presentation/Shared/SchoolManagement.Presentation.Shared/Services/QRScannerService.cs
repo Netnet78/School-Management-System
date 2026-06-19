@@ -21,7 +21,7 @@ namespace SchoolManagement.Presentation.Shared.Services
             };
         }
 
-        public string? Decode(CameraFrame frame)
+        public string? Decode(BitmapInfo frame)
         {
             Result result = _barcodeReader.Decode(
                 frame.Data,

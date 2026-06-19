@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using SchoolManagement.Application.Features.Reports.Models;
-using SchoolManagement.Core.Features.Reports.Models;
 
 namespace SchoolManagement.Presentation.Features.Reports.Models
 {
@@ -16,7 +15,7 @@ namespace SchoolManagement.Presentation.Features.Reports.Models
 
         public string IconKind => Definition.IconKind;
 
-        public ReportTag Key => Definition.Key;
+        public string Key => Definition.Key;
 
         public int SortOrder => Definition.SortOrder;
 

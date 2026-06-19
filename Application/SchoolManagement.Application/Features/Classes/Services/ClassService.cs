@@ -1,15 +1,36 @@
+using SchoolManagement.Application.Features.Classes.Models;
+
 namespace SchoolManagement.Application.Features.Classes.Services
 {
     public class ClassService : CrudServiceBase<Class>, IClassService
     {
         private readonly IClassRepository _classRepository;
         private readonly IStudentClassRepository _studentClassRepository;
+        private readonly IAuthorizationService _authorizationService;
+
         public ClassService(
             IClassRepository repository,
-            IStudentClassRepository studentClassRepository) : base(repository)
+            IStudentClassRepository studentClassRepository,
+            IAuthorizationService authorizationService) : base(repository)
         {
             _classRepository = repository;
             _studentClassRepository = studentClassRepository;
+            _authorizationService = authorizationService;
+        }
+
+        public async Task<ClassPermissions> GetPermissionsAsync()
+        {
+            User? user = _authorizationService.CurrentUser;
+
+            return new ClassPermissions
+            {
+                CanView = (await _authorizationService.AuthorizeAsync(null, PermissionType.ViewClasses)).Status == Status.Success,
+                CanInsert = (await _authorizationService.AuthorizeAsync(null, PermissionType.InsertClasses)).Status == Status.Success,
+                CanEdit = (await _authorizationService.AuthorizeAsync(null, PermissionType.EditClasses)).Status == Status.Success,
+                CanDelete = (await _authorizationService.AuthorizeAsync(null, PermissionType.DeleteClasses)).Status == Status.Success,
+                CanManageDepartments = user?.IsAdmin() == true,
+                CurrentUser = user,
+            };
         }
 
         public async Task<ReturnResponse<IEnumerable<ClassStudentCountDto>>> GetStudentCountPerClassAsync(int fromYear, int toYear)

@@ -1,8 +1,10 @@
 ﻿using SchoolManagement.Core.Features.Accessments.Models;
 using SchoolManagement.Core.Shared.Contracts;
+using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Exams.Models
 {
+    [Description("ប្រឡង")]
     public class Exam : IEntity
     {
         public int Id { get; set; }

@@ -9,7 +9,7 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Export.Rendering
     {
         public bool CanRender(ReportResult result)
         {
-            return result.ReportTag == ReportTag.StudentRoster && result is GroupedTableReportResult;
+            return result.ReportTag == "student-roster" && result is GroupedTableReportResult;
         }
 
         public XLWorkbook Render(ReportResult data)
@@ -66,8 +66,10 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Export.Rendering
 
             foreach (var row in group.Rows)
             {
-                string lastName = row.GetValueOrDefault("fullName")?.ToString().Split(' ')[0] ?? "";
-                string firstName = row.GetValueOrDefault("fullName")?.ToString().Split(' ')[1] ?? "";
+                string fullName = row.GetValueOrDefault("fullName")?.ToString() ?? "";
+                string lastName = fullName.SplitName().LastName;
+                string firstName = fullName.SplitName().FirstName;
+
                 string gender = row.GetValueOrDefault("gender")?.ToString() ?? "";
                 string formattedGender = gender switch
                 {

@@ -20,13 +20,13 @@ namespace SchoolManagement.Core.Shared.Extensions
 
         /// <summary>
         /// Serializes the property values to a JSON string, excluding or masking properties marked with the
-        /// <see cref="AuditMaskAttribute"/>.
+        /// <see cref="AuditHideAttribute"/>.
         /// </summary>
-        /// <remarks>Properties decorated with the <see cref="AuditMaskAttribute"/> are either omitted or their values
+        /// <remarks>Properties decorated with the <see cref="AuditHideAttribute"/> are either omitted or their values
         /// are replaced with a masked value in the resulting JSON. This method is intended for scenarios where
         /// sensitive data should not be exposed in serialized output.</remarks>
         /// <param name="values">The set of property values to serialize. Cannot be null.</param>
-        /// <returns>A JSON string representing the serialized property values. Properties marked with the <see cref="AuditMaskAttribute"/> are
+        /// <returns>A JSON string representing the serialized property values. Properties marked with the <see cref="AuditHideAttribute"/> are
         /// excluded or masked in the output.</returns>
         public static string SerializeProperties(this PropertyValues values)
         {
@@ -39,14 +39,24 @@ namespace SchoolManagement.Core.Shared.Extensions
                 if (propertyInfo == null)
                     continue;
 
-                if (propertyInfo.IsDefined(typeof(AuditMaskAttribute)))
+                if (propertyInfo.IsDefined(typeof(AuditHideAttribute)))
                     continue;
 
                 object? value = values[property.Name];
 
-                if (propertyInfo.IsDefined(typeof(AuditMaskAttribute)))
+                AuditHideAttribute? attribute = property
+                    .PropertyInfo?
+                    .GetCustomAttributes(typeof(AuditHideAttribute), true)
+                    .Cast<AuditHideAttribute>()
+                    .FirstOrDefault();
+
+                if (attribute != null && attribute.ShowMasked == true)
                 {
                     value = "***MASKED***";
+                }
+                else if (attribute != null && attribute.ShowMasked == false)
+                {
+                    continue;
                 }
 
                 dict[property.Name] = value;
@@ -59,20 +69,20 @@ namespace SchoolManagement.Core.Shared.Extensions
         /// Serializes the properties of the current object to a JSON string, including only those properties that
         /// differ from the comparison object if specified.
         /// </summary>
-        /// <remarks>Properties decorated with the <see cref="AuditMaskAttribute"/> are masked in the serialized output
+        /// <remarks>Properties decorated with the <see cref="AuditHideAttribute"/> are masked in the serialized output
         /// for security. The comparison is performed using value equality for each property.</remarks>
         /// <param name="current">The set of property values to serialize.</param>
         /// <param name="comparison">The set of property values to compare against for detecting modifications.</param>
         /// <param name="onlyModified">If <see langword="true"/>, only properties with values different from the comparison object are included;
         /// otherwise, all properties are included.</param>
         /// <returns>A JSON string representing the selected properties and their values. Properties marked with the
-        /// <see cref="AuditMaskAttribute"/> are masked in the output.</returns>
+        /// <see cref="AuditHideAttribute"/> are masked in the output.</returns>
         public static string SerializeModifiedProperties(
             this PropertyValues current,
             PropertyValues comparison,
             bool onlyModified)
         {
-            Dictionary<string, object?> dict = new();
+            Dictionary<string, object?> dict = [];
 
             foreach (IProperty property in current.Properties)
             {
@@ -83,11 +93,22 @@ namespace SchoolManagement.Core.Shared.Extensions
 
                 if (!onlyModified || changed)
                 {
-                    if (property.PropertyInfo?.IsDefined(typeof(AuditMaskAttribute)) == true)
+                    AuditHideAttribute? attribute = property
+                        .PropertyInfo?
+                        .GetCustomAttributes(typeof(AuditHideAttribute), true)
+                        .Cast<AuditHideAttribute>()
+                        .FirstOrDefault();
+
+                    if (attribute != null && attribute.ShowMasked == true)
                     {
                         dict[property.Name] = "***MASKED***";
                         continue;
                     }
+                    else if (attribute != null && attribute.ShowMasked == false)
+                    {
+                        continue;
+                    }
+
                     dict[property.Name] = currentValue;
                 }
             }

@@ -5,9 +5,11 @@ using SchoolManagement.Core.Features.Students.Models;
 using SchoolManagement.Core.Features.Employees.Models;
 using SchoolManagement.Core.Features.Attendances.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Attendances.Models
 {
+    [Description("វត្តមាន")]
     [AuditIgnoreType(AuditOperation.Insert | AuditOperation.Update)]
     public class Attendance : IEntity
     {

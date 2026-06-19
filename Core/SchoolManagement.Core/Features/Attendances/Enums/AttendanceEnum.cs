@@ -14,5 +14,7 @@ namespace SchoolManagement.Core.Features.Attendances.Enums
         Excused,
         [Description("ច្បាប់យឺត")]
         ExcusedLate,
+        [Description("ច្បាប់ចេញទៅក្រៅ")]
+        EarlyLeave
     }
 }

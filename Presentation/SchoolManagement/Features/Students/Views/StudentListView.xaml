@@ -67,108 +67,108 @@
             </StackPanel>
         </StackPanel>
 
-        <Expander Grid.Row="1" Margin="20,10" Background="#F5F5F5" Padding="10">
-            <Expander.Header>
-                <StackPanel Orientation="Horizontal">
-                    <materialDesign:PackIcon Kind="Filter" VerticalAlignment="Center" Margin="0 0 5 0"/>
-                    <TextBlock FontSize="18" FontWeight="Bold">ច្រោះទិន្នន័យ</TextBlock>
-                </StackPanel>
-            </Expander.Header>
+         <Expander Grid.Row="1" Margin="20,10" Background="#F5F5F5" Padding="16">
+             <Expander.Header>
+                 <StackPanel Orientation="Horizontal">
+                     <materialDesign:PackIcon Kind="Filter" VerticalAlignment="Center" Margin="0 0 5 0"/>
+                     <TextBlock FontSize="18" FontWeight="Bold">ច្រោះទិន្នន័យ</TextBlock>
+                 </StackPanel>
+             </Expander.Header>
 
-            <StackPanel>
-                <StackPanel>
-                    <Grid ColumnDefinitions="*,*,*,*" TextElement.FontSize="16" TextElement.FontFamily="{StaticResource NotoSansKhmer}">
-                        <StackPanel Margin="5">
-                            <TextBlock Text="ស្វែងរកតាមឈ្មោះ" FontWeight="Regular" FontSize="14" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding Filters.Search, UpdateSourceTrigger=PropertyChanged}"
-                                 Padding="8" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Margin="5">
-                            <TextBlock Text="ភេទ" FontWeight="Regular" FontSize="14" Margin="0,0,0,5"/>
-                            <ComboBox Padding="8" SelectedValue="{Binding Filters.Gender}" SelectedValuePath="Tag">
-                                <ComboBoxItem Content="ទាំងអស់" Tag="{x:Null}"/>
-                                <ComboBoxItem Content="ប្រុស" Tag="{x:Static enum:Gender.Male}"/>
-                                <ComboBoxItem Content="ស្រី" Tag="{x:Static enum:Gender.Female}"/>
-                            </ComboBox>
-                        </StackPanel>
-                        <StackPanel Grid.Column="2" Margin="5">
-                            <TextBlock Text="តម្រៀបទិន្នន័យតាម" FontWeight="Regular" FontSize="14" Margin="0,0,0,5"/>
-                            <ComboBox Padding="8" SelectedValue="{Binding Filters.SortBy}" SelectedValuePath="Tag">
-                                <ComboBoxItem Content="ID" Tag="Id"/>
-                                <ComboBoxItem Content="ឈ្មោះ" Tag="FullName"/>
-                                <ComboBoxItem Content="កាលបរិច្ឆេទបញ្ចូល" Tag="CreatedAt"/>
-                            </ComboBox>
-                        </StackPanel>
-                        <StackPanel Grid.Column="3" Margin="5">
-                            <TextBlock Text="រៀបលំដាប់លំដោយតាម" FontWeight="Regular" FontSize="14" Margin="0,0,0,5"/>
-                            <ComboBox Padding="8"
-                                  SelectedValue="{Binding Filters.OrderBy}"
-                                  SelectedValuePath="Tag">
-                                <ComboBoxItem Content="ពីទាបទៅខ្ពស់ (ក-អ)"
-                                          Tag="{x:Static enum:OrderDirection.Ascending}"/>
-                                <ComboBoxItem Content="ពីខ្ពស់ទៅទាប (អ-ក)"
-                                          Tag="{x:Static enum:OrderDirection.Descending}"/>
-                            </ComboBox>
-                        </StackPanel>
-                    </Grid>
+             <StackPanel>
+                 <StackPanel>
+                     <Grid ColumnDefinitions="*,*,*,*" TextElement.FontSize="16" TextElement.FontFamily="{StaticResource NotoSansKhmer}">
+                         <StackPanel Margin="8">
+                             <TextBlock Text="ស្វែងរកតាមឈ្មោះ" FontWeight="Regular" FontSize="16" Margin="0,0,0,6"/>
+                             <TextBox Text="{Binding Filters.Search, UpdateSourceTrigger=PropertyChanged}"
+                                  Padding="10" FontSize="16"/>
+                         </StackPanel>
+                         <StackPanel Grid.Column="1" Margin="8">
+                             <TextBlock Text="ភេទ" FontWeight="Regular" FontSize="16" Margin="0,0,0,6"/>
+                             <ComboBox Padding="10" FontSize="16" SelectedValue="{Binding Filters.Gender}" SelectedValuePath="Tag">
+                                 <ComboBoxItem Content="ទាំងអស់" Tag="{x:Null}"/>
+                                 <ComboBoxItem Content="ប្រុស" Tag="{x:Static enum:Gender.Male}"/>
+                                 <ComboBoxItem Content="ស្រី" Tag="{x:Static enum:Gender.Female}"/>
+                             </ComboBox>
+                         </StackPanel>
+                         <StackPanel Grid.Column="2" Margin="8">
+                             <TextBlock Text="តម្រៀបទិន្នន័យតាម" FontWeight="Regular" FontSize="16" Margin="0,0,0,6"/>
+                             <ComboBox Padding="10" FontSize="16" SelectedValue="{Binding Filters.SortBy}" SelectedValuePath="Tag">
+                                 <ComboBoxItem Content="ID" Tag="Id"/>
+                                 <ComboBoxItem Content="ឈ្មោះ" Tag="FullName"/>
+                                 <ComboBoxItem Content="កាលបរិច្ឆេទបញ្ចូល" Tag="CreatedAt"/>
+                             </ComboBox>
+                         </StackPanel>
+                         <StackPanel Grid.Column="3" Margin="8">
+                             <TextBlock Text="រៀបលំដាប់លំដោយតាម" FontWeight="Regular" FontSize="16" Margin="0,0,0,6"/>
+                             <ComboBox Padding="10" FontSize="16"
+                                   SelectedValue="{Binding Filters.OrderBy}"
+                                   SelectedValuePath="Tag">
+                                 <ComboBoxItem Content="ពីទាបទៅខ្ពស់ (ក-អ)"
+                                           Tag="{x:Static enum:OrderDirection.Ascending}"/>
+                                 <ComboBoxItem Content="ពីខ្ពស់ទៅទាប (អ-ក)"
+                                           Tag="{x:Static enum:OrderDirection.Descending}"/>
+                             </ComboBox>
+                         </StackPanel>
+                     </Grid>
 
-                    <Grid ColumnDefinitions="*,*">
-                        <StackPanel Grid.Column="0" Margin="5">
-                            <TextBlock Text="ច្រោះចាប់ពីថ្ងៃទី" FontWeight="Regular" FontSize="14" Margin="0,0,0,5"/>
-                            <DatePicker SelectedDate="{Binding Filters.FromDate, UpdateSourceTrigger=PropertyChanged}"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Margin="5">
-                            <TextBlock Text="រហូតដល់ថ្ងៃទី" FontWeight="Regular" FontSize="14" Margin="0,0,0,5"/>
-                            <DatePicker SelectedDate="{Binding Filters.ToDate, UpdateSourceTrigger=PropertyChanged}"/>
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
+                     <Grid ColumnDefinitions="*,*">
+                         <StackPanel Grid.Column="0" Margin="8">
+                             <TextBlock Text="ច្រោះចាប់ពីថ្ងៃទី" FontWeight="Regular" FontSize="16" Margin="0,0,0,6"/>
+                             <DatePicker FontSize="16" Padding="6" SelectedDate="{Binding Filters.FromDate, UpdateSourceTrigger=PropertyChanged}"/>
+                         </StackPanel>
+                         <StackPanel Grid.Column="1" Margin="8">
+                             <TextBlock Text="រហូតដល់ថ្ងៃទី" FontWeight="Regular" FontSize="16" Margin="0,0,0,6"/>
+                             <DatePicker FontSize="16" Padding="6" SelectedDate="{Binding Filters.ToDate, UpdateSourceTrigger=PropertyChanged}"/>
+                         </StackPanel>
+                     </Grid>
+                 </StackPanel>
 
-                <StackPanel Margin="0 10 0 0" TextElement.FontSize="14">
-                    <Grid ColumnDefinitions="*, *">
-                        <StackPanel Grid.Column="0" Margin="5">
-                            <TextBlock Text="ជំនាញ/ផ្នែក" Margin="0,0,0,5"/>
-                            <ComboBox ItemsSource="{Binding Departments}"
-                                      IsEnabled="{Binding IsAdmin, UpdateSourceTrigger=PropertyChanged}"
-                                      DisplayMemberPath="KhmerName"
-                                      SelectedItem="{Binding SelectedDepartment}"
-                                      Padding="8"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Margin="5"
-                                    Visibility="{Binding HasSelectedDepartment, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <TextBlock Text="ជំនាន់" Margin="0,0,0,5"/>
-                            <ComboBox ItemsSource="{Binding Generations}"
-                                      SelectedItem="{Binding SelectedGeneration}"
-                                      Padding="8">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding CohortNumber, StringFormat='ជំនាន់ទី {0}'}"/>
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
+                 <StackPanel Margin="0 10 0 0" TextElement.FontSize="16">
+                     <Grid ColumnDefinitions="*, *">
+                         <StackPanel Grid.Column="0" Margin="8">
+                             <TextBlock Text="ជំនាញ/ផ្នែក" FontSize="16" Margin="0,0,0,6"/>
+                             <ComboBox ItemsSource="{Binding Departments}"
+                                       IsEnabled="{Binding IsAdmin, UpdateSourceTrigger=PropertyChanged}"
+                                       DisplayMemberPath="KhmerName"
+                                       SelectedItem="{Binding SelectedDepartment}"
+                                       Padding="10" FontSize="16"/>
+                         </StackPanel>
+                         <StackPanel Grid.Column="1" Margin="8"
+                                     Visibility="{Binding HasSelectedDepartment, Converter={StaticResource BooleanToVisibilityConverter}}">
+                             <TextBlock Text="ជំនាន់" FontSize="16" Margin="0,0,0,6"/>
+                             <ComboBox ItemsSource="{Binding Generations}"
+                                       SelectedItem="{Binding SelectedGeneration}"
+                                       Padding="10" FontSize="16">
+                                 <ComboBox.ItemTemplate>
+                                     <DataTemplate>
+                                         <TextBlock Text="{Binding CohortNumber, StringFormat='ជំនាន់ទី {0}'}"/>
+                                     </DataTemplate>
+                                 </ComboBox.ItemTemplate>
+                             </ComboBox>
+                         </StackPanel>
+                     </Grid>
+                 </StackPanel>
 
-                <StackPanel Margin="0 10 0 0" TextElement.FontSize="14"
-                            Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Grid ColumnDefinitions="*">
-                        <StackPanel Grid.Column="0" Margin="5" Orientation="Horizontal">
-                            <CheckBox VerticalAlignment="Center"
-                                      IsChecked="{Binding Filters.ShowInactiveStudents, UpdateSourceTrigger=PropertyChanged}"/>
-                            <TextBlock VerticalAlignment="Center" Margin="5,0,0,0" Text="ច្រោះ​សិស្សដែលបានឈប់រៀនដែរ"/>
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
+                 <StackPanel Margin="0 12 0 0" TextElement.FontSize="16"
+                             Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
+                     <Grid ColumnDefinitions="*">
+                         <StackPanel Grid.Column="0" Margin="8" Orientation="Horizontal">
+                             <CheckBox VerticalAlignment="Center" FontSize="16"
+                                       IsChecked="{Binding Filters.ShowInactiveStudents, UpdateSourceTrigger=PropertyChanged}"/>
+                             <TextBlock VerticalAlignment="Center" Margin="8,0,0,0" Text="ច្រោះ​សិស្សដែលបានឈប់រៀនដែរ" FontSize="16"/>
+                         </StackPanel>
+                     </Grid>
+                 </StackPanel>
 
-                <Button Margin="0 10 0 0" Command="{Binding RefreshOnFilterCommand}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="ចាប់ផ្ដើមច្រោះ" FontSize="16"/>
-                        <materialDesign:PackIcon Kind="FilterPlus" VerticalAlignment="Center" Margin="5 0 0 0"/>
-                    </StackPanel>
-                </Button>
-            </StackPanel>
-        </Expander>
+                 <Button Margin="0 12 0 0" Command="{Binding RefreshOnFilterCommand}">
+                     <StackPanel Orientation="Horizontal">
+                         <TextBlock Text="ចាប់ផ្ដើមច្រោះ" FontSize="16"/>
+                         <materialDesign:PackIcon Kind="FilterPlus" VerticalAlignment="Center" Margin="5 0 0 0"/>
+                     </StackPanel>
+                 </Button>
+             </StackPanel>
+         </Expander>
 
         <Grid Grid.Row="2" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -184,6 +184,7 @@
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   FontFamily="{StaticResource NotoSansKhmer}"
+                  AlternatingRowBackground="#cce0ff"
                   FontSize="16"
                   Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverterReversed}}">
             <DataGrid.Resources>
@@ -259,7 +260,7 @@
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"
                     Visibility="{Binding CanViewStudents, Converter={StaticResource BooleanToVisibilityConverterReversed}}">
-            <TextBlock Text="មិនអនុញ្ញាត ​ឱ្យ​ចូលប្រើប្រាស់" FontSize="20" FontWeight="Bold" Foreground="Red" Margin="0,0,0,10"/>
+            <TextBlock Text="មិនអនុញ្ញាត ​ឱ្យ​ចូលប្រើប្រាស់!" FontSize="20" FontWeight="Bold" Foreground="Red" Margin="0,0,0,10"/>
             <TextBlock Text="អ្នកគ្មានសិទ្ធិគ្រប់គ្រាន់ក្នុងការមើលទិន្នន័យសិស្សទេ!" FontSize="14" TextAlignment="Center"/>
         </StackPanel>
 

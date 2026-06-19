@@ -86,6 +86,12 @@ namespace SchoolManagement.Presentation.Shared.Features.Students.Observables
                 filters.Add(new(s => s.Candidate.Skill.Department.Id, FilterOperator.Equals, DepartmentId.Value));
             }
 
+            if (GenerationId.HasValue)
+            {
+                filters.Add(new FilterCondition<Student>(
+                    s => s.Classes.Any(sc => sc.Class.GenerationId == GenerationId.Value)));
+            }
+
             return filters;
         }
     }

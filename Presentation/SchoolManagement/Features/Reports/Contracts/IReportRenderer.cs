@@ -1,6 +1,6 @@
 using SchoolManagement.Core.Features.Reports.Models;
 
-namespace SchoolManagement.Application.Features.Reports.Contracts
+namespace SchoolManagement.Presentation.Features.Reports.Contracts
 {
     public interface IReportRenderer
     {

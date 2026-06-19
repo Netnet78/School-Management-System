@@ -9,6 +9,7 @@ using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Employees.Models
 {
+    [Description("បុគ្គលិក")]
     public class Employee : IEntity, IAuditableEntity
     {
         public int Id { get; set; }
@@ -61,7 +62,12 @@ namespace SchoolManagement.Core.Features.Employees.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public string GetAuditName()
+        public string CustomAuditDescription()
+        {
+            return "";
+        }
+
+        public string CustomAuditName()
         {
             return $"{FullName}";
         }

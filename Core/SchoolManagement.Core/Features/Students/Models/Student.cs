@@ -6,9 +6,11 @@ using SchoolManagement.Core.Features.Skills.Models;
 using SchoolManagement.Core.Features.Students.Enums;
 using SchoolManagement.Core.Shared.Contracts;
 using SchoolManagement.Core.Shared.Enums;
+using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Students.Models
 {
+    [Description("សិស្ស")]
     public class Student : IAuditableEntity, IEntity
     {
         public int Id { get; set; }
@@ -92,7 +94,12 @@ namespace SchoolManagement.Core.Features.Students.Models
         public ICollection<StudentClass> Classes { get; set; } = [];
         public StudentQR? StudentQR { get; set; } = null;
 
-        public string GetAuditName()
+        public string CustomAuditDescription()
+        {
+            return "";
+        }
+
+        public string CustomAuditName()
         {
             return string.IsNullOrWhiteSpace(FullName)
                 ? $"Student #{Id}"

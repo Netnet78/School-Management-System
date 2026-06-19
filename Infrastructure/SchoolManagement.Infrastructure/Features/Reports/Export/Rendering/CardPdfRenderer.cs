@@ -29,7 +29,7 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Export.Rendering
         private void BuildCardPages(IDocumentContainer container, CardReportResult data)
         {
             CardSheetLayout layout = data.Layout ?? new CardSheetLayout();
-            List<ReportItemGroup> cardGroups = data.CardGroups ?? [];
+            List<CardDefinition> cardGroups = data.CardGroups ?? [];
 
             int columns = Math.Max(1, layout.Columns);
             int rows = Math.Max(1, layout.Rows);
@@ -56,6 +56,26 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Export.Rendering
             float slotWidth = availableWidth / columns;
             float slotHeight = availableHeight / rows;
 
+            ICardPdfRenderer? renderer = _cardRenderers.FirstOrDefault(c => c.CanRender(data));
+            if (renderer == null)
+                throw new InvalidOperationException(
+                    "The report data couldn't be exported due to having no renderer can handle it\n" +
+                    $"The report tag: {data.ReportTag}");
+
+            byte[][]? cardImages = null;
+            if (cardGroups.Count > 0)
+            {
+                cardImages = new byte[cardGroups.Count][];
+                CardRenderContext[] contexts = cardGroups
+                    .Select(g => CreateRenderContext(g, slotWidth, slotHeight))
+                    .ToArray();
+
+                Parallel.For(0, cardGroups.Count, i =>
+                {
+                    cardImages[i] = renderer.RenderToBytes(cardGroups[i], contexts[i]);
+                });
+            }
+
             for (int pageIndex = 0; pageIndex < pageCount; pageIndex++)
             {
                 int pageStart = pageIndex * cardsPerPage;
@@ -77,6 +97,7 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Export.Rendering
                     page.Content().Column(column =>
                     {
                         column.Spacing(verticalSpacing);
+                        column.Item().AlignCenter();
 
                         for (int rowIndex = 0; rowIndex < rows; rowIndex++)
                         {
@@ -87,29 +108,18 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Export.Rendering
                                 for (int columnIndex = 0; columnIndex < columns; columnIndex++)
                                 {
                                     int cardIndex = pageStart + (rowIndex * columns) + columnIndex;
-                                    ReportItemGroup? cardGroup = cardIndex < cardGroups.Count
-                                        ? cardGroups[cardIndex]
-                                        : null;
 
                                     row.ConstantItem(slotWidth)
                                         .Height(slotHeight)
                                         .Element(cell =>
                                         {
-                                            if (cardGroup == null)
+                                            if (cardImages == null || cardIndex >= cardImages.Length)
                                             {
                                                 cell.Element(_ => { });
                                                 return;
                                             }
 
-                                            CardRenderContext context = CreateRenderContext(cardGroup, slotWidth, slotHeight);
-                                            ICardPdfRenderer? renderer = _cardRenderers.FirstOrDefault(c => c.CanRender(data));
-
-                                            if (renderer == null) 
-                                                throw new InvalidOperationException(
-                                                    "The report data couldn't be exported due to having no renderer can handle it\n" +
-                                                    $"The report tag: {data.ReportTag.ToString()}");
-
-                                            renderer.Render(cell, cardGroup, context);
+                                            cell.Image(cardImages[cardIndex]).FitArea();
                                         });
                                 }
                             });
@@ -142,7 +152,7 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Export.Rendering
             return landscape ? pageSize.Landscape() : pageSize;
         }
 
-        private static CardRenderContext CreateRenderContext(ReportItemGroup cardGroup, float slotWidth, float slotHeight)
+        private static CardRenderContext CreateRenderContext(CardDefinition cardGroup, float slotWidth, float slotHeight)
         {
             float designWidth = Math.Max(1, cardGroup.Width);
             float designHeight = Math.Max(1, cardGroup.Height);

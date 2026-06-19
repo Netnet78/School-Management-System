@@ -72,6 +72,9 @@
             <DataTemplate DataType="{x:Type classVm:ClassStudentListViewModel}">
                 <classViews:ClassStudentListView />
             </DataTemplate>
+            <DataTemplate DataType="{x:Type classVm:AddStudentsToClassViewModel}">
+                <classViews:AddStudentsToClassView />
+            </DataTemplate>
             <DataTemplate DataType="{x:Type attendanceVm:AttendanceViewModel}">
                 <attendanceViews:AttendanceView />
             </DataTemplate>
@@ -127,6 +130,9 @@
             </DataTemplate>
             <DataTemplate DataType="{x:Type studentCardFilterVm:StudentCardFilterViewModel}">
                 <studentCardFilterViews:StudentCardFilterView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type studentCardFilterVm:StudentCardOptionsViewModel}">
+                <studentCardFilterViews:StudentCardOptionsView />
             </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>

@@ -43,9 +43,5 @@
                                        Background="{DynamicResource MaterialDesign.Brush.Primary}"
                                        Content="{Binding CurrentView, RelativeSource={RelativeSource AncestorType=UserControl}}">
         </mah:TransitioningContentControl>
-
-        <local:LoadingPanel x:Name="LoadingPanel"
-                        IsLoading="{Binding IsLoading, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                        Message="សូមរងចាំមួយភ្លេទសិន!"/>
     </Grid>
 </UserControl>

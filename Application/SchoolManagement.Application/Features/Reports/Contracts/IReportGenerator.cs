@@ -4,9 +4,9 @@ namespace SchoolManagement.Application.Features.Reports.Contracts
 {
     public interface IReportGenerator
     {
-        ReportTag ReportTypeKey { get; }
+        string ReportTypeKey { get; }
 
-        object CreateDefaultFilter();
+        object CreateDefaultRequest();
 
         Task<ReportResult> GenerateAsync(object filter, CancellationToken cancellationToken = default);
     }

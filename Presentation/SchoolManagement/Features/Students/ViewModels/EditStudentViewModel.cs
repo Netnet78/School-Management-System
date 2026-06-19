@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SchoolManagement.Application.Features.Classes.Authorization;
-using SchoolManagement.Core.Features.Files.Models;
 using SchoolManagement.Presentation.Shared.Features.Classes.Observables;
 using SchoolManagement.Presentation.Shared.Features.Students.Observables;
 using SchoolManagement.Presentation.Shared.Features.Students.Params;
@@ -157,14 +156,7 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
                     return;
                 }
 
-                await _studentService.UpdateAsync(new Student
-                {
-                    Id = updatedStudent.Id,
-                    CandidateId = updatedStudent.CandidateId,
-                    EnrollDate = updatedStudent.EnrollDate,
-                    IsActive = updatedStudent.IsActive,
-                    StudentQR = updatedStudent.StudentQR
-                });
+                await _studentService.UpdateAsync(updatedStudent);
 
                 await UploadStudentPhotoAsync(updatedStudent);
 

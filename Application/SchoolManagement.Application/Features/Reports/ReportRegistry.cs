@@ -1,19 +1,21 @@
 using SchoolManagement.Application.Features.Reports.Contracts;
 using SchoolManagement.Application.Features.Reports.Descriptor;
-using SchoolManagement.Core.Features.Reports.Models;
 
 namespace SchoolManagement.Application.Features.Reports
 {
     public class ReportRegistry : IReportRegistry
     {
-        private readonly Dictionary<ReportTag, ReportTypeDescriptor> _descriptors;
+        private readonly Dictionary<string, ReportTypeDescriptor> _descriptors;
 
         public ReportRegistry(IEnumerable<ReportTypeDescriptor> descriptors)
         {
-            _descriptors = descriptors.ToDictionary(d => d.Key);
+            _descriptors = descriptors
+                .GroupBy(d => d.Key, StringComparer.Ordinal)
+                .Select(g => g.Last())
+                .ToDictionary(d => d.Key, StringComparer.Ordinal);
         }
 
-        public ReportTypeDescriptor? GetDescriptor(ReportTag key) =>
+        public ReportTypeDescriptor? GetDescriptor(string key) =>
             _descriptors.TryGetValue(key, out var desc) ? desc : null;
 
         public IReadOnlyList<ReportTypeDescriptor> GetAllDescriptors() => _descriptors.Values.ToList();

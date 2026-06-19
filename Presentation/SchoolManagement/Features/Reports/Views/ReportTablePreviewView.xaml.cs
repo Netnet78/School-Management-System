@@ -4,11 +4,9 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using SchoolManagement.Core.Features.Reports.Enums;
-using SchoolManagement.Core.Features.Reports.Models;
 using SchoolManagement.Presentation.Features.Reports.Contracts;
 using SchoolManagement.Presentation.Features.Reports.Converters;
 using SchoolManagement.Presentation.Features.Reports.Models;
-using SchoolManagement.Presentation.Features.Reports.Providers;
 
 namespace SchoolManagement.Presentation.Features.Reports.Views
 {
@@ -43,7 +41,7 @@ namespace SchoolManagement.Presentation.Features.Reports.Views
             GenerateColumns(provider.TableData);
         }
 
-        private void OnPreviewProviderPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        async private void OnPreviewProviderPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (sender is not IReportTablePreviewProvider provider)
                 return;
@@ -52,9 +50,12 @@ namespace SchoolManagement.Presentation.Features.Reports.Views
             {
                 GenerateColumns(provider.TableData);
             }
-            else if (e.PropertyName == "IsAllSelected" && _headerCheckBox != null && provider is StudentCardTableReportProvider cardProvider)
+            else if (e.PropertyName == "IsAllSelected" && _headerCheckBox != null && provider is ISelectableItemReport selectionProvider)
             {
-                _headerCheckBox.IsChecked = cardProvider.IsAllSelected;
+                await App.Current.Dispatcher.BeginInvoke(() =>
+                {
+                    _headerCheckBox.IsChecked = selectionProvider.IsAllSelected;
+                });
             }
         }
 
@@ -74,9 +75,9 @@ namespace SchoolManagement.Presentation.Features.Reports.Views
                     VerticalAlignment = VerticalAlignment.Center,
                 };
 
-                if (_previewProvider is StudentCardTableReportProvider cardProvider)
+                if (_previewProvider is ISelectableItemReport selectionProvider)
                 {
-                    _headerCheckBox.IsChecked = cardProvider.IsAllSelected;
+                    _headerCheckBox.IsChecked = selectionProvider.IsAllSelected;
                     _headerCheckBox.Click += OnHeaderCheckBoxClick;
                 }
 
@@ -108,12 +109,12 @@ namespace SchoolManagement.Presentation.Features.Reports.Views
 
                 if (isImageColumn)
                 {
-                    var binding = new Binding($"Values[{col.Key}].Value")
+                    Binding binding = new($"Values[{col.Key}].Value")
                     {
                         Converter = _bytesToImageConverter,
                     };
 
-                    var factory = new FrameworkElementFactory(typeof(Image));
+                    FrameworkElementFactory factory = new(typeof(Image));
                     factory.SetBinding(Image.SourceProperty, binding);
                     factory.SetValue(Image.WidthProperty, 60.0);
                     factory.SetValue(Image.HeightProperty, 80.0);
@@ -165,40 +166,40 @@ namespace SchoolManagement.Presentation.Features.Reports.Views
 
         private void OnHeaderCheckBoxClick(object sender, RoutedEventArgs e)
         {
-            if (sender is CheckBox && _previewProvider is StudentCardTableReportProvider cardProvider)
+            if (sender is CheckBox && _previewProvider is ISelectableItemReport selectionProvider)
             {
-                cardProvider.ToggleSelectAll();
+                selectionProvider.ToggleSelectAll();
             }
         }
 
         private void OnRowCheckBoxChecked(object sender, RoutedEventArgs e)
         {
-            if (sender is CheckBox && _previewProvider is StudentCardTableReportProvider cardProvider)
+            if (sender is CheckBox && _previewProvider is ISelectableItemReport selectionProvider)
             {
-                int? id = ExtractStudentId(e.Source as CheckBox);
+                int? id = ExtractEntityId(e.Source as CheckBox);
                 if (id.HasValue)
                 {
-                    cardProvider.SelectStudent(id.Value);
+                    selectionProvider.SelectItem(id.Value);
                 }
             }
         }
 
         private void OnRowCheckBoxUnchecked(object sender, RoutedEventArgs e)
         {
-            if (sender is CheckBox && _previewProvider is StudentCardTableReportProvider cardProvider)
+            if (sender is CheckBox && _previewProvider is ISelectableItemReport selectionProvider)
             {
-                int? id = ExtractStudentId(e.Source as CheckBox);
+                int? id = ExtractEntityId(e.Source as CheckBox);
                 if (id.HasValue)
                 {
-                    cardProvider.DeselectStudent(id.Value);
+                    selectionProvider.DeselectItem(id.Value);
                 }
             }
         }
 
-        private static int? ExtractStudentId(CheckBox? checkBox)
+        private static int? ExtractEntityId(CheckBox? checkBox)
         {
             if (checkBox?.DataContext is ReportTableRow row
-                && row.Values.TryGetValue("__studentRawId", out var cell)
+                && row.Values.TryGetValue("__rawId", out var cell)
                 && cell.Value is int id
                 && id > 0)
                 return id;

@@ -17,6 +17,6 @@ namespace SchoolManagement.Presentation.Features.Reports.Models
 
         public ObservableCollection<ReportTableRow> Rows { get; init; } = [];
 
-        public Dictionary<string, object?> Summary { get; init; } = [];
+        public Dictionary<string, object>? Summary { get; init; } = [];
     }
 }

@@ -3,9 +3,11 @@ using SchoolManagement.Core.Shared.Attributes;
 using SchoolManagement.Core.Shared.Contracts;
 using SchoolManagement.Core.Features.AuditLogs.Enums;
 using SchoolManagement.Core.Features.Auth.Models;
+using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.AuditLogs.Models
 {
+    [Description("ប្រវត្តិប្រតិបត្តិការ")]
     [AuditIgnoreType(AuditOperation.All)]
     public class AuditLog : IEntity
     {

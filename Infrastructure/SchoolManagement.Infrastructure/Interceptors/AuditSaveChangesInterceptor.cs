@@ -56,7 +56,8 @@ namespace SchoolManagement.Infrastructure.Interceptors
                 if (ignoreAttr != null && !ignoreAttr.Operation.HasFlag(operation))
                     continue;
 
-                string? displayName = (entry.Entity as IAuditableEntity)?.GetAuditName();
+                string? displayName = (entry.Entity as IAuditableEntity)?.CustomAuditName();
+                string? customDescription = (entry.Entity as IAuditableEntity)?.CustomAuditDescription();
                 int? currentUserId = userSessionService?.CurrentUser?.Id;
 
                 AuditLog log = new()
@@ -69,9 +70,10 @@ namespace SchoolManagement.Infrastructure.Interceptors
                         _ => entry.State.ToString(),
                     },
                     EntityType = entityType.Name,
-                    EntityName = displayName,
+                    EntityName = string.IsNullOrWhiteSpace(displayName) ? string.Empty : displayName,
                     Timestamp = DateTime.UtcNow,
-                    UserId = currentUserId
+                    UserId = currentUserId,
+                    CustomDescription = string.IsNullOrWhiteSpace(customDescription) ? string.Empty : customDescription,
                 };
 
                 switch (entry.State)

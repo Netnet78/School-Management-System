@@ -7,7 +7,6 @@ namespace SchoolManagement.Presentation.Features.Classes.ViewModels
     public partial class ClassViewModel : ObservableObject, IViewModel, IAsyncLoadable
     {
         private readonly IClassService _classService;
-        private readonly IAuthorizationService _authorizationService;
         private readonly IMessageService _messageService;
         private readonly INavigationService _navigationService;
 
@@ -36,31 +35,24 @@ namespace SchoolManagement.Presentation.Features.Classes.ViewModels
 
         public ClassViewModel(
             IClassService classService,
-            IAuthorizationService authorizationService,
             IMessageService messageService,
             INavigationService navigationService)
         {
             _classService = classService;
-            _authorizationService = authorizationService;
             _messageService = messageService;
             _navigationService = navigationService;
         }
 
         public async Task LoadAsync()
         {
-            await CheckPermissions();
+            var permissions = await _classService.GetPermissionsAsync();
+            CanViewClasses = permissions.CanView;
+            CanInsertClasses = permissions.CanInsert;
+            CanEditClasses = permissions.CanEdit;
+            CanDeleteClasses = permissions.CanDelete;
+            CanManageDepartments = permissions.CanManageDepartments;
+
             await LoadClassesAsync();
-        }
-
-        // ====== Permission checks ======
-
-        private async Task CheckPermissions()
-        {
-            CanViewClasses = (await _authorizationService.AuthorizeAsync(null, PermissionType.ViewClasses)).Status == Status.Success;
-            CanInsertClasses = (await _authorizationService.AuthorizeAsync(null, PermissionType.InsertClasses)).Status == Status.Success;
-            CanEditClasses = (await _authorizationService.AuthorizeAsync(null, PermissionType.EditClasses)).Status == Status.Success;
-            CanDeleteClasses = (await _authorizationService.AuthorizeAsync(null, PermissionType.DeleteClasses)).Status == Status.Success;
-            CanManageDepartments = _authorizationService.UserIsAdmin;
         }
 
         // ====== Load data ======
@@ -77,16 +69,7 @@ namespace SchoolManagement.Presentation.Features.Classes.ViewModels
 
             try
             {
-                User? currentUser = _authorizationService.CurrentUser;
-                if (currentUser == null)
-                {
-                    _messageService.Show("Current user session hasn't been set!");
-                    return;
-                }
-
-                IEnumerable<FilterCondition<Class>> predicate = ClassFilters.BuildAccessFilter(currentUser);
                 ReturnResponse<IEnumerable<Class>> response = await _classService.GetAllAsync(
-                    filters: predicate,
                     orderBy: [new SortCriteria<Class>("Id")]);
 
                 if (response.Status != Status.Success)
@@ -130,13 +113,6 @@ namespace SchoolManagement.Presentation.Features.Classes.ViewModels
         {
             if (cls == null || !CanEditClasses) return;
 
-            ReturnResponse auth = await _authorizationService.AuthorizeAsync(cls, PermissionType.EditClasses);
-            if (auth.Status != Status.Success)
-            {
-                _messageService.Show("អ្នកគ្មានសិទ្ធិកែប្រែថ្នាក់នេះទេ!", "គ្មានសិទ្ធិ!", MessageButton.OK, MessageIcon.Hand);
-                return;
-            }
-
             await _navigationService.NavigateAsync<EditClassViewModel>(new EditClassParams { Class = cls });
         }
 
@@ -144,13 +120,6 @@ namespace SchoolManagement.Presentation.Features.Classes.ViewModels
         private async Task DeleteClassAsync(Class? cls)
         {
             if (cls == null || !CanDeleteClasses) return;
-
-            ReturnResponse auth = await _authorizationService.AuthorizeAsync(cls, PermissionType.DeleteClasses);
-            if (auth.Status != Status.Success)
-            {
-                _messageService.Show("អ្នកគ្មានសិទ្ធិលុបថ្នាក់នេះទេ!", "គ្មានសិទ្ធិ!", MessageButton.OK, MessageIcon.Hand);
-                return;
-            }
 
             MessageResult result = _messageService.Show(
                 $"តើអ្នកប្រាកដទេថានឹងលុបថ្នាក់ \"{cls.GetKhmerName()}\"?",

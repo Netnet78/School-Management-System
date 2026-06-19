@@ -8,6 +8,13 @@ namespace SchoolManagement.Infrastructure.Features.Shared.Models
         public FilterOperator Operator { get; }
         public object? Value { get; }
         public IEnumerable<object>? Values { get; }
+        public Expression<Func<T, bool>>? CustomExpression { get; }
+
+        public FilterCondition(Expression<Func<T, bool>> expression)
+        {
+            CustomExpression = expression;
+            PropertyPath = string.Empty;
+        }
 
         public FilterCondition(string propertyPath, FilterOperator op, object? value)
         {

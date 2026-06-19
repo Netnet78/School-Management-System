@@ -8,7 +8,7 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Export
     public class PdfExporter : IReportExporter
     {
         private readonly IEnumerable<IPdfRenderer> _pdfRenderers;
-        private static bool _licenseConfigured;
+        private bool _licenseConfigured;
 
         public string FormatName => "PDF";
 
@@ -20,7 +20,7 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Export
             _pdfRenderers = pdfRenderers;
         }
 
-        private static void ConfigureQuestPdf()
+        private void ConfigureQuestPdf()
         {
             if (_licenseConfigured)
             {

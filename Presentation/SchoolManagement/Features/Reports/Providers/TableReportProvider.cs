@@ -1,19 +1,22 @@
 using System.Windows.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
-using SchoolManagement.Application.Features.Reports.Contracts;
+using SchoolManagement.Presentation.Features.Reports.Contracts;
 using SchoolManagement.Core.Features.Reports.Models;
 using SchoolManagement.Infrastructure.Features.Reports.Contracts;
-using SchoolManagement.Presentation.Features.Reports.Contracts;
 using SchoolManagement.Presentation.Features.Reports.Models;
 using SchoolManagement.Presentation.Features.Reports.Views;
 
 namespace SchoolManagement.Presentation.Features.Reports.Providers
 {
-    public abstract partial class TableReportViewProvider : ObservableObject, IReportViewProvider, IReportTablePreviewProvider
+    public abstract partial class TableReportProvider : ObservableObject, IReportViewProvider, IReportTablePreviewProvider
     {
-        public abstract ReportTag ReportTypeKey { get; }
+        public abstract string ReportTypeKey { get; }
 
         public abstract IReportFilterViewModel? FilterViewModel { get; }
+
+        public IReportOptionsViewModel? OptionsViewModel => null;
+
+        public abstract string[] SupportedExportFormats { get; }
 
         protected abstract Task<ReportResult> GenerateReportAsync(object filter, CancellationToken cancellationToken);
 
@@ -36,7 +39,7 @@ namespace SchoolManagement.Presentation.Features.Reports.Providers
         private object? _lastFilter;
         private int _generationId;
 
-        protected TableReportViewProvider(IReportRenderer renderer)
+        protected TableReportProvider(IReportRenderer renderer)
         {
             _renderer = renderer;
             PreviewView = new ReportTablePreviewView { DataContext = this };
@@ -91,11 +94,9 @@ namespace SchoolManagement.Presentation.Features.Reports.Providers
             }
         }
 
-        public bool CanExport(IReportExporter exporter) => exporter.FormatName == "Excel";
-
         public async Task ExportAsync(IReportExporter exporter, string filePath, CancellationToken cancellationToken = default)
         {
-            if (!CanExport(exporter))
+            if (!SupportedExportFormats.Contains(exporter.FormatName))
                 throw new InvalidOperationException($"Table reports do not support {exporter.FormatName} export.");
 
             if (_lastFilter != null)

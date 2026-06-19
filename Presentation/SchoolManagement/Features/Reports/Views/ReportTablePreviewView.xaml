@@ -15,6 +15,18 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="8,2"/>
         </Style>
+
+        <Style x:Key="AlternatingRowStyle" TargetType="DataGridRow">
+            <Setter Property="Background" Value="Transparent" />
+            <Style.Triggers>
+                <Trigger Property="AlternationIndex" Value="1">
+                    <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Background}" />
+                </Trigger>
+                <Trigger Property="AlternationIndex" Value="0">
+                    <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <Grid>
@@ -23,7 +35,11 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <DataGrid x:Name="ReportDataGrid" ItemsSource="{Binding TableData.Rows}"
+        <DataGrid x:Name="ReportDataGrid"
+                  AlternatingRowBackground="Transparent"
+                  AlternationCount="2"
+                  RowStyle="{StaticResource AlternatingRowStyle}"
+                  ItemsSource="{Binding TableData.Rows}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   CanUserAddRows="False"
@@ -54,25 +70,17 @@
         <Border Grid.Row="1" Margin="0 8 0 0" Padding="6"
                 Visibility="{Binding TableData.HasSelection, Converter={StaticResource BoolToVis}}">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Command="{Binding GoToPreviousPageCommand}"
-                        Padding="8 4" Margin="0 0 6 0">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="◀" Margin="0 0 4 0"/>
-                        <TextBlock Text="ថយក្រោយ"/>
-                    </StackPanel>
+                <Button Command="{Binding ClearAllSelectionsCommand}"
+                        Padding="8 4" Margin="0 0 12 0">
+                    <TextBlock Text="Uncheck All"/>
                 </Button>
-                <TextBlock Text="{Binding PageInfo}"
-                           VerticalAlignment="Center"
-                           Margin="10 0"
-                           FontSize="14"
-                           FontWeight="SemiBold"/>
-                <Button Command="{Binding GoToNextPageCommand}"
-                        Padding="8 4" Margin="6 0 0 0">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="បន្ទាប់"/>
-                        <TextBlock Text=" ▶" Margin="4 0 0 0"/>
-                    </StackPanel>
+                <Button Command="{Binding SelectAllFilteredCommand}"
+                        Padding="8 4" Margin="0 0 12 0">
+                    <TextBlock Text="Select All Filtered"/>
                 </Button>
+                <ToggleButton IsChecked="{Binding ShowSelectedOnly}"
+                              Padding="8 4" MinHeight="30"/>
+                <TextBlock Text="បោះពុម្ពតែអ្វីដែលបានជ្រើសរើស" FontSize="16" VerticalAlignment="Center" Margin="5 0 0 0"/>
             </StackPanel>
         </Border>
     </Grid>

@@ -279,7 +279,8 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
 
             var response = await _generationService.GetAllAsync(
                 filters: [new FilterCondition<Generation>(g => g.DepartmentId, FilterOperator.Equals, value.Id)],
-                orderBy: [new SortCriteria<Generation>("CohortNumber", OrderDirection.Descending)]);
+                orderBy: [new SortCriteria<Generation>("CohortNumber", OrderDirection.Descending)],
+                includes: ["Department"]);
             if (response.Status == Status.Success && response.Value != null)
             {
                 foreach (var gen in response.Value)
@@ -318,11 +319,16 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
             Filters.FromDate = null;
             Filters.ToDate = null;
             Filters.StayType = null;
-            Filters.DepartmentId = null;
-            Filters.GenerationId = null;
-            SelectedDepartment = null;
-            SelectedGeneration = null;
-            Generations.Clear();
+
+            if (IsAdmin)
+            {
+                Filters.DepartmentId = null;
+                Filters.GenerationId = null;
+                SelectedDepartment = null;
+                SelectedGeneration = null;
+                Generations.Clear();
+            }
+
             await RefreshOnFilterCommand.ExecuteAsync(null);
         }
 

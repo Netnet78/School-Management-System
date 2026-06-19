@@ -7,7 +7,7 @@ public class CameraService : ICameraService
 {
     private VideoCaptureDevice? _device;
 
-    public event Action<CameraFrame>? FrameReady;
+    public event Action<BitmapInfo>? FrameReady;
 
     public CameraItem[] GetCameras()
     {
@@ -37,7 +37,7 @@ public class CameraService : ICameraService
     private void NewFrameEventHandler(object sender, NewFrameEventArgs eventArgs)
     {
         using Bitmap frame = (Bitmap)eventArgs.Frame.Clone();
-        CameraFrame bufferFrame = frame.ConvertToCameraFrame();
+        BitmapInfo bufferFrame = frame.ConvertToCameraFrame();
 
         FrameReady?.Invoke(bufferFrame);
     }

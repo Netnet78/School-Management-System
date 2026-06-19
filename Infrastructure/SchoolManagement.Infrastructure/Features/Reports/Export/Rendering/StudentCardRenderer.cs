@@ -3,18 +3,19 @@ using QuestPDF.Infrastructure;
 using SchoolManagement.Assets;
 using SchoolManagement.Core.Features.Reports.Enums;
 using SchoolManagement.Core.Features.Reports.Models;
+using SchoolManagement.Core.Shared.Models;
 using SchoolManagement.Infrastructure.Features.Reports.Contracts;
 using SchoolManagement.Infrastructure.Features.Reports.Models;
 using SkiaSharp;
 using SkiaSharp.HarfBuzz;
+using System.Collections.Concurrent;
 
 namespace SchoolManagement.Infrastructure.Features.Reports.Export.Rendering
 {
     public class StudentCardRenderer : ICardPdfRenderer
     {
         private const double RenderScale = 300.0 / 72.0; // around 4.167f
-        private static readonly Dictionary<string, SKTypeface> FontCache = new(StringComparer.OrdinalIgnoreCase);
-
+        private static readonly ConcurrentDictionary<string, Lazy<SKTypeface?>> FontCache = new(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, string> FontFileMap = new(StringComparer.OrdinalIgnoreCase)
         {
             ["Khmer OS Muol Light"] = "khmer-os-muol-light.ttf",
@@ -24,37 +25,19 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Export.Rendering
             ["Times New Roman"] = "times-new-roman.ttf",
         };
 
+        private static readonly ConcurrentDictionary<string, Lazy<SKBitmap?>> TemplateCache = new(StringComparer.OrdinalIgnoreCase);
 
-        public bool CanRender(ReportResult result) => result is CardReportResult r && r.ReportTag == ReportTag.StudentCard;
-        public void Render(IContainer container, ReportItemGroup cardGroup, CardRenderContext? context = null)
+        public bool CanRender(ReportResult result) => result is CardReportResult r && r.ReportTag == "student-card";
+        public void Render(IContainer container, CardDefinition cardGroup, CardRenderContext context)
         {
-            LoadFonts();
+            float offsetX = Math.Max(0f, context.OffsetX);
+            float offsetY = Math.Max(0f, context.OffsetY);
 
-            float offsetX = Math.Max(0f, context?.OffsetX ?? 0f);
-            float offsetY = Math.Max(0f, context?.OffsetY ?? 0f);
-
-            if (!string.IsNullOrWhiteSpace(cardGroup.TemplateFileFilePath))
-            {
-                string templatePath = cardGroup.TemplateFileFilePath;
-
-                if (!File.Exists(templatePath))
-                {
-                    throw new FileNotFoundException(
-                        $"Card template file was not found: {templatePath}",
-                        templatePath);
-                }
-
-                byte[] bytes = RenderCard(cardGroup, context, offsetX, offsetY);
-                container.PaddingLeft(offsetX).PaddingTop(offsetY).Image(bytes).FitArea();
-            }
-            else
-            {
-                byte[] bytes = RenderCard(cardGroup, context, offsetX, offsetY);
-                container.PaddingLeft(offsetX).PaddingTop(offsetY).Image(bytes).FitArea();
-            }
+            byte[] bytes = RenderToBytes(cardGroup, context);
+            container.PaddingLeft(offsetX).PaddingTop(offsetY).Image(bytes).FitArea();
         }
 
-        private static byte[] RenderCard(ReportItemGroup cardGroup, CardRenderContext? context, float offsetX, float offsetY)
+        private static byte[] RenderCard(CardDefinition cardGroup, CardRenderContext? context, float offsetX, float offsetY)
         {
             float scale = Math.Min(context?.ScaleX ?? 1f, context?.ScaleY ?? 1f) * (float)RenderScale;
 
@@ -64,10 +47,15 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Export.Rendering
             using SKCanvas canvas = new(sKBitmap);
             canvas.Clear(SKColors.White);
 
-            if (!string.IsNullOrWhiteSpace(cardGroup.TemplateFileFilePath))
+            string? templatePath = cardGroup.TemplateFilePath;
+            if (!string.IsNullOrWhiteSpace(templatePath))
             {
-                using SKBitmap template = SKBitmap.Decode(cardGroup.TemplateFileFilePath);
-                canvas.DrawBitmap(template, new SKRect(0, 0, cardWidth, cardHeight));
+                SKBitmap? template = TemplateCache.GetOrAdd(templatePath, path => new Lazy<SKBitmap?>(() =>
+                    File.Exists(path) ? SKBitmap.Decode(path) : null,
+                    LazyThreadSafetyMode.ExecutionAndPublication)).Value;
+
+                if (template != null)
+                    canvas.DrawBitmap(template, new SKRect(0, 0, cardWidth, cardHeight));
             }
 
             foreach (CardItem item in cardGroup.Items)
@@ -75,9 +63,9 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Export.Rendering
                 float x = item.XPos * scale;
                 float y = item.YPos * scale;
 
-                if (item.Value is byte[] imageBytes)
+                if (item.Value is BitmapInfo bitmapInfo)
                 {
-                    using SKBitmap photo = SKBitmap.Decode(imageBytes);
+                    using SKBitmap photo = SKBitmap.Decode(bitmapInfo.Data);
                     float w = (float)(item.Width ?? photo.Width) * (float)scale;
                     float h = (float)(item.Height ?? photo.Height) * (float)scale;
                     canvas.DrawBitmap(photo, new SKRect(x, y, x + w, y + h));
@@ -121,7 +109,7 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Export.Rendering
             }
 
             using var image = SKImage.FromBitmap(sKBitmap);
-            using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+            using var data = image.Encode(SKEncodedImageFormat.Jpeg, 85);
             return data.ToArray();
         }
 
@@ -139,32 +127,23 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Export.Rendering
         {
             if (string.IsNullOrWhiteSpace(fontFamily)) return null;
 
-            if (FontCache.TryGetValue(fontFamily, out var cached)) return cached;
-
-            if (FontFileMap.TryGetValue(fontFamily, out var fileName))
+            return FontCache.GetOrAdd(fontFamily, family => new Lazy<SKTypeface?>(() =>
             {
-                var path = Path.Combine(ResourcePaths.Fonts, fileName);
-                if (File.Exists(path))
+                if (FontFileMap.TryGetValue(family, out var fileName))
                 {
-                    SKTypeface typeface = SKTypeface.FromFile(path);
-                    FontCache[fontFamily] = typeface;
-                    return typeface;
+                    var path = Path.Combine(ResourcePaths.Fonts, fileName);
+                    if (File.Exists(path))
+                        return SKTypeface.FromFile(path);
                 }
-            }
-
-            return null;
+                return null;
+            }, LazyThreadSafetyMode.ExecutionAndPublication)).Value;
         }
 
-        public static void LoadFonts()
+        public byte[] RenderToBytes(CardDefinition cardGroup, CardRenderContext context)
         {
-            foreach (var (family, fileName) in FontFileMap)
-            {
-                var path = Path.Combine(ResourcePaths.Fonts, fileName);
-                if (File.Exists(path) && !FontCache.ContainsKey(family))
-                {
-                    FontCache[family] = SKTypeface.FromFile(path);
-                }
-            }
+            float offsetX = Math.Max(0f, context?.OffsetX ?? 0f);
+            float offsetY = Math.Max(0f, context?.OffsetY ?? 0f);
+            return RenderCard(cardGroup, context, offsetX, offsetY);
         }
     }
 }

@@ -26,7 +26,6 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -36,7 +35,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <StackPanel Orientation="Horizontal">
-                <materialDesign:PackIcon Kind="Report" Width="32" Height="32" VerticalAlignment="Center"
+                <materialDesign:PackIcon Kind="ChartBar" Width="32" Height="32" VerticalAlignment="Center"
                                          Foreground="{DynamicResource MaterialDesign.Brush.Primary}"/>
                 <TextBlock Text="មើលរបាយការណ៍" FontSize="24" FontWeight="Bold"
                            Margin="10 0 0 0" VerticalAlignment="Center"/>
@@ -65,12 +64,25 @@
                     <DataTemplate DataType="{x:Type models:ReportCardItem}">
 
                         <Border Width="200"
-                    MinHeight="120"
-                    Margin="0 0 10 10"
-                    Padding="12"
-                    CornerRadius="8"
-                    Background="{DynamicResource MaterialDesign.Brush.Primary}"
-                    Cursor="Hand">
+                            MinHeight="120"
+                            Margin="0 0 10 10"
+                            Padding="12"
+                            CornerRadius="8"
+                            Cursor="Hand">
+
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
+                                    <Setter Property="BorderThickness" Value="0" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Secondary}" />
+                                            <Setter Property="BorderThickness" Value="2" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Accent}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
 
                             <Border.InputBindings>
                                 <MouseBinding MouseAction="LeftClick"
@@ -112,21 +124,88 @@
             </ItemsControl>
         </ScrollViewer>
 
-        <!-- Filter Section -->
-        <Border Grid.Row="2" Margin="0 0 0 10" Padding="10"
-                BorderBrush="{DynamicResource MaterialDesign.Brush.Primary}"
-                BorderThickness="1" CornerRadius="4"
-                Visibility="{Binding IsFilterVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <StackPanel>
-                <Button Command="{Binding ClearFiltersCommand}">
-                    <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="FilterOff" />
-                        <TextBlock Margin="10 0 0 0"  Text="លុបនៃការច្រោះទិន្នន័យ / Reset Filters"/>
-                    </StackPanel>
-                </Button>
-                <ContentControl Margin="0 10 0 0" Content="{Binding CurrentFilterViewModel}"/>
+        <!-- Filter + Options + Export Toolbar -->
+        <Grid Grid.Row="2" Margin="0 0 0 10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Visibility="{Binding IsFilterVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <!-- Filter Section -->
+                <Border Padding="5"
+                        BorderBrush="{DynamicResource MaterialDesign.Brush.Primary}"
+                        BorderThickness="1" CornerRadius="4"
+                        Margin="0 0 0 10">
+                    <Expander Padding="20">
+                        <Expander.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Filter" Width="24" Height="24.4"/>
+                                <TextBlock Text="ការច្រោះទិន្នន័យ" Margin="10 0 0 0"
+                                           FontSize="20" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Expander.Header>
+                        
+                        <StackPanel>
+                            <Button Command="{Binding ClearFiltersCommand}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="FilterOff" />
+                                    <TextBlock Margin="10 0 0 0" Text="លុបនៃការច្រោះទិន្នន័យ / Reset Filters"/>
+                                </StackPanel>
+                            </Button>
+                            <ContentControl Margin="0 10 0 0" Content="{Binding CurrentFilterViewModel}"/>
+                        </StackPanel>
+                    </Expander>
+                </Border>
+
+                <!-- Card Options Section -->
+                <Border Padding="5"
+                        BorderBrush="{DynamicResource MaterialDesign.Brush.Primary}"
+                        BorderThickness="1" CornerRadius="4"
+                        Visibility="{Binding HasCardOptions, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Expander Padding="20">
+                        <Expander.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="CardText" Width="24" Height="24.4"/>
+                                <TextBlock Text="ការកំណត់របាយការណ៍" Margin="10 0 0 0"
+                                           FontSize="20" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Expander.Header>
+                        <ContentControl Content="{Binding CurrentOptionsViewModel}"/>
+                    </Expander>
+                </Border>
             </StackPanel>
-        </Border>
+
+            <!-- Export Buttons -->
+            <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Top"
+                        Margin="10 0 0 0"
+                        Visibility="{Binding HasData, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Text="ជម្រើសនៃការបោះពុម្ព" FontSize="18" FontWeight="SemiBold"/>
+                <Rectangle Height="1" Fill="{DynamicResource MaterialDesign.Brush.Primary}" Margin="0 0 0 10"/>
+                <ItemsControl ItemsSource="{Binding Exporters}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type infraExport:IReportExporter}">
+                            <Button Command="{Binding DataContext.ExportCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}"
+                                    Margin="0 0 10 0"
+                                    Height="40">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="FileExport"
+                                                             Width="20" Height="20" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding FormatName, StringFormat='ផលិតជាឯកសារ {0}'}"
+                                               Margin="8 0 0 0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Grid>
 
         <!-- Provider Preview -->
         <ContentControl Grid.Row="3"
@@ -135,12 +214,26 @@
                         Visibility="{Binding HasData, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
         <!-- No Data Message -->
-        <TextBlock Grid.Row="3"
-                   Text="សូមជ្រើសរើសប្រភេទរបាយការណ៍ និងកំណត់តម្រង"
-                   FontSize="18"
-                   HorizontalAlignment="Center" VerticalAlignment="Center"
+        <StackPanel Grid.Row="3"
+                   Opacity="0.5"
                    Visibility="{Binding ShowNoDataMessage, Converter={StaticResource BooleanToVisibilityConverter}}"
-                   Opacity="0.5"/>
+                   HorizontalAlignment="Center" VerticalAlignment="Center">
+            <materialDesign:PackIcon Kind="Fly" 
+                                     Width="128"
+                                     Height="128"
+                                     Margin="0 0 0 10"
+                                     HorizontalAlignment="Center"/>
+            <TextBlock
+                   Text="របាយការណ៍មិនទាន់មានទិន្នន័យនៅឡើយទេ!"
+                   FontSize="20"
+                   FontWeight="Semibold"
+                   Margin="0 0 0 10"
+                   HorizontalAlignment="Center"/>
+            <TextBlock
+                   Text="សូមជ្រើសរើសប្រភេទរបាយការណ៍ណាមួយផ្សេងទៀត និងកំណត់ការច្រោះ"
+                   FontSize="18"
+                   HorizontalAlignment="Center"/>
+        </StackPanel>
 
         <!-- Pagination -->
         <Border Grid.Row="4" Margin="0 10 0 0" Padding="8">
@@ -187,32 +280,6 @@
                        FontSize="14" FontWeight="SemiBold"/>
         </Border>
 
-        <!-- Export Buttons -->
-        <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right"
-                    Margin="0 10 0 0"
-                    Visibility="{Binding HasData, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <ItemsControl ItemsSource="{Binding Exporters}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="{x:Type infraExport:IReportExporter}">
-                        <Button Command="{Binding DataContext.ExportCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                CommandParameter="{Binding}"
-                                Margin="0 0 10 0"
-                                Height="40" Width="160">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <materialDesign:PackIcon Kind="FileExport"
-                                                         Width="20" Height="20" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding FormatName, StringFormat='Export {0}'}"
-                                           Margin="8 0 0 0" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
+
     </Grid>
 </UserControl>

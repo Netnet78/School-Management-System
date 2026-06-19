@@ -11,13 +11,14 @@ namespace SchoolManagement.Presentation.Shared.Features.Students.Observables
         public StudentClass? Class { get; set; }
         public bool IsActive { get; set; } = true;
         public StudentQR? StudentQR { get; set; }
+        public new DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public StudentForm(Student student)
         {
             Id = student.Id;
             IsActive = student.IsActive;
             CandidateId = student.CandidateId;
-            CreatedAt = student.Candidate?.CreatedAt ?? CreatedAt;
+            CreatedAt = student.CreatedAt ?? CreatedAt;
             SkillId = student.SkillId;
             FirstName = student.FirstName;
             LastName = student.LastName;
@@ -87,7 +88,8 @@ namespace SchoolManagement.Presentation.Shared.Features.Students.Observables
                 Candidate = candidate,
                 IsActive = IsActive,
                 StudentQR = StudentQR,
-                EnrollDate = EnrollDate
+                EnrollDate = EnrollDate,
+                CreatedAt = CreatedAt,
             };
         }
 

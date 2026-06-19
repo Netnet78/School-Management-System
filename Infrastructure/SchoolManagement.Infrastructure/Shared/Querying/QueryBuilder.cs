@@ -25,6 +25,12 @@ public static class QueryBuilder
     {
         foreach (FilterCondition<T> filter in filters)
         {
+            if (filter.CustomExpression != null)
+            {
+                query = query.Where(filter.CustomExpression);
+                continue;
+            }
+
             if (filter.Value == null &&
                 (filter.Values == null || !filter.Values.Any()) &&
                 filter.Operator != FilterOperator.IsNull &&

@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SchoolManagement.Core.Features.Candidates.Models
 {
+    [Description("បេក្ខជន")]
     public class Candidate : IEntity
     {
         [Description("លេខសម្គាល់")]

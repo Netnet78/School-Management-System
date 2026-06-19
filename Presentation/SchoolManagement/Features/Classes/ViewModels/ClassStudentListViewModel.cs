@@ -129,9 +129,16 @@ namespace SchoolManagement.Presentation.Features.Classes.ViewModels
         }
 
         [RelayCommand]
+        private async Task ShowAddStudentsToClass()
+        {
+            await _navigationService.NavigateAsync<AddStudentsToClassViewModel>(new AddStudentsToClassParams { Class = _class });
+        }
+
+        [RelayCommand]
         private async Task GoBackAsync()
         {
             await _navigationService.NavigateAsync<ClassViewModel>();
         }
+
     }
 }

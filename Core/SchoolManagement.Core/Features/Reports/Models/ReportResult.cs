@@ -36,7 +36,7 @@ namespace SchoolManagement.Core.Features.Reports.Models
         /// <summary>
         /// The tag of the report that identifies the type of report
         /// </summary>
-        public required ReportTag? ReportTag { get; set; }
+        public required string? ReportTag { get; set; }
 
     }
 }

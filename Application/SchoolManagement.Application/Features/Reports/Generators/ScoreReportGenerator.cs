@@ -1,16 +1,21 @@
 using SchoolManagement.Application.Features.Reports.Contracts;
 using SchoolManagement.Application.Features.Reports.Models;
 using SchoolManagement.Core.Features.Accessments.Models;
+using SchoolManagement.Core.Features.Reports.Attributes;
+using SchoolManagement.Core.Features.Reports.Enums;
 using SchoolManagement.Core.Features.Reports.Models;
 
 namespace SchoolManagement.Application.Features.Reports.Generators
 {
+    [ReportType(Key = "score-report", DisplayName = "Score Report", DisplayNameKhmer = "របាយការណ៍ពិន្ទុ",
+        Description = "View and export assessment scores by class, subject, and exam", IconKind = "Scoreboard", SortOrder = 3, ReportStyle = ReportStyle.Table,
+        SupportedExportFormats = new[] { "Excel" })]
     public class ScoreReportGenerator : IReportGenerator
     {
         private readonly IAccessmentRepository _assessmentRepository;
         private readonly IExamRepository _examRepository;
 
-        public ReportTag ReportTypeKey => ReportTag.ScoreReport;
+        public string ReportTypeKey => "score-report";
 
         public ScoreReportGenerator(
             IAccessmentRepository assessmentRepository,
@@ -20,7 +25,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
             _examRepository = examRepository;
         }
 
-        public object CreateDefaultFilter() => new ScoreReportFilter();
+        public object CreateDefaultRequest() => new ScoreReportFilter();
 
         public async Task<ReportResult> GenerateAsync(object filter, CancellationToken cancellationToken = default)
         {
@@ -137,7 +142,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
 
             return new TableReportResult
             {
-                ReportTag = ReportTag.ScoreReport,
+                ReportTag = "score-report",
                 Title = "របាយការណ៍ពិន្ទុប្រលង",
                 SubTitle = "Score Report",
                 GeneratedDate = DateTime.UtcNow,

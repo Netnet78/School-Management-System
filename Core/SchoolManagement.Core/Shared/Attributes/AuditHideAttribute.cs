@@ -7,7 +7,8 @@
     /// change tracking. This is useful for sensitive or irrelevant data that should not be recorded during auditing
     /// processes.</remarks>
     [AttributeUsage(AttributeTargets.Property)]
-    public class AuditMaskAttribute : Attribute
+    public class AuditHideAttribute : Attribute
     {
+        public bool ShowMasked { get; set; } = false;
     }
 }

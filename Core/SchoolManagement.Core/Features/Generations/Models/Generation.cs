@@ -5,6 +5,7 @@ using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Generations.Models
 {
+    [Description("ជំនាន់")]
     public class Generation : IEntity
     {
         [Description("លេខសម្គាល់")]
@@ -18,5 +19,6 @@ namespace SchoolManagement.Core.Features.Generations.Models
         public int DepartmentId { get; set; }
         public Department Department { get; set; } = null!;
         public ICollection<Class> Classes { get; set; } = [];
+        public string KhmerName => $"ជំនាន់ទី {CohortNumber}";
     }
 }

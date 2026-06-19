@@ -73,42 +73,42 @@ namespace SchoolManagement.Presentation.Shell.ViewModels
         [RelayCommand]
         private async Task ShowDashboardAsync()
         {
-            await NavigateTo<DashboardViewModel>();
+            await NavigateTo<DashboardViewModel>().ConfigureAwait(false);
         }
         [RelayCommand]
         private async Task ShowAttendanceAsync()
         {
-            await NavigateTo<AttendanceViewModel>();
+            await NavigateTo<AttendanceViewModel>().ConfigureAwait(false);
         }
         [RelayCommand]
         private async Task ShowStudentListAsync()
         {
-            await NavigateTo<StudentListViewModel>();
+            await NavigateTo<StudentListViewModel>().ConfigureAwait(false);
         }
         [RelayCommand]
         private async Task ShowAddStudentAsync()
         {
-            await NavigateTo<AddStudentViewModel>();
+            await NavigateTo<AddStudentViewModel>().ConfigureAwait(false);
         }
         [RelayCommand]
         private async Task ShowClassAsync()
         {
-            await NavigateTo<ClassViewModel>();
+            await NavigateTo<ClassViewModel>().ConfigureAwait(false);
         }
         [RelayCommand]
         private async Task ShowReportAsync()
         {
-            await NavigateTo<ReportViewModel>();
+            await NavigateTo<ReportViewModel>().ConfigureAwait(false);
         }
         [RelayCommand]
         private async Task ShowEmployeeAsync()
         {
-            await NavigateTo<EmployeeViewModel>();
+            await NavigateTo<EmployeeViewModel>().ConfigureAwait(false);
         }
         [RelayCommand]
         private async Task ShowAuditLogAsync()
         {
-            await NavigateTo<AuditLogViewModel>();
+            await NavigateTo<AuditLogViewModel>().ConfigureAwait(false);
         }
 
         private async Task NavigateTo<T>() where T : IViewModel
@@ -118,7 +118,7 @@ namespace SchoolManagement.Presentation.Shell.ViewModels
             IsLoading = true;
             try
             {
-                await _navigationService.NavigateAsync<T>();
+                await _navigationService.NavigateAsync<T>().ConfigureAwait(false);
             }
             finally
             {
@@ -128,10 +128,21 @@ namespace SchoolManagement.Presentation.Shell.ViewModels
 
         private async void OnViewModelChanged(IViewModel? old, IViewModel current)
         {
-            _dispatcherService.Invoke(() =>
+            try
             {
-                CurrentViewModel = current;
-            });
+                await _dispatcherService.InvokeAsync(() =>
+                {
+                    CurrentViewModel = current;
+                }).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                await _dispatcherService.InvokeAsync(() =>
+                {
+                    _messageService.Show("Couldn't navigate to the page! Please try again!", "Navigation Error",
+                        MessageButton.OK, MessageIcon.Error);
+                }).ConfigureAwait(false);
+            }
         }
 
         private async void OnUserSessionChanged(User? obj)

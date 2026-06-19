@@ -11,17 +11,18 @@ using SchoolManagement.Presentation.Features.Reports.Models;
 
 namespace SchoolManagement.Presentation.Features.Reports.ViewModels
 {
-    public partial class ReportViewModel : ObservableObject, IViewModel, IAsyncLoadable
+    public partial class ReportViewModel : ObservableObject, IViewModel, IAsyncLoadable, IDisposable
     {
         private readonly IReportRegistry _registry;
-        private readonly IEnumerable<IReportViewProvider> _providers;
+        private readonly Dictionary<string, IReportViewProvider> _providers;
         private readonly IEnumerable<IReportExporter> _exporters;
         private readonly IMessageService _messageService;
         private readonly ILoadingService _loadingService;
 
         public IEnumerable<IReportExporter> Exporters =>
             _currentProvider != null
-                ? _exporters.Where(e => _currentProvider.CanExport(e))
+                ? _exporters.Where(e => _registry.GetDescriptor(_currentProvider.ReportTypeKey)
+                    ?.SupportedExportFormats.Contains(e.FormatName) == true)
                 : [];
 
         private IReportViewProvider? _currentProvider;
@@ -40,6 +41,12 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewModels
 
         [ObservableProperty]
         private IReportFilterViewModel? _currentFilterViewModel;
+
+        [ObservableProperty]
+        private object? _currentOptionsViewModel;
+
+        [ObservableProperty]
+        private bool _hasCardOptions;
 
         [ObservableProperty]
         private UserControl? _currentPreviewView;
@@ -98,7 +105,7 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewModels
             ILoadingService loadingService)
         {
             _registry = registry;
-            _providers = providers;
+            _providers = providers.ToDictionary(p => p.ReportTypeKey.ToString());
             _exporters = exporters;
             _messageService = messageService;
             _loadingService = loadingService;
@@ -145,7 +152,7 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewModels
                 SelectedReportTitle = card.DisplayName;
 
                 // Find provider by key
-                IReportViewProvider? provider = _providers.FirstOrDefault(p => p.ReportTypeKey == card.Key);
+                IReportViewProvider? provider = _providers.GetValueOrDefault(card.Key.ToString());
                 if (provider == null)
                 {
                     _messageService.Show($"No provider found for report '{card.Key}'", "Error", MessageButton.OK, MessageIcon.Error);
@@ -162,7 +169,7 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewModels
                 OnPropertyChanged(nameof(Exporters));
                 HasData = false;
                 SummaryText = string.Empty;
-                HasSummary = string.IsNullOrWhiteSpace(_currentProvider.SummaryText) && HasData;
+                HasSummary = !string.IsNullOrWhiteSpace(_currentProvider.SummaryText) && HasData;
                 CurrentPreviewView = null;
 
                 // Wire filter
@@ -182,6 +189,10 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewModels
                     CurrentFilterViewModel = null;
                     IsFilterVisible = false;
                 }
+
+                // Wire options
+                CurrentOptionsViewModel = provider.OptionsViewModel;
+                HasCardOptions = provider.OptionsViewModel != null;
 
                 CurrentPreviewView = provider.PreviewView;
 
@@ -220,7 +231,15 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewModels
 
         private async void OnFilterChanged()
         {
-            await OnFilterChangedAsync();
+            try
+            {
+                await OnFilterChangedAsync();
+            }
+            catch (Exception ex)
+            {
+                _messageService.Show($"There's an error when trying to update the filter!\n{ex.Message}",
+                    "Filter error!", MessageButton.OK, MessageIcon.Error);
+            }
         }
 
         private async Task GenerateWithProviderAsync(object filter)
@@ -266,7 +285,9 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewModels
                 if (cancellationToken.IsCancellationRequested || !IsCurrentPreviewGeneration(generationId))
                     return;
 
-                _messageService.Show($"Error generating report: {ex.Message}", "Error", MessageButton.OK, MessageIcon.Error);
+                _messageService.Show($"Error generating report: {ex.Message}" +
+                    $"\nStacktrace: {ex.StackTrace}\nInner Exception: {ex.InnerException}", 
+                    "Report generation error", MessageButton.OK, MessageIcon.Error);
             }
             finally
             {
@@ -368,15 +389,18 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewModels
             }
         }
 
-        partial void OnPageSizeChanged(int value)
+        async partial void OnPageSizeChanged(int value)
         {
-            _ = OnPageSizeChangedAsync();
-        }
-
-        private async Task OnPageSizeChangedAsync()
-        {
-            CurrentPage = 1;
-            await RegenerateAsync();
+            try
+            {
+                CurrentPage = 1;
+                await RegenerateAsync();
+            }
+            catch (Exception ex)
+            {
+                _messageService.Show($"Error when trying to change the page size!\n{ex.Message}", "ERROR",
+                    MessageButton.OK, MessageIcon.Error);
+            }
         }
 
         private async Task RegenerateAsync()
@@ -402,6 +426,13 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewModels
             {
                 IsLoading = false;
             }
+        }
+
+        public void Dispose()
+        {
+            _previewGenerationCts?.Dispose();
+            _previewGenerationCts = null;
+            GC.SuppressFinalize(this);
         }
     }
 }

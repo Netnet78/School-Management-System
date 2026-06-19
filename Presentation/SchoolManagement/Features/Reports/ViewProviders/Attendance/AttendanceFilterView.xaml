@@ -5,30 +5,35 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewProviders.Attendance"
              mc:Ignorable="d"
-             d:DataContext="{d:DesignInstance Type=local:AttendanceFilterViewModel}"
-             d:DesignHeight="80" d:DesignWidth="800">
-    <StackPanel Orientation="Horizontal">
-        <StackPanel Orientation="Horizontal" Margin="0 0 15 0">
-            <TextBlock Text="ស្វែងរក" VerticalAlignment="Center" Margin="0 0 5 0"/>
-            <TextBox Width="150"
-                     Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged, Delay=400}"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Margin="0 0 15 0">
-            <TextBlock Text="ថ្នាក់" VerticalAlignment="Center" Margin="0 0 5 0"/>
-            <ComboBox Width="150"
-                      ItemsSource="{Binding Classes}"
-                      SelectedItem="{Binding SelectedClass}"
-                      DisplayMemberPath="KhmerName"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Margin="0 0 15 0">
-            <TextBlock Text="ចាប់ពីថ្ងៃ" VerticalAlignment="Center" Margin="0 0 5 0"/>
-            <DatePicker Width="130"
-                        SelectedDate="{Binding DateFrom}"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal">
-            <TextBlock Text="ដល់ថ្ងៃ" VerticalAlignment="Center" Margin="0 0 5 0"/>
-            <DatePicker Width="130"
-                        SelectedDate="{Binding DateTo}"/>
-        </StackPanel>
-    </StackPanel>
+              d:DataContext="{d:DesignInstance Type=local:AttendanceFilterViewModel}"
+              d:DesignHeight="80" d:DesignWidth="900"
+              TextElement.FontSize="16">
+     <StackPanel Orientation="Horizontal">
+         <StackPanel Orientation="Horizontal" Margin="0 0 25 0">
+             <TextBlock Text="ស្វែងរក" VerticalAlignment="Center" Margin="0 0 8 0"/>
+             <TextBox Width="180"
+                      Padding="6"
+                      Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged, Delay=400}"/>
+         </StackPanel>
+         <StackPanel Orientation="Horizontal" Margin="0 0 25 0">
+             <TextBlock Text="ថ្នាក់" VerticalAlignment="Center" Margin="0 0 8 0"/>
+             <ComboBox Width="180"
+                       Padding="6"
+                       ItemsSource="{Binding Classes}"
+                       SelectedItem="{Binding SelectedClass}"
+                       DisplayMemberPath="KhmerName"/>
+         </StackPanel>
+         <StackPanel Orientation="Horizontal" Margin="0 0 25 0">
+             <TextBlock Text="ចាប់ពីថ្ងៃ" VerticalAlignment="Center" Margin="0 0 8 0"/>
+             <DatePicker Width="150"
+                         Padding="6"
+                         SelectedDate="{Binding DateFrom}"/>
+         </StackPanel>
+         <StackPanel Orientation="Horizontal">
+             <TextBlock Text="ដល់ថ្ងៃ" VerticalAlignment="Center" Margin="0 0 8 0"/>
+             <DatePicker Width="150"
+                         Padding="6"
+                         SelectedDate="{Binding DateTo}"/>
+         </StackPanel>
+     </StackPanel>
 </UserControl>

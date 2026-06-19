@@ -1,8 +1,10 @@
 ﻿using SchoolManagement.Core.Features.Subjects.Models;
 using SchoolManagement.Core.Shared.Contracts;
+using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Accessments.Models
 {
+    [Description("ពិន្ទុ")]
     public class Score : IEntity
     {
         public int Id { get; set; }

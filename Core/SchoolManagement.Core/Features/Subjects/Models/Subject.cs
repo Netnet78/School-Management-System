@@ -1,8 +1,10 @@
 ﻿using SchoolManagement.Core.Features.Classes.Models;
 using SchoolManagement.Core.Shared.Contracts;
+using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Subjects.Models
 {
+    [Description("មុខវិជ្ជា")]
     public class Subject : IEntity
     {
         public int Id { get; set; }

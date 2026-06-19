@@ -5,33 +5,38 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewProviders.StudentRoster"
              mc:Ignorable="d"
-             d:DataContext="{d:DesignInstance Type=local:StudentRosterFilterViewModel}"
-             d:DesignHeight="80" d:DesignWidth="900">
-    <StackPanel Orientation="Horizontal">
-        <StackPanel Orientation="Horizontal" Margin="0 0 15 0">
-            <TextBlock Text="ស្វែងរក" VerticalAlignment="Center" Margin="0 0 5 0"/>
-            <TextBox Width="150"
-                     Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged, Delay=400}"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Margin="0 0 15 0">
-            <TextBlock Text="ចាប់ពីថ្ងៃ" VerticalAlignment="Center" Margin="0 0 5 0"/>
-            <DatePicker Width="130"
-                        SelectedDate="{Binding EnrollDateFrom}"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Margin="0 0 15 0">
-            <TextBlock Text="ដល់ថ្ងៃ" VerticalAlignment="Center" Margin="0 0 5 0"/>
-            <DatePicker Width="130"
-                        SelectedDate="{Binding EnrollDateTo}"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Margin="0 0 15 0">
-            <TextBlock Text="ថ្ងៃទី" VerticalAlignment="Center" Margin="0 0 5 0"/>
-            <DatePicker Width="130"
-                        SelectedDate="{Binding ReportDate}"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal">
-            <CheckBox IsChecked="{Binding IncludeInactive}"
-                      Content="បង្ហាញសិស្សឈប់រៀន"
-                      VerticalAlignment="Center"/>
-        </StackPanel>
-    </StackPanel>
+              d:DataContext="{d:DesignInstance Type=local:StudentRosterFilterViewModel}"
+              d:DesignHeight="80" d:DesignWidth="1100"
+              TextElement.FontSize="16">
+     <StackPanel Orientation="Horizontal">
+         <StackPanel Orientation="Horizontal" Margin="0 0 25 0">
+             <TextBlock Text="ស្វែងរក" VerticalAlignment="Center" Margin="0 0 8 0"/>
+             <TextBox Width="180"
+                      Padding="6"
+                      Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged, Delay=400}"/>
+         </StackPanel>
+         <StackPanel Orientation="Horizontal" Margin="0 0 25 0">
+             <TextBlock Text="ចាប់ពីថ្ងៃ" VerticalAlignment="Center" Margin="0 0 8 0"/>
+             <DatePicker Width="150"
+                         Padding="6"
+                         SelectedDate="{Binding EnrollDateFrom}"/>
+         </StackPanel>
+         <StackPanel Orientation="Horizontal" Margin="0 0 25 0">
+             <TextBlock Text="ដល់ថ្ងៃ" VerticalAlignment="Center" Margin="0 0 8 0"/>
+             <DatePicker Width="150"
+                         Padding="6"
+                         SelectedDate="{Binding EnrollDateTo}"/>
+         </StackPanel>
+         <StackPanel Orientation="Horizontal" Margin="0 0 25 0">
+             <TextBlock Text="ថ្ងៃទី" VerticalAlignment="Center" Margin="0 0 8 0"/>
+             <DatePicker Width="150"
+                         Padding="6"
+                         SelectedDate="{Binding ReportDate}"/>
+         </StackPanel>
+         <StackPanel Orientation="Horizontal">
+             <CheckBox IsChecked="{Binding IncludeInactive}"
+                       Content="បង្ហាញសិស្សឈប់រៀន"
+                       VerticalAlignment="Center"/>
+         </StackPanel>
+     </StackPanel>
 </UserControl>

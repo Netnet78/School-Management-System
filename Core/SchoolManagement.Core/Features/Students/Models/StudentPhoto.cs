@@ -1,13 +1,13 @@
 using SchoolManagement.Core.Shared.Attributes;
-
 using SchoolManagement.Core.Shared.Contracts;
 using SchoolManagement.Core.Features.AuditLogs.Enums;
 using SchoolManagement.Core.Features.Files.Enums;
 using SchoolManagement.Core.Features.Candidates.Models;
-
+using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Students.Models
 {
+    [Description("រូបភាពសិស្ស")]
     [AuditIgnoreType(AuditOperation.All)]
     public class StudentPhoto : IEntity
     {

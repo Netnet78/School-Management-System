@@ -9,6 +9,7 @@
     /// identify the entity involved in an operation.</remarks>
     public interface IAuditableEntity
     {
-        string GetAuditName();
+        string CustomAuditName();
+        string CustomAuditDescription();
     }
 }

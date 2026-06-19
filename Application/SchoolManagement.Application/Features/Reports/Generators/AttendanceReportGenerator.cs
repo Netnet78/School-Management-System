@@ -1,22 +1,27 @@
 using SchoolManagement.Application.Features.Reports.Contracts;
 using SchoolManagement.Application.Features.Reports.Models;
 using SchoolManagement.Core.Features.Attendances.Models;
+using SchoolManagement.Core.Features.Reports.Attributes;
+using SchoolManagement.Core.Features.Reports.Enums;
 using SchoolManagement.Core.Features.Reports.Models;
 
 namespace SchoolManagement.Application.Features.Reports.Generators
 {
+    [ReportType(Key = "attendance-report", DisplayName = "Attendance Report", DisplayNameKhmer = "របាយការណ៍វត្តមាន",
+        Description = "View and export attendance summaries by student and class", IconKind = "ClipboardCheck", SortOrder = 2, ReportStyle = ReportStyle.Table,
+        SupportedExportFormats = new[] { "Excel" })]
     public class AttendanceReportGenerator : IReportGenerator
     {
         private readonly IAttendanceRepository _attendanceRepository;
 
-        public ReportTag ReportTypeKey => ReportTag.AttendanceReport;
+        public string ReportTypeKey => "attendance-report";
 
         public AttendanceReportGenerator(IAttendanceRepository attendanceRepository)
         {
             _attendanceRepository = attendanceRepository;
         }
 
-        public object CreateDefaultFilter() => new AttendanceReportFilter
+        public object CreateDefaultRequest() => new AttendanceReportFilter
         {
             DateFrom = new DateTime(DateTime.UtcNow.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             DateTo = DateTime.UtcNow,
@@ -50,9 +55,8 @@ namespace SchoolManagement.Application.Features.Reports.Generators
 
             int totalCount = await _attendanceRepository.CountAsync(filters, attendanceFilter.Page, attendanceFilter.PageSize);
 
-            // Group by student for summary
             var studentGroups = attendances
-                .GroupBy(a => a.StudentClass?.Student?.Candidate?.FullName ?? "Unknown")
+                .GroupBy(a => a.StudentClass?.StudentId)
                 .ToList();
 
             var rows = new List<Dictionary<string, ReportCell>>();
@@ -81,7 +85,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
 
             return new TableReportResult
             {
-                ReportTag = ReportTag.AttendanceReport,
+                ReportTag = "attendance-report",
                 Title = "របាយការណ៍វត្តមានសិស្ស",
                 SubTitle = "Attendance Report",
                 GeneratedDate = DateTime.UtcNow,

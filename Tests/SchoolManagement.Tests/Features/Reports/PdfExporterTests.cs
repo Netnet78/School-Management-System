@@ -27,11 +27,11 @@ namespace SchoolManagement.Tests.Features.Reports
             return new CardReportResult
             {
                 Title = "Student Card",
-                ReportTag = ReportTag.StudentCard,
+                ReportTag = "student-card",
                 GeneratedDate = new DateTime(2026, 5, 30, 8, 30, 0, DateTimeKind.Local),
                 CardGroups =
                 [
-                    new ReportItemGroup
+                    new CardDefinition
                     {
                         Width = 709,
                         Height = 945,

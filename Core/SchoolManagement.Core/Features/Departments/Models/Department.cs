@@ -6,6 +6,7 @@ using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Departments.Models
 {
+    [Description("នាយកដ្ឋាន")]
     public class Department : IEntity
     {
         [Description("លេខសម្គាល់")]

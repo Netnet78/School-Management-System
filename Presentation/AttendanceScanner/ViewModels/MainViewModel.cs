@@ -265,7 +265,7 @@ public partial class MainViewModel : ObservableObject, IDisposable, IViewModel
         }
     }
 
-    private async void DecodeFrame(CameraFrame frame)
+    private async void DecodeFrame(BitmapInfo frame)
     {
         if (Interlocked.CompareExchange(ref _isDecoding, 1, 0) != 0) return;
 

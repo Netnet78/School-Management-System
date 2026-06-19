@@ -21,7 +21,6 @@ global using SchoolManagement.Core.Features.Classes.DTOs;
 global using SchoolManagement.Core.Features.Candidates.Models;
 global using SchoolManagement.Core.Features.Files.Models;
 global using SchoolManagement.Core.Shared.Extensions;
-global using SchoolManagement.Application.Features.Classes.Helpers;
 global using SchoolManagement.Core.Features.Classes.Models;
 global using SchoolManagement.Core.Features.Employees.Models;
 global using SchoolManagement.Core.Features.Students.Enums;

@@ -1,9 +1,11 @@
 ﻿using SchoolManagement.Core.Features.Candidates.Models;
 using SchoolManagement.Core.Features.Departments.Models;
 using SchoolManagement.Core.Shared.Contracts;
+using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Skills.Models
 {
+    [Description("ជំនាញ")]
     public class Skill : IEntity
     {
         public int Id { get; set; }

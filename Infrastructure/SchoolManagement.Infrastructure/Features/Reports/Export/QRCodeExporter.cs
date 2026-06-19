@@ -72,12 +72,15 @@ public static class QRCodeExporter
 
                 float radius = logoSize / 2f + 10;
 
+                using SKTypeface typeface = SKTypeface.FromFile(Path.Combine(ResourcePaths.Fonts, "noto-sans-khmer.ttf"));
+                using SKFont font = new(typeface);
+
                 canvas.DrawText(
                     label,
                     width / 2,
                     height + 20,
                     SKTextAlign.Center,
-                    new(SKTypeface.FromFile(Path.Combine(ResourcePaths.Fonts, "noto-sans-khmer.ttf"))),
+                    font,
                     paint);
 
                 paint.Color = SKColors.White;

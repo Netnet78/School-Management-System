@@ -1,20 +1,22 @@
 using SchoolManagement.Application.Features.Reports.Contracts;
-using SchoolManagement.Core.Features.Reports.Models;
 using SchoolManagement.Presentation.Features.Reports.Contracts;
+using SchoolManagement.Core.Features.Reports.Models;
 
 namespace SchoolManagement.Presentation.Features.Reports.Providers
 {
-    public class GenericTableReportProvider : TableReportViewProvider
+    public class GenericTableReportProvider : TableReportProvider
     {
         private readonly IReportGenerator _generator;
         private readonly IReportFilterViewModel? _filterVm;
 
-        public override ReportTag ReportTypeKey { get; }
+        public override string ReportTypeKey { get; }
 
         public override IReportFilterViewModel? FilterViewModel => _filterVm;
 
+        public override string[] SupportedExportFormats => ["Excel"];
+
         public GenericTableReportProvider(
-            ReportTag reportTypeKey,
+            string reportTypeKey,
             IReportGenerator generator,
             IReportFilterViewModel? filterVm,
             IReportRenderer renderer)

@@ -4,9 +4,11 @@ using SchoolManagement.Core.Features.Generations.Models;
 using SchoolManagement.Core.Features.Grades.Models;
 using SchoolManagement.Core.Features.Students.Models;
 using SchoolManagement.Core.Shared.Contracts;
+using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Classes.Models
 {
+    [Description("ថ្នាក់រៀន")]
     public class Class : IEntity
     {
         public int Id { get; set; }

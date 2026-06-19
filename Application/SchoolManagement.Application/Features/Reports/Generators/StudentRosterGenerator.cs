@@ -2,10 +2,15 @@ using KhmerCalendar;
 using SchoolManagement.Application.Features.Reports.Contracts;
 using SchoolManagement.Application.Features.Reports.Models;
 using SchoolManagement.Assets;
+using SchoolManagement.Core.Features.Reports.Attributes;
+using SchoolManagement.Core.Features.Reports.Enums;
 using SchoolManagement.Core.Features.Reports.Models;
 
 namespace SchoolManagement.Application.Features.Reports.Generators
 {
+    [ReportType(Key = "student-roster", DisplayName = "Student Roster", DisplayNameKhmer = "បញ្ជីឈ្មោះសិស្ស",
+        Description = "ព័ត៌មានបញ្ជីឈ្មោះសិស្សតាមផ្នែកនីមួយៗ", SortOrder = 1, ReportStyle = ReportStyle.GroupedTable,
+        SupportedExportFormats = new[] { "Excel" })]
     public class StudentRosterGenerator : IReportGenerator
     {
         private readonly ISkillRepository _skillRepository;
@@ -15,7 +20,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
 
         private readonly string _templatePath = Path.Combine(ResourcePaths.Spreadsheets, "student_roster.xlsx");
 
-        public ReportTag ReportTypeKey => ReportTag.StudentRoster;
+        public string ReportTypeKey => "student-roster";
 
         public StudentRosterGenerator(
             IStudentClassRepository studentClassRepository,
@@ -29,7 +34,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
             _classRepository = classRepository;
         }
 
-        public object CreateDefaultFilter() => new StudentRosterFilter
+        public object CreateDefaultRequest() => new StudentRosterFilter
         {
             IsActive = true
         };
@@ -64,6 +69,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
             User? user = _authorizationService.CurrentUser;
             bool isAdmin = user?.IsAdmin() == true;
             bool isHeadTeacher = user?.IsHeadTeacher() == true;
+            bool isTeacher = user?.IsValidRole(RoleType.Teacher) == true;
 
             var skillGroups = studentClasses
                 .GroupBy(sc => sc.Student.SkillId)
@@ -72,8 +78,10 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                     SkillId = skillGroup.Key,
                     Classes = skillGroup
                         .GroupBy(sc => sc.ClassId)
-                        .OrderBy(g => g.First().Class.Generation.Department.Id)
+                        .OrderBy(g => g.First().Class.GenerationId)
                 });
+
+            IEnumerable<Skill> skills = await _skillRepository.GetAllAsync();
 
             List<TableReportGroup> tableReportGroups = [];
 
@@ -81,7 +89,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
             {
                 foreach (var studentClassGroup in group.Classes)
                 {
-                    Class? @class = await _classRepository.GetByIdWithSubjectsAsync(studentClassGroup.Key);
+                    Class? @class = studentClassGroup.First().Class;
                     var rows = new List<Dictionary<string, ReportCell>>();
 
                     foreach (StudentClass sc in studentClassGroup)
@@ -116,7 +124,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                         {
                             row["grade"] = @class?.Grade?.KhmerName;
                         }
-                        else
+                        else if (isTeacher)
                         {
                             row["className"] = @class?.KhmerName;
                         }
@@ -149,7 +157,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                     columns.Add(new() { Key = "status", Header = "Status", HeaderKhmer = "ស្ថានភាព", Width = 100 });
                     columns.Add(new() { Key = "enrollDate", Header = "Enroll Date", HeaderKhmer = "ថ្ងៃចុះឈ្មោះ", Width = 120 });
 
-                    Skill skill = await _skillRepository.GetByIdAsync(group.SkillId)
+                    Skill skill = skills.FirstOrDefault(s => s.Id == group.SkillId)
                         ?? throw new InvalidOperationException("Student's skill cannot be null when generating a student roster!");
 
                     TableReportGroup result = new()
@@ -173,7 +181,7 @@ namespace SchoolManagement.Application.Features.Reports.Generators
 
             return new GroupedTableReportResult()
             {
-                ReportTag = ReportTag.StudentRoster,
+                ReportTag = "student-roster",
                 Groups = tableReportGroups,
                 GeneratedDate = DateTime.Now,
                 ReportDate = studentFilter.ReportDate.ToDateTime(TimeOnly.MinValue),

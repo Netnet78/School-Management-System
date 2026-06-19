@@ -3,6 +3,7 @@ using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Auth.Models
 {
+    [Description("ការអនុញ្ញាត")]
     public class Permission : IEntity
     {
         [Description("លេខសម្គាល់")]

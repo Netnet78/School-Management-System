@@ -44,7 +44,7 @@ namespace SchoolManagement.Tests.Features.Reports
             try
             {
                 var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                    _exporter.ExportToFileAsync(new CardReportResult() { ReportTag = ReportTag.StudentCard }, outputPath));
+                    _exporter.ExportToFileAsync(new CardReportResult() { ReportTag = "student-card" }, outputPath));
 
                 Assert.Contains("This report type cannot be exported to Excel", exception.Message);
             }
@@ -59,7 +59,7 @@ namespace SchoolManagement.Tests.Features.Reports
         {
             return new TableReportResult
             {
-                ReportTag = ReportTag.StudentRoster,
+                ReportTag = "student-roster",
                 Title = "Student Report",
                 SubTitle = "Export Test",
                 GeneratedDate = new DateTime(2026, 5, 29, 12, 0, 0, DateTimeKind.Utc),

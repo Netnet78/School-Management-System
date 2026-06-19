@@ -1,8 +1,10 @@
 ﻿using SchoolManagement.Core.Features.Accessments.Models;
 using SchoolManagement.Core.Shared.Contracts;
+using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Subjects.Models
 {
+    [Description("ផ្នែកនៃមុខវិជ្ជា")]
     public class SubjectComponent : IEntity
     {
         public int Id { get; set; }
