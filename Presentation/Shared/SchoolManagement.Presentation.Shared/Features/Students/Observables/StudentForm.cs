@@ -1,17 +1,25 @@
-﻿using SchoolManagement.Core.Features.Candidates.Models;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using SchoolManagement.Core.Features.Candidates.Models;
 using SchoolManagement.Presentation.Shared.Features.Candidates.Observables;
 
 namespace SchoolManagement.Presentation.Shared.Features.Students.Observables
 {
     public partial class StudentForm : CandidateForm
     {
-        public new int Id { get; set; }
-        public int CandidateId { get; set; }
-        public DateOnly? EnrollDate { get; set; }
-        public StudentClass? Class { get; set; }
-        public bool IsActive { get; set; } = true;
-        public StudentQR? StudentQR { get; set; }
-        public new DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        [ObservableProperty]
+        private int _id;
+        [ObservableProperty]
+        private int _candidateId;
+        [ObservableProperty]
+        private DateTime? _enrollDate;
+        [ObservableProperty]
+        private StudentClass? _class;
+        [ObservableProperty]
+        private bool _isActive;
+        [ObservableProperty]
+        private StudentQR? _studentQr;
+        [ObservableProperty]
+        private DateTime _candidateCreatedAt;
 
         public StudentForm(Student student)
         {
@@ -19,6 +27,7 @@ namespace SchoolManagement.Presentation.Shared.Features.Students.Observables
             IsActive = student.IsActive;
             CandidateId = student.CandidateId;
             CreatedAt = student.CreatedAt ?? CreatedAt;
+            CandidateCreatedAt = student.Candidate.CreatedAt;
             SkillId = student.SkillId;
             FirstName = student.FirstName;
             LastName = student.LastName;
@@ -46,6 +55,7 @@ namespace SchoolManagement.Presentation.Shared.Features.Students.Observables
             StayType = student.StayType;
             OtherInfo = student.OtherInfo;
             Photo = student.Photo;
+            EnrollDate = student.EnrollDate?.ToDateTime(TimeOnly.MinValue);
         }
 
         public Student ToStudentModel()
@@ -60,7 +70,7 @@ namespace SchoolManagement.Presentation.Shared.Features.Students.Observables
                 Gender = Gender,
                 DateOfBirth = DateOfBirth,
                 SkillId = SkillId,
-                Skill = Skill ?? new() { Id = SkillId },
+                Skill = Skill!,
                 BirthVillage = BirthVillage,
                 BirthCommune = BirthCommune,
                 BirthDistrict = BirthDistrict,
@@ -79,16 +89,17 @@ namespace SchoolManagement.Presentation.Shared.Features.Students.Observables
                 ExamRoom = ExamRoom,
                 StayType = StayType,
                 OtherInfo = OtherInfo,
+                CreatedAt = CandidateCreatedAt
             };
 
-            return new()
+            return new Student()
             {
                 Id = Id,
                 CandidateId = CandidateId,
                 Candidate = candidate,
                 IsActive = IsActive,
-                StudentQR = StudentQR,
-                EnrollDate = EnrollDate,
+                StudentQR = StudentQr,
+                EnrollDate = EnrollDate is DateTime dt ? DateOnly.FromDateTime(dt) : DateOnly.FromDateTime(DateTime.Now),
                 CreatedAt = CreatedAt,
             };
         }

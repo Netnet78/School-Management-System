@@ -6,17 +6,17 @@
         InsertStudents,
         EditStudents,
         DeleteStudents,
-
         ViewClasses,
         InsertClasses,
         EditClasses,
         DeleteClasses,
-
         ManageEmployees,
         ManageAttendances,
-
         ManageCandidates,
-
-        ManageDepartments
+        ManageDepartments,
+        ManageAssessments,
+        ManageSubjects,
+        ManageUsers,
+        ManageRoles,
     }
 }

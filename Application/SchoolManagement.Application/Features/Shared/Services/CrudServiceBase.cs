@@ -66,7 +66,7 @@ namespace SchoolManagement.Application.Features.Shared.Services
                 return new()
                 {
                     Status = Status.Failed,
-                    Message = $"Could not retrieve {typeof(TEntity).Name} data.\n{ex.Message}",
+                    Message = $"មិនអាចទាញយកទិន្នន័យ {typeof(TEntity).Name} បានឡើយ។\n{ex.Message}",
                 };
             }
         }

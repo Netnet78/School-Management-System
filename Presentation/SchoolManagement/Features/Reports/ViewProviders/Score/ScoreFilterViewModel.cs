@@ -11,6 +11,8 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Score
         private readonly IClassSubjectService _classSubjectService;
         private readonly IExamService _examService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly IMessageService _messageService;
+        private readonly IDispatcherService _dispatcherService;
 
         [ObservableProperty]
         private IEnumerable<Class> _classes = [];
@@ -39,12 +41,16 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Score
             IClassService classService,
             IClassSubjectService classSubjectService,
             IExamService examService,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService,
+            IMessageService messageService,
+            IDispatcherService dispatcherService)
         {
             _classService = classService;
             _classSubjectService = classSubjectService;
             _examService = examService;
             _authorizationService = authorizationService;
+            _messageService = messageService;
+            _dispatcherService = dispatcherService;
         }
 
         public override ScoreReportFilter GetFilterData()
@@ -85,17 +91,7 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Score
 
         partial void OnSelectedClassChanged(Class? value)
         {
-            _ = LoadSubjectsAsync(value?.Id);      
-        }
-
-        partial void OnSelectedSubjectChanged(ClassSubject? value)
-        {  
-        
-        }
-
-        partial void OnSelectedExamChanged(Exam? value)
-        {      
-        
+            _ = LoadSubjectsAsync(value?.Id); 
         }
 
         partial void OnSearchKeywordChanged(string value)
@@ -110,6 +106,15 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Score
                 var response = await _classSubjectService.GetAllAsync(
                     filters: [new FilterCondition<ClassSubject>(cs => cs.ClassId, FilterOperator.Equals, classId.Value)],
                     includes: ["Subject"]);
+
+                if (response.Status != Status.Success)
+                {
+                    _dispatcherService.Invoke(() =>
+                    {
+                        _messageService.Show("មានកំហុសបច្ចេកទេសអំឡុងពេលដែលកំពុងទាញយកទិន្នន័យមុខវិជ្ជា");
+                    });
+                }
+
                 Subjects = response.Value ?? [];
             }
             else

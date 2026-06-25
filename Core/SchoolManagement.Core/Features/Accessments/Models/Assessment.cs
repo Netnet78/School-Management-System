@@ -4,7 +4,7 @@ using SchoolManagement.Core.Features.Students.Models;
 using SchoolManagement.Core.Shared.Contracts;
 using System.ComponentModel;
 
-namespace SchoolManagement.Core.Features.Accessments.Models
+namespace SchoolManagement.Core.Features.Assessments.Models
 {
     [Description("លទ្ធផលសមត្ថភាព")]
     public class Assessment : IEntity

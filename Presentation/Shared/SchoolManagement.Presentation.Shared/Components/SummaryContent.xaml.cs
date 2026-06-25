@@ -21,7 +21,7 @@ namespace SchoolManagement.Presentation.Shared.Components
 
         public static readonly DependencyProperty SummaryProperty =
             DependencyProperty.Register(
-                nameof(Content),
+                nameof(Summary),
                 typeof(string),
                 typeof(SummaryContent),
                 new PropertyMetadata(string.Empty)

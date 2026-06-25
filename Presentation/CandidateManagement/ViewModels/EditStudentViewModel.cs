@@ -114,7 +114,8 @@ namespace CandidateManagement.ViewModels
 
                     if (uploadResponse.Value != null)
                     {
-                        EditedStudent.Photo!.Key = uploadResponse.Value.FileKey;
+                        if (EditedStudent.Photo is null) return;
+                        EditedStudent.Photo.Key = uploadResponse.Value.FileKey;
                     }
                 }
 

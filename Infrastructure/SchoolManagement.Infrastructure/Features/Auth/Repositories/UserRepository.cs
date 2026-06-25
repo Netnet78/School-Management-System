@@ -44,4 +44,28 @@ public class UserRepository : BaseRepository<User>, IUserRepository
     {
         return await CreateQuery().FirstOrDefaultAsync(u => u.Username == name);
     }
+
+    public async Task<User?> GetUserByEmployeeIdAsync(int employeeId)
+    {
+        return await CreateQuery().FirstOrDefaultAsync(u => u.EmployeeId == employeeId);
+    }
+
+    public async Task<User> CreateUserForEmployeeAsync(int employeeId, string username, string plainPassword, int roleId)
+    {
+        string hashedPassword = plainPassword.ToHashedPassword();
+
+        User user = new()
+        {
+            Username = username,
+            PasswordHash = hashedPassword,
+            RoleId = roleId,
+            EmployeeId = employeeId,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await Context.AddAsync(user);
+        await SaveAsync();
+        return user;
+    }
 }

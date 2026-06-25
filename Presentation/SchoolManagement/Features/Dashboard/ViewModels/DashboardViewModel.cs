@@ -205,7 +205,7 @@ namespace SchoolManagement.Presentation.Features.Dashboard.ViewModels
                 StudentsPerClassChart.Series.Add(
                     new ColumnSeries<int>
                     {
-                        Values = values
+                        Values = values,
                     }
                 );
 

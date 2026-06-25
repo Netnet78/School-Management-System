@@ -19,6 +19,7 @@ public interface IBaseRepository<MT>
     }
 
     public Task SaveAsync();
+    public Task SaveAsync(MT entity);
 
     Task<IEnumerable<MT>> FindAsync(
         IEnumerable<FilterCondition<MT>>? filters = null,

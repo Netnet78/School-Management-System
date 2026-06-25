@@ -269,11 +269,11 @@ public partial class CardTableReportProvider : ObservableObject, IReportViewProv
                 SelectedStudentIds = selectedIds.ToList(),
                 PageSize = null,
             };
-            _ = GenerateInternalAsync(selectFilter);
+            Task.Run(() => GenerateInternalAsync(selectFilter));
         }
         else
         {
-            _ = GenerateInternalAsync(_originalFilter);
+            Task.Run(() => GenerateInternalAsync(_originalFilter));
         }
     }
 
@@ -374,7 +374,7 @@ public partial class CardTableReportProvider : ObservableObject, IReportViewProv
         };
     }
 
-    private ReportTableData ConvertToTableData(CardReportResult cardResult, HashSet<int> selectedIds)
+    private static ReportTableData ConvertToTableData(CardReportResult cardResult, HashSet<int> selectedIds)
     {
         var data = new ReportTableData();
 

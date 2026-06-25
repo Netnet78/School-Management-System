@@ -8,6 +8,7 @@
              xmlns:viewmodels="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewModels"
              xmlns:models="clr-namespace:SchoolManagement.Presentation.Features.Reports.Models"
              xmlns:infraExport="clr-namespace:SchoolManagement.Infrastructure.Features.Reports.Contracts;assembly=SchoolManagement.Infrastructure"
+            xmlns:components="clr-namespace:SchoolManagement.Presentation.Shared.Components;assembly=SchoolManagement.Presentation.Shared"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=viewmodels:ReportViewModel}"
              Background="{DynamicResource MaterialDesignPaper}"
@@ -272,14 +273,9 @@
         </Border>
 
         <!-- Summary Row -->
-        <Border Grid.Row="5" Margin="0 10 0 0" Padding="8"
-                Background="{DynamicResource MaterialDesign.Brush.Primary}"
-                Visibility="{Binding HasSummary, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <TextBlock Text="{Binding SummaryText}"
-                       Foreground="{DynamicResource MaterialDesign.Brush.Primary.Foreground}"
-                       FontSize="14" FontWeight="SemiBold"/>
-        </Border>
-
+        <components:SummaryContent Summary="{Binding SummaryText}" 
+                                   Grid.Row="5"
+                                   Visibility="{Binding HasSummary, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
     </Grid>
 </UserControl>

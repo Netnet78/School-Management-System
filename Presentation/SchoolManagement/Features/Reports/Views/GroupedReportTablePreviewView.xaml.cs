@@ -114,6 +114,7 @@ namespace SchoolManagement.Presentation.Features.Reports.Views
                 Margin = new Thickness(0, 10, 0, 0),
                 Summary = BuildSummaryText(tab.Summary)
             };
+
             Grid.SetRow(summaryContent, 1);
             grid.Children.Add(summaryContent);
 
@@ -184,9 +185,9 @@ namespace SchoolManagement.Presentation.Features.Reports.Views
             }
         }
 
-        private static string BuildSummaryText(Dictionary<string, object?> summary)
+        private static string BuildSummaryText(Dictionary<string, object>? summary)
         {
-            if (summary?.Count > 0)
+            if (summary?.Count > 0 && summary != null)
             {
                 return string.Join(" | ", summary
                     .Where(kvp => !kvp.Key.StartsWith("__"))

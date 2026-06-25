@@ -108,7 +108,7 @@ Use cases, interfaces, and generators.
 |---|---|---|
 | `StudentRosterGenerator` | Table | `IStudentClassRepository` (with `Student`, `Candidate`, `Class`, `Grade`, `Skill` includes) |
 | `AttendanceReportGenerator` | Table | `IAttendanceRepository` (with `StudentClass.Student.Candidate`, `Class` includes) |
-| `ScoreReportGenerator` | Table | `IAccessmentRepository` (with `StudentClass.Student.Candidate`, `ClassSubject.Subject`, `Exam`, `Scores.Component` includes) |
+| `ScoreReportGenerator` | Table | `IAssessmentRepository` (with `StudentClass.Student.Candidate`, `ClassSubject.Subject`, `Exam`, `Scores.Component` includes) |
 | `StudentCardGenerator` | Card | `IStudentClassRepository` + `IPhotoFetchService` + `QRCodeExporter` |
 
 **Registry:** `ReportRegistry` wraps `IEnumerable<ReportDefinition>` in a `Dictionary<string, ReportDefinition>` keyed by `Key`, ordered by `SortOrder`.

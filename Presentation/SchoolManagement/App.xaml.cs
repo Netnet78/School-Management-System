@@ -13,6 +13,8 @@ using SchoolManagement.Presentation.Features.Dashboard.Views;
 using SchoolManagement.Presentation.Features.Departments.Views;
 using SchoolManagement.Presentation.Features.Employees.ViewModels;
 using SchoolManagement.Presentation.Features.Employees.Views;
+using SchoolManagement.Presentation.Features.Roles.ViewModels;
+using SchoolManagement.Presentation.Features.Roles.Views;
 using SchoolManagement.Application.Features.Reports.Contracts;
 using SchoolManagement.Presentation.Features.Reports.ViewModels;
 using SchoolManagement.Presentation.Features.Reports.Views;
@@ -70,6 +72,8 @@ namespace SchoolManagement.Presentation
                     services.AddTransient<EmployeeViewModel>();
                     services.AddTransient<AddEmployeeViewModel>();
                     services.AddTransient<EditEmployeeViewModel>();
+                    services.AddTransient<EmployeeUserViewModel>();
+                    services.AddTransient<RoleManagementViewModel>();
                     services.AddTransient<AuditLogViewModel>();
                     services.AddTransient<EditStudentViewModel>();
                     services.AddTransient<AddClassViewModel>();
@@ -78,6 +82,9 @@ namespace SchoolManagement.Presentation
                     services.AddTransient<DepartmentViewModel>();
                     services.AddTransient<ScoreViewModel>();
                     services.AddTransient<SubjectAssignmentViewModel>();
+                    services.AddTransient<SubjectListViewModel>();
+                    services.AddTransient<AddSubjectViewModel>();
+                    services.AddTransient<EditSubjectViewModel>();
                     services.AddTransient<AddStudentOptionViewModel>();
                     services.AddTransient<AssignCandidateViewModel>();
                     services.AddTransient<StudentCardOptionsViewModel>();
@@ -110,6 +117,8 @@ namespace SchoolManagement.Presentation
                     services.AddTransient<EmployeeView>();
                     services.AddTransient<AddEmployeeView>();
                     services.AddTransient<EditEmployeeView>();
+                    services.AddTransient<EmployeeUserView>();
+                    services.AddTransient<RoleManagementView>();
                     services.AddTransient<AuditLogView>();
                     services.AddTransient<EditStudentView>();
                     services.AddTransient<AddClassView>();
@@ -118,6 +127,9 @@ namespace SchoolManagement.Presentation
                     services.AddTransient<DepartmentView>();
                     services.AddTransient<ScoreView>();
                     services.AddTransient<SubjectAssignmentView>();
+                    services.AddTransient<SubjectListView>();
+                    services.AddTransient<AddSubjectView>();
+                    services.AddTransient<EditSubjectView>();
                     services.AddTransient<AddStudentOptionView>();
                     services.AddTransient<AssignCandidateView>();
                 }).Build();

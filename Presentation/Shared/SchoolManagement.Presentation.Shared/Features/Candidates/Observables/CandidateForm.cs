@@ -63,12 +63,10 @@ namespace SchoolManagement.Presentation.Shared.Features.Candidates.Observables
             }
         }
 
-        [Required(AllowEmptyStrings = false, ErrorMessage = "លេខសម្គាល់ជំនាញមិនអាចគ្មានទិន្នន័យបានទេ")]
         [Description("លេខសម្គាល់ជំនាញ")]
         [ObservableProperty]
         private int _skillId;
 
-        [Required]
         [Description("ជំនាញ")]
         [ObservableProperty]
         private Skill? _skill;

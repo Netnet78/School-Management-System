@@ -138,7 +138,7 @@ namespace SchoolManagement.Presentation.Features.Reports.Providers
                     Header = group.KhmerName ?? group.Name,
                     Columns = columns,
                     Rows = rows,
-                    Summary = result.Summary
+                    Summary = group.Summary
                 });
             }
 

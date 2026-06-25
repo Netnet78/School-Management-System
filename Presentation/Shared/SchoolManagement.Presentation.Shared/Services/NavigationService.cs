@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System.Windows;
 
 namespace SchoolManagement.Presentation.Shared.Services
 {
@@ -18,9 +19,9 @@ namespace SchoolManagement.Presentation.Shared.Services
         public IViewModel? PreviousViewModel { get; private set; }
 
         public event Action<IViewModel?, IViewModel>? OnViewModelChanged;
-        public Task NavigateAsync<TViewModel>(INavigationParams? @params = null) where TViewModel : IViewModel
+        public async Task NavigateAsync<TViewModel>(INavigationParams? @params = null) where TViewModel : IViewModel
         {
-            return NavigateAsync(typeof(TViewModel), @params);
+            await NavigateAsync(typeof(TViewModel), @params).ConfigureAwait(false);
         }
 
         public async Task NavigateAsync(Type viewModelType, INavigationParams? @params = null)
@@ -31,24 +32,24 @@ namespace SchoolManagement.Presentation.Shared.Services
                 _vmCache[viewModelType] = viewmodel;
             }
 
+            IViewModel? previous = CurrentViewModel;
+
+            await _dispatcherService.InvokeAsync(() =>
+            {
+                PreviousViewModel = previous;
+                CurrentViewModel = viewmodel;
+                OnViewModelChanged?.Invoke(previous, viewmodel);
+            });
+
             if (viewmodel is INavigationAware aware && @params != null)
             {
-                await aware.OnNavigatedToAsync(@params);
+                await aware.OnNavigatedToAsync(@params).ConfigureAwait(false);
             }
 
             if (viewmodel is IAsyncLoadable loadable)
             {
                 await loadable.LoadAsync().ConfigureAwait(false);
             }
-
-            await _dispatcherService.InvokeAsync(async () =>
-            {
-                PreviousViewModel = CurrentViewModel;
-                CurrentViewModel = viewmodel;
-                OnViewModelChanged?.Invoke(PreviousViewModel, CurrentViewModel);
-            });
-
-            await Task.CompletedTask;
         }
 
         /// <inheritdoc/>
@@ -65,7 +66,10 @@ namespace SchoolManagement.Presentation.Shared.Services
             }
             finally
             {
-                if (vm != null)
+                if (vm != null && Application.Current is { } app &&
+                    app.Dispatcher != null &&
+                    !app.Dispatcher.HasShutdownStarted &&
+                    !app.Dispatcher.HasShutdownFinished)
                 {
                     await NavigateAsync(vm);
                 }

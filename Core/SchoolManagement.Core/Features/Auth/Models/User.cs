@@ -18,8 +18,9 @@ namespace SchoolManagement.Core.Features.Auth.Models
         public string PasswordHash { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        [AuditHide]
+        [AuditIgnore]
         public DateTime? LastLogin { get; set; }
+        [AuditIgnore]
         public int FailedLoginAttempts { get; set; } = 0;
         public DateTime? LockedOutEnd { get; set; }
         public int RoleId { get; set; }

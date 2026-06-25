@@ -13,6 +13,6 @@ namespace SchoolManagement.Core.Features.Subjects.Models
         public decimal MaxScore { get; set; }
         public bool IsActive { get; set; } = true;
         public ICollection<ClassSubject> ClassSubjects { get; set; } = [];
-        public ICollection<SubjectComponent> Components { get; set; } = [];
+        public ICollection<SubjectMapper> Components { get; set; } = [];
     }
 }

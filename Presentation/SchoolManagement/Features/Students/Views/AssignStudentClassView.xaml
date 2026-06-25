@@ -56,10 +56,10 @@
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <CheckBox IsChecked="{Binding IsChecked}" VerticalAlignment="Center" Margin="0,0,10,0" />
                                         <StackPanel>
-                                            <TextBlock Text="{Binding Class.Name}" FontSize="15" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Class.KhmerName}" FontSize="15" FontWeight="SemiBold" />
                                             <StackPanel Orientation="Horizontal" TextElement.FontSize="13" TextElement.Foreground="#666">
-                                                <TextBlock Text="{Binding Class.Grade.Name, StringFormat='Grade: {0}'}" Margin="0,0,15,0" />
-                                                <TextBlock Text="{Binding Class.Generation.Department.Name, StringFormat='Dept: {0}'}" Margin="0,0,15,0" />
+                                                <TextBlock Text="{Binding Class.Grade.KhmerName, StringFormat='Grade: {0}'}" Margin="0,0,15,0" />
+                                                <TextBlock Text="{Binding Class.Generation.Department.KhmerName, StringFormat='Dept: {0}'}" Margin="0,0,15,0" />
                                                 <TextBlock Text="{Binding Class.Teacher.FullName, StringFormat='Teacher: {0}'}" />
                                             </StackPanel>
                                         </StackPanel>

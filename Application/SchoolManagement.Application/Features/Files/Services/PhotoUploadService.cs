@@ -35,7 +35,7 @@ namespace SchoolManagement.Application.Features.Files.Services
             string fileName = $"{uuid}{extension}";
             string destination = Path.Combine(photoDirectory, fileName);
 
-            File.Copy(path, destination, true);
+            await Task.Run(() => File.Copy(path, destination, true));
 
             ReturnResponse returnResponse = await _s3Service.UploadFile(destination, config.StudentPhotoFolderBucketPath);
 
@@ -58,7 +58,6 @@ namespace SchoolManagement.Application.Features.Files.Services
                 StudentPhoto studentPhoto = new()
                 {
                     Id = student.Id,
-                    Student = student,
                     FileStatus = fileStatus,
                     Key = fileName,
                     LastAttempt = DateTime.UtcNow,
@@ -93,7 +92,7 @@ namespace SchoolManagement.Application.Features.Files.Services
             string fileName = $"{uuid}{extension}";
             string destination = Path.Combine(photoDirectory, fileName);
 
-            File.Copy(path, destination, true);
+            await Task.Run(() => File.Copy(path, destination, true));
 
             ReturnResponse returnResponse = await _s3Service.UploadFile(destination, config.EmployeePhotoFolderBucketPath);
 
@@ -116,7 +115,6 @@ namespace SchoolManagement.Application.Features.Files.Services
                 EmployeePhoto employeePhoto = new()
                 {
                     Id = employee.Id,
-                    Employee = employee,
                     FileStatus = fileStatus,
                     Key = fileName,
                     LastAttempt = DateTime.UtcNow,

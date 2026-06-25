@@ -1,12 +1,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SchoolManagement.Core.Features.Candidates.Models;
-using SchoolManagement.Core.Features.Files.Models;
 using SchoolManagement.Core.Features.Skills.Models;
 using SchoolManagement.Presentation.Shared.Features.Classes.Observables;
 using SchoolManagement.Presentation.Shared.Features.Students.Observables;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 
 namespace SchoolManagement.Presentation.Features.Students.ViewModels
 {
@@ -34,6 +31,12 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
         private string? _currentPhoto;
 
         [ObservableProperty]
+        private string? _currentPhotoPreview;
+
+        [ObservableProperty]
+        private bool _isPhotoLoading;
+
+        [ObservableProperty]
         private bool _canSetSkill;
 
         [ObservableProperty]
@@ -46,7 +49,7 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
         private ObservableCollection<ClassCheckItem> _availableClasses = [];
 
         [ObservableProperty]
-        private bool _isLoading;
+        private bool _isLoading = false;
 
         [ObservableProperty]
         private bool _canEdit;
@@ -76,6 +79,11 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
             _studentService = studentService;
             _fileDialogService = fileDialogService;
 
+        }
+
+        partial void OnCurrentPhotoChanged(string? value)
+        {
+            CurrentPhotoPreview = value;
         }
 
         public abstract Task LoadAsync();
@@ -135,13 +143,17 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
 
         protected async Task LoadAvailableClassesAsync(int? departmentId)
         {
-            if (!departmentId.HasValue)
-            {
-                return;
-            }
+            ReturnResponse<IEnumerable<Class>> classResponse;
 
-            var classResponse = await _classService.GetAllAsync(
-                filters: [new FilterCondition<Class>(c => c.Generation.DepartmentId, FilterOperator.Equals, departmentId.Value)]);
+            if (departmentId.HasValue)
+            {
+                classResponse = await _classService.GetAllAsync(
+                    filters: [new FilterCondition<Class>(c => c.Generation.DepartmentId, FilterOperator.Equals, departmentId.Value)]);
+            }
+            else
+            {
+                classResponse = await _classService.GetAllAsync();
+            }
 
             if (classResponse.Status == Status.Success && classResponse.Value != null)
             {

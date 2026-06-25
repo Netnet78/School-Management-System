@@ -1,4 +1,4 @@
-﻿using System.Windows;
+﻿using System.Globalization;
 using System.Windows.Data;
 
 namespace SchoolManagement.Presentation.Shared.XAMLConverters
@@ -11,15 +11,16 @@ namespace SchoolManagement.Presentation.Shared.XAMLConverters
             {
                 return dateOnly.ToDateTime(new TimeOnly(0, 0));
             }
-            return DependencyProperty.UnsetValue;
+            return Binding.DoNothing;
         }
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is DateTime dateTime)
+            if (value is DateTime dt)
             {
-                return DateOnly.FromDateTime(dateTime);
+                return DateOnly.FromDateTime(dt);
             }
-            return DependencyProperty.UnsetValue;
+            return Binding.DoNothing;
         }
     }
 }

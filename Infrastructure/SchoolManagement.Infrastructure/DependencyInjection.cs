@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SchoolManagement.Core.Shared.Configurations;
 using SchoolManagement.Infrastructure.Data;
-using SchoolManagement.Infrastructure.Features.Accessments.Repositories;
+using SchoolManagement.Infrastructure.Features.Assessments.Repositories;
 using SchoolManagement.Infrastructure.Features.Attendances.Repositories;
 using SchoolManagement.Infrastructure.Features.AuditLogs.Repositories;
 using SchoolManagement.Infrastructure.Features.Auth.Repositories;
@@ -58,7 +58,7 @@ namespace SchoolManagement.Infrastructure
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<IPermissionRepository, PermissionRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
-            services.AddScoped<IAccessmentRepository, ScoreRepository>();
+            services.AddScoped<IAssessmentRepository, ScoreRepository>();
             services.AddScoped<ISkillRepository, SkillRepository>();
             services.AddScoped<IStudentClassRepository, StudentClassRepository>();
             services.AddScoped<IStudentQRRepository, StudentQRRepository>();
@@ -72,7 +72,7 @@ namespace SchoolManagement.Infrastructure
             services.AddScoped<AuditSaveChangesInterceptor>();
 
             // Register Infrastructure Services
-            services.AddScoped<ISettingsService, SettingsService>();
+            services.AddSingleton<ISettingsService, SettingsService>();
 
             // Report exporters
             services.AddTransient<IReportExporter, ExcelExporter>();

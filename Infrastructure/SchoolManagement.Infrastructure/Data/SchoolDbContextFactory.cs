@@ -12,6 +12,8 @@ namespace SchoolManagement.Infrastructure.Data
 
             string connectionString = SecretHelper.GetValueFromEnv("DB_CONNECTION");
 
+            optionsBuilder.EnableSensitiveDataLogging();
+
             // Use Npgsql with connection pooling for better performance
             optionsBuilder.UseNpgsql(connectionString, npgsqlOptions =>
             {

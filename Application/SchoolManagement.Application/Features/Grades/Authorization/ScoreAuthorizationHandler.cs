@@ -1,4 +1,4 @@
-using SchoolManagement.Core.Features.Accessments.Models;
+using SchoolManagement.Core.Features.Assessments.Models;
 
 namespace SchoolManagement.Application.Features.Grades.Authorization
 {

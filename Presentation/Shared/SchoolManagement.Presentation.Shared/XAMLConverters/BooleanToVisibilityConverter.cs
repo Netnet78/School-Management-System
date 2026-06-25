@@ -13,13 +13,14 @@ namespace SchoolManagement.Presentation.Shared.XAMLConverters
         public bool Collapse { get; set; } = false;
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is bool b)
-            {
-                bool data = IsReversed ? !b : b;
-                Visibility visibility = data ? (Visibility.Visible) : (Collapse ? Visibility.Collapsed : Visibility.Hidden);
-                return visibility;
-            }
-            return Visibility.Hidden;
+            bool b;
+            if (value is bool boolVal)
+                b = boolVal;
+            else
+                b = value is not null;
+
+            bool data = IsReversed ? !b : b;
+            return data ? Visibility.Visible : (Collapse ? Visibility.Collapsed : Visibility.Hidden);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

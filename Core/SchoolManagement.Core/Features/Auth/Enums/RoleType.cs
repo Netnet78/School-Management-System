@@ -3,6 +3,7 @@
     public enum RoleType
     {
         Admin,
+        HeadMaster,
         Teacher,
         HeadTeacher,
     }

@@ -23,5 +23,11 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
         {
             await navigationService.NavigateAsync<AssignCandidateViewModel>();
         }
+
+        [RelayCommand]
+        private async Task GoBackAsync()
+        {
+            await navigationService.NavigateAsync<StudentListViewModel>();
+        }
     }
 }

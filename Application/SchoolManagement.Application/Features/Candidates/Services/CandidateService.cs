@@ -1,10 +1,13 @@
+using SchoolManagement.Application.Features.Shared.Services;
+
 namespace SchoolManagement.Application.Features.Candidates.Services
 {
-    public class CandidateService : ICandidateService
+    public class CandidateService : CrudServiceBase<Candidate>, ICandidateService
     {
         private readonly ICandidateRepository _candidateRepository;
 
         public CandidateService(ICandidateRepository candidateRepository)
+            : base(candidateRepository)
         {
             _candidateRepository = candidateRepository;
         }

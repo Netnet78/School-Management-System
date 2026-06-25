@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SchoolManagement.Core.Features.Accessments.Models;
+using SchoolManagement.Core.Features.Assessments.Models;
 using SchoolManagement.Core.Features.Auth.Models;
 
 namespace SchoolManagement.Infrastructure.Data
@@ -12,6 +12,7 @@ namespace SchoolManagement.Infrastructure.Data
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<Subject> Subjects { get; set; }
         public DbSet<SubjectComponent> SubjectComponents { get; set; }
+        public DbSet<SubjectMapper> SubjectMappers { get; set; }
         public DbSet<StudentQR> StudentQRs { get; set; }
         public DbSet<StudentClass> StudentClasses { get; set; }
         public DbSet<Student> Students { get; set; }
@@ -38,6 +39,10 @@ namespace SchoolManagement.Infrastructure.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<SubjectComponent>()
+                .HasIndex(s => s.Name)
+                .IsUnique();
+
             modelBuilder.Entity<Subject>()
                 .Property(s => s.MaxScore)
                 .HasPrecision(5, 2);
@@ -122,7 +127,6 @@ namespace SchoolManagement.Infrastructure.Data
                     .WithMany(s => s.ClassSubjects)
                     .HasForeignKey(cs => cs.SubjectId);
             });
-
 
             base.OnModelCreating(modelBuilder);
         }

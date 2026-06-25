@@ -44,24 +44,17 @@ namespace SchoolManagement.Presentation.Shared.Components
         private async static void OnCurrentViewChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             CustomContentControl control = (CustomContentControl)d;
-            IViewModel? value = (IViewModel?)e.NewValue;
 
             if (!control._isInitialized || control._contentFadeIn == null || control._contentFadeOut == null)
             {
-                //control.ContentContainer.Content = value;
                 return;
             }
 
-            await Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                Storyboard fadeOut = control._contentFadeOut.Clone();
-                fadeOut.Begin(control.ContentContainer, HandoffBehavior.SnapshotAndReplace);
-            });
-            await Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                Storyboard fadeIn = control._contentFadeIn.Clone();
-                fadeIn.Begin(control.ContentContainer, HandoffBehavior.SnapshotAndReplace);
-            });
+            Storyboard fadeOut = control._contentFadeOut.Clone();
+            fadeOut.Begin(control.ContentContainer, HandoffBehavior.SnapshotAndReplace);
+
+            Storyboard fadeIn = control._contentFadeIn.Clone();
+            fadeIn.Begin(control.ContentContainer, HandoffBehavior.SnapshotAndReplace);
         }
 
         public CustomContentControl()

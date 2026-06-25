@@ -1,6 +1,6 @@
 using SchoolManagement.Application.Features.Reports.Contracts;
 using SchoolManagement.Application.Features.Reports.Models;
-using SchoolManagement.Core.Features.Accessments.Models;
+using SchoolManagement.Core.Features.Assessments.Models;
 using SchoolManagement.Core.Features.Reports.Attributes;
 using SchoolManagement.Core.Features.Reports.Enums;
 using SchoolManagement.Core.Features.Reports.Models;
@@ -12,13 +12,13 @@ namespace SchoolManagement.Application.Features.Reports.Generators
         SupportedExportFormats = new[] { "Excel" })]
     public class ScoreReportGenerator : IReportGenerator
     {
-        private readonly IAccessmentRepository _assessmentRepository;
+        private readonly IAssessmentRepository _assessmentRepository;
         private readonly IExamRepository _examRepository;
 
         public string ReportTypeKey => "score-report";
 
         public ScoreReportGenerator(
-            IAccessmentRepository assessmentRepository,
+            IAssessmentRepository assessmentRepository,
             IExamRepository examRepository)
         {
             _assessmentRepository = assessmentRepository;
@@ -73,9 +73,10 @@ namespace SchoolManagement.Application.Features.Reports.Generators
 
             // Collect all unique component names across all assessments
             var allComponentKeys = assessmentList
+            // TODO: Fix the current implementation to support the actualy component id rather than its mapper
                 .SelectMany(a => a.Scores)
-                .Where(s => s.Component != null)
-                .Select(s => s.Component.Name)
+                .Where(s => s.Mapper != null)
+                .Select(s => s.Mapper.Component)
                 .Distinct()
                 .Order()
                 .ToList();
@@ -99,12 +100,13 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 };
 
                 // Add component scores as dynamic columns
-                foreach (var componentKey in allComponentKeys)
+                foreach (SubjectComponent? component in allComponentKeys)
                 {
                     var score = assessment.Scores
-                        .FirstOrDefault(s => s.Component?.Name == componentKey);
+                        // TODO: Fix the current implementation to support the actualy component id rather than its mapper
+                        .FirstOrDefault(s => s.Mapper?.Id == component.Id);
 
-                    row[$"component_{componentKey}"] = score?.Amount;
+                    row[$"component_{component}"] = score?.Amount ?? 0;
                 }
 
                 rows.Add(row);
@@ -115,17 +117,17 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 new() { Key = "studentName", Header = "Student Name", HeaderKhmer = "ឈ្មោះសិស្ស", Width = 200 },
                 new() { Key = "latinName", Header = "Latin Name", HeaderKhmer = "ឈ្មោះឡាតាំង", Width = 180 },
                 new() { Key = "subject", Header = "Subject", HeaderKhmer = "មុខវិជ្ជា", Width = 150 },
-                new() { Key = "exam", Header = "Exam", HeaderKhmer = "ប្រលង", Width = 120 },
-                new() { Key = "className", Header = "Class", HeaderKhmer = "ថ្នាក់", Width = 150 },
+                new() { Key = "exam", Header = "Exam", HeaderKhmer = "ប្រលង", Width = 160 },
+                new() { Key = "className", Header = "Class", HeaderKhmer = "ថ្នាក់", Width = 200 },
             };
 
             // Add dynamic component columns
-            foreach (var componentKey in allComponentKeys)
+            foreach (SubjectComponent? component in allComponentKeys)
             {
                 columns.Add(new ReportColumn
                 {
-                    Key = $"component_{componentKey}",
-                    Header = componentKey,
+                    Key = $"component_{component.Name}",
+                    Header = component.Name,
                     DataType = typeof(decimal),
                     Width = 80,
                 });
@@ -151,8 +153,8 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 Summary = new Dictionary<string, object>
                 {
                     ["__totalCount"] = totalCount,
-                    ["totalAssessments"] = rows.Count,
-                    ["averageScore"] = rows.Count > 0
+                    ["ចំនួនសិស្សានុសិស្ស"] = rows.Count,
+                    ["ពិន្ទុមធ្យម"] = rows.Count > 0
                         ? Math.Round(rows.Average(r => Convert.ToDecimal(r.GetValueOrDefault("totalScore")?.Value ?? 0m)), 2)
                         : 0m,
                 }

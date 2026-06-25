@@ -3,6 +3,7 @@ using SchoolManagement.Infrastructure.Data;
 using System.Reflection;
 using SchoolManagement.Infrastructure.Shared.Contracts;
 using SchoolManagement.Infrastructure.Shared.Querying;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace SchoolManagement.Infrastructure.Shared.Repositories;
 
@@ -42,7 +43,7 @@ public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity>
     {
         ArgumentNullException.ThrowIfNull(data);
         await Set.AddAsync(data);
-        await SaveAsync();
+        await SaveAsync(data);
     }
 
     public virtual async Task UpdateAsync(TEntity data)
@@ -50,19 +51,20 @@ public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity>
         ArgumentNullException.ThrowIfNull(data);
 
         int id = GetEntityId(data);
-        TEntity? existing = await Set.FindAsync(id);
 
-        if (existing is null)
+        EntityEntry<TEntity>? tracked = Context.ChangeTracker.Entries<TEntity>()
+            .FirstOrDefault(e => e.Entity.Id == data.Id);
+
+        if (tracked != null)
         {
-            Set.Attach(data);
-            Context.Entry(data).State = EntityState.Modified;
+            Context.Entry(tracked.Entity).CurrentValues.SetValues(data);
+            await SaveAsync(tracked.Entity);
         }
         else
         {
-            Context.Entry(existing).CurrentValues.SetValues(data);
+            Context.Update(data);
+            await SaveAsync(data);
         }
-
-        await SaveAsync();
     }
 
     public virtual async Task DeleteAsync(TEntity data)
@@ -75,6 +77,12 @@ public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity>
     public virtual async Task SaveAsync()
     {
         await Context.SaveChangesAsync();
+    }
+
+    public virtual async Task SaveAsync(TEntity entity)
+    {
+        await Context.SaveChangesAsync();
+        await Context.Entry(entity).ReloadAsync();
     }
 
     public virtual async Task<IEnumerable<TEntity>> FindAsync(

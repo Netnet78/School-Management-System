@@ -74,17 +74,20 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
                     return;
                 }
 
+                await LoadSkillsAsync();
                 LoadStudentToForm(_student);
                 StudentName = $"{StudentForm.LastName} {StudentForm.FirstName}";
 
-                await LoadSkillsAsync();
-
+                IsPhotoLoading = true;
+                CurrentPhoto = null;
                 ReturnResponse<FileObject> photoResponse = await _photoFetchService.GetStudentPhoto(StudentForm.PhotoKey);
 
                 if (photoResponse.Status == Status.Success)
                 {
                     CurrentPhoto = photoResponse.Value?.FilePath;
                 }
+
+                IsPhotoLoading = false;
 
                 User? user = _authorizationService.CurrentUser;
                 if (user == null)
@@ -93,6 +96,24 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
                     return;
                 }
                 CanAssignClass = false;
+
+                if (user.IsAdmin())
+                {
+                    CanAssignClass = true;
+                    CanSetSkill = true;
+
+                    await LoadAvailableClassesAsync(departmentId: null);
+
+                    HashSet<int> enrolledIds = await LoadExistingEnrollmentsAsync(_student.Id);
+
+                    foreach (ClassCheckItem item in AvailableClasses)
+                    {
+                        if (item.Class != null && enrolledIds.Contains(item.Class.Id))
+                        {
+                            item.IsChecked = true;
+                        }
+                    }
+                }
 
                 if (user.IsHeadTeacher())
                 {
@@ -155,12 +176,11 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
                     _messageService.Show(candidateResponse.Message, "ឈប់សិន!", MessageButton.OK, MessageIcon.Hand);
                     return;
                 }
-
-                await _studentService.UpdateAsync(updatedStudent);
+                await DeleteStudentPhotoAsync(updatedStudent.Candidate);
 
                 await UploadStudentPhotoAsync(updatedStudent);
 
-                await DeleteStudentPhotoAsync(updatedStudent.Candidate);
+                await _studentService.UpdateAsync(updatedStudent);
 
                 User? user = _authorizationService.CurrentUser;
                 if (user == null)
@@ -169,7 +189,7 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
                     return;
                 }
 
-                if (user.IsHeadTeacher())
+                if (user.IsHeadTeacher() || user.IsAdmin())
                 {
                     HashSet<int> existingClassIds = await LoadExistingEnrollmentsAsync(_student.Id);
 
@@ -177,6 +197,8 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
                     {
                         if (item.Class != null && !existingClassIds.Contains(item.Class.Id))
                         {
+                            DateTime now = DateTime.Now;
+
                             await _studentClassService.InsertAsync(new StudentClass
                             {
                                 StudentId = _student.Id,
@@ -195,6 +217,9 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
                         }
                     }
                 }
+
+                _messageService.Show("បានកែប្រែទិន្នន័យសិស្សដោយជោគជ័យ!", "ជោគជ័យ", icon: MessageIcon.Success);
+                await GoBackAsync();
             }
             catch (Exception ex)
             {
@@ -204,8 +229,6 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
             finally
             {
                 IsLoading = false;
-                _messageService.Show($"ទិន្នន័យសិស្សឈ្មោះ {StudentName} ត្រូវបានរក្សាទុកជាការស្រេច!", "ប្រតិបត្តិការប្រកបទៅដោយភាព​ជោគជ័យ!",
-                    MessageButton.OK, MessageIcon.Success);
             }
         }
 
@@ -222,8 +245,8 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
         [RelayCommand]
         private async Task CancelAsync()
         {
-            await GoBackAsync();
             _student = null;
+            await GoBackAsync();
         }
     }
 }

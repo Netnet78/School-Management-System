@@ -34,6 +34,8 @@ namespace SchoolManagement.Presentation.Shared.Components
             MessageButton.AbortRetry
         ];
 
+        private readonly DispatcherTimer? copyTimer;
+
         public CustomMessageBox(string title, string message, MessageButton messageBoxButton, MessageIcon messageBoxImage, int? autoHideIn = null)
         {
             InitializeComponent();
@@ -101,6 +103,17 @@ namespace SchoolManagement.Presentation.Shared.Components
                     break;
             }
 
+            // Copy status timer
+            copyTimer = new DispatcherTimer()
+            {
+                Interval = TimeSpan.FromSeconds(2)
+            };
+            copyTimer.Tick += (s, e) =>
+            {
+                copyTimer.Stop();
+                CopyStatusText.Visibility = Visibility.Collapsed;
+            };
+
             // Auto hide logic
             if (autoHideIn != null)
             {
@@ -161,6 +174,17 @@ namespace SchoolManagement.Presentation.Shared.Components
             Close();
         }
 
+        public void Copy_Click(object sender, RoutedEventArgs e)
+        {
+            Clipboard.SetText(MessageText.Text);
+
+            CopyStatusText.Text = "Copied";
+            CopyStatusText.Visibility = Visibility.Visible;
+
+            copyTimer?.Stop();
+            copyTimer?.Start();
+        }
+
         public static MessageResult Show(string message, string title, MessageButton button, MessageIcon icon, int? autoHide = null)
         {
             CustomMessageBox msg = new(title, message, button, icon, autoHide)
@@ -168,7 +192,14 @@ namespace SchoolManagement.Presentation.Shared.Components
                 WindowStartupLocation = WindowStartupLocation.CenterScreen
             };
             msg.ShowDialog();
-            return msg.Result;
+            try
+            {
+                return msg.Result;
+            }
+            finally
+            {
+                msg.copyTimer?.Stop();
+            }
         }
     }
 }

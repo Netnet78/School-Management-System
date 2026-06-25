@@ -1,4 +1,4 @@
-﻿using SchoolManagement.Core.Features.Accessments.Models;
+﻿using SchoolManagement.Core.Features.Assessments.Models;
 using SchoolManagement.Core.Shared.Contracts;
 using System.ComponentModel;
 

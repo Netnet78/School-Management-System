@@ -40,7 +40,7 @@ namespace SchoolManagement.Infrastructure.Migrations
             migrationBuilder.RenameColumn(
                 name: "ClassSubjectId",
                 table: "Scores",
-                newName: "AccessmentId");
+                newName: "AssessmentId");
 
             migrationBuilder.RenameIndex(
                 name: "IX_Scores_StudentClassId",
@@ -172,7 +172,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                 newName: "ExamId");
 
             migrationBuilder.RenameColumn(
-                name: "AccessmentId",
+                name: "AssessmentId",
                 table: "Scores",
                 newName: "ClassSubjectId");
 

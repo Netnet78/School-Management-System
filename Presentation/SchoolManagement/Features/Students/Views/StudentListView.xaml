@@ -179,7 +179,6 @@
 
         <DataGrid Grid.Row="2"
                   ItemsSource="{Binding Students}"
-                  SelectedItem="{Binding SelectedStudent}"
                   Margin="20"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
@@ -215,7 +214,7 @@
 
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70" />
-                <DataGridTextColumn Header="គោត្តនាម និងនាម" Binding="{Binding Candidate.FullName}" Width="160"/>
+                <DataGridTextColumn Header="គោត្តនាម និងនាម" Binding="{Binding FullName}" Width="160"/>
                 <DataGridTextColumn Header="ភេទ" Binding="{Binding Candidate.Gender, Converter={StaticResource EnumToDescriptionConverter}}" Width="80"/>
                 <DataGridTextColumn Header="ថ្ងៃខែឆ្នាំកំណើត" Binding="{Binding Candidate.DateOfBirth, StringFormat='yyyy-MM-dd'}" Width="160"/>
                 <DataGridTextColumn Header="ការស្នាក់នៅ" Binding="{Binding Candidate.StayType, Converter={StaticResource EnumToDescriptionConverter}}" Width="125"/>
@@ -225,7 +224,7 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" Margin="5">
-                                <Button Content="Class"
+                                <Button Content="ថ្នាក់រៀន"
                                         Padding="5,3" Margin="2"
                                         IsEnabled="{Binding DataContext.CanAssignClass, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         Command="{Binding DataContext.AssignClassCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
@@ -233,7 +232,7 @@
                                         Background="#9C27B0" Foreground="White"
                                         FontSize="12"
                                         Width="52"/>
-                                <Button Content="Edit"
+                                <Button Content="កែប្រែ"
                                         Padding="5,3" Margin="2"
                                         IsEnabled="{Binding DataContext.CanEditStudents, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         Command="{Binding DataContext.EditStudentCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
@@ -241,14 +240,14 @@
                                         Background="#FF9800" Foreground="White"
                                         FontSize="12"
                                         Width="52"/>
-                                <Button Content="Delete"
-                                        Padding="5,3" Margin="2"
+                                <Button Content="បញ្ឈប់/លុប"
+                                        Padding="1,3" Margin="2"
                                         IsEnabled="{Binding DataContext.CanDeleteStudents, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         Command="{Binding DataContext.DeleteStudentCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"
                                         Background="#F44336" Foreground="White"
                                         FontSize="12"
-                                        Width="52"/>
+                                        Width="68"/>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

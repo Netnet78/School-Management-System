@@ -4,8 +4,10 @@ namespace SchoolManagement.Infrastructure.Features.Files.Services
 {
     public class SettingsService : ISettingsService
     {
-        private JsonDocument _json;
+        private JsonDocument? _json;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
+        private bool _isInitialized;
+        private object _initLock = new();
 
         public string SettingsPath { get; }
 
@@ -15,19 +17,23 @@ namespace SchoolManagement.Infrastructure.Features.Files.Services
             string assemblyDirectory = Path.GetDirectoryName(assemblyPath) ?? string.Empty;
             SettingsPath = Path.Combine(assemblyDirectory, "appsettings.json");
 
-            if (!Path.Exists(SettingsPath))
-            {
-                CreateSettingsFile();
-            }
-
-            string jsonString = File.ReadAllText(SettingsPath);
             _jsonSerializerOptions = new JsonSerializerOptions
             {
                 WriteIndented = true,
             };
+        }
+
+        private JsonDocument InitSettings()
+        {
+            if (!Path.Exists(SettingsPath))
+                CreateSettingsFile();
+
+            string jsonString = File.ReadAllText(SettingsPath);
             _json = JsonDocument.Parse(jsonString);
+            _isInitialized = true;
 
             CheckPhotoPathConfig();
+            return _json;
         }
 
         private void CheckPhotoPathConfig()
@@ -83,7 +89,9 @@ namespace SchoolManagement.Infrastructure.Features.Files.Services
 
         public Settings GetAllSettings()
         {
-            JsonElement root = _json.RootElement;
+            EnsureInitialized();
+            JsonElement root = _json?.RootElement ??
+                throw new FileNotFoundException("មិនអាចរកឃើញ appsettings.json បានទេ!");
             JsonElement storage = root.GetProperty("Storage");
             return new Settings
             {
@@ -98,6 +106,7 @@ namespace SchoolManagement.Infrastructure.Features.Files.Services
 
         public void SaveAllSettings(Settings settings)
         {
+            EnsureInitialized();
             var obj = new
             {
                 Theme = settings.Theme,
@@ -116,6 +125,16 @@ namespace SchoolManagement.Infrastructure.Features.Files.Services
 
             string jsonString = File.ReadAllText(SettingsPath);
             _json = JsonDocument.Parse(jsonString);
+        }
+
+        private void EnsureInitialized()
+        {
+            if (_isInitialized) return;
+            lock (_initLock)
+            {
+                if (_isInitialized) return;
+                InitSettings();
+            }
         }
     }
 }

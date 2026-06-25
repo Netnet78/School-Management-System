@@ -17,7 +17,7 @@ namespace SchoolManagement.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.7")
+                .HasAnnotation("ProductVersion", "10.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -37,7 +37,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("PermissionRole");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Features.Accessments.Models.Assessment", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Assessments.Models.Assessment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -72,16 +72,13 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("Assessments");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Features.Accessments.Models.Score", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Assessments.Models.Score", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AccessmentId")
-                        .HasColumnType("integer");
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
@@ -92,11 +89,16 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.Property<int>("ComponentId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("MapperId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AssessmentId");
 
                     b.HasIndex("ComponentId");
+
+                    b.HasIndex("MapperId");
 
                     b.ToTable("Scores");
                 });
@@ -824,18 +826,43 @@ namespace SchoolManagement.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("KhmerName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("SubjectComponents");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Subjects.Models.SubjectMapper", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ComponentId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("SubjectId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ComponentId");
+
                     b.HasIndex("SubjectId");
 
-                    b.ToTable("SubjectComponents");
+                    b.ToTable("SubjectMappers");
                 });
 
             modelBuilder.Entity("PermissionRole", b =>
@@ -853,7 +880,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Features.Accessments.Models.Assessment", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Assessments.Models.Assessment", b =>
                 {
                     b.HasOne("SchoolManagement.Core.Features.Classes.Models.ClassSubject", "ClassSubject")
                         .WithMany("Scores")
@@ -880,23 +907,31 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.Navigation("StudentClass");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Features.Accessments.Models.Score", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Assessments.Models.Score", b =>
                 {
-                    b.HasOne("SchoolManagement.Core.Features.Accessments.Models.Assessment", "Assessment")
+                    b.HasOne("SchoolManagement.Core.Features.Assessments.Models.Assessment", "Assessment")
                         .WithMany("Scores")
                         .HasForeignKey("AssessmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SchoolManagement.Core.Features.Subjects.Models.SubjectComponent", "Component")
-                        .WithMany("Scores")
+                        .WithMany()
                         .HasForeignKey("ComponentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagement.Core.Features.Subjects.Models.SubjectMapper", "Mapper")
+                        .WithMany("Scores")
+                        .HasForeignKey("MapperId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Assessment");
 
                     b.Navigation("Component");
+
+                    b.Navigation("Mapper");
                 });
 
             modelBuilder.Entity("SchoolManagement.Core.Features.Attendances.Models.Attendance", b =>
@@ -1109,18 +1144,26 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Features.Subjects.Models.SubjectComponent", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Subjects.Models.SubjectMapper", b =>
                 {
+                    b.HasOne("SchoolManagement.Core.Features.Subjects.Models.SubjectComponent", "Component")
+                        .WithMany("Mappers")
+                        .HasForeignKey("ComponentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("SchoolManagement.Core.Features.Subjects.Models.Subject", "Subject")
                         .WithMany("Components")
                         .HasForeignKey("SubjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Component");
+
                     b.Navigation("Subject");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Features.Accessments.Models.Assessment", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Assessments.Models.Assessment", b =>
                 {
                     b.Navigation("Scores");
                 });
@@ -1221,6 +1264,11 @@ namespace SchoolManagement.Infrastructure.Migrations
                 });
 
             modelBuilder.Entity("SchoolManagement.Core.Features.Subjects.Models.SubjectComponent", b =>
+                {
+                    b.Navigation("Mappers");
+                });
+
+            modelBuilder.Entity("SchoolManagement.Core.Features.Subjects.Models.SubjectMapper", b =>
                 {
                     b.Navigation("Scores");
                 });

@@ -45,14 +45,24 @@
                        VerticalAlignment="Center"/>
             </StackPanel>
 
-            <TextBlock x:Name="MessageText"
+
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" MaxHeight="600">
+                <TextBlock x:Name="MessageText"
                        Text="កុំព្យូទ័ររបស់អ្នកត្រូវបានគេ hack"
                        TextWrapping="Wrap"
                        Margin="0 0 0 20"
                        FontSize="16"/>
+            </ScrollViewer>
 
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right">
+
+                <Button Click="Copy_Click" x:Name="CopyButton">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesigns:PackIcon Kind="ContentCopy" Width="16" Height="16" />
+                        <TextBlock Margin="5 0 0 0" x:Name="CopyStatusText" Visibility="Collapsed"/>
+                    </StackPanel>
+                </Button>
 
                 <Button Content="OK"
                         Name="OKButton"
@@ -96,7 +106,6 @@
                         Margin="5"
                         Click="Abort_Click"/>
             </StackPanel>
-
         </StackPanel>
     </Border>
 </Window>

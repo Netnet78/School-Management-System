@@ -82,7 +82,7 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
             }
         }
 
-        private IEnumerable<FilterCondition<Class>> BuildClassFilter(User user)
+        private List<FilterCondition<Class>> BuildClassFilter(User user)
         {
             List<FilterCondition<Class>> filters = [];
 

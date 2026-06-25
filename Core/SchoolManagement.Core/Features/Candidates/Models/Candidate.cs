@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations;
 namespace SchoolManagement.Core.Features.Candidates.Models
 {
     [Description("បេក្ខជន")]
-    public class Candidate : IEntity
+    public class Candidate : IEntity, IAuditableEntity
     {
         [Description("លេខសម្គាល់")]
         public int Id { get; set; }
@@ -145,5 +145,15 @@ namespace SchoolManagement.Core.Features.Candidates.Models
 
         // One candidate can be a student (one to unique)
         public Student? Student { get; set; } = null;
+
+        public string CustomAuditDescription()
+        {
+            return "";
+        }
+
+        public string CustomAuditName()
+        {
+            return FullName;
+        }
     }
 }

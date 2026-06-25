@@ -1,7 +1,7 @@
 ﻿using SchoolManagement.Core.Features.Classes.Models;
 using SchoolManagement.Core.Features.Attendances.Models;
 using SchoolManagement.Core.Shared.Contracts;
-using SchoolManagement.Core.Features.Accessments.Models;
+using SchoolManagement.Core.Features.Assessments.Models;
 using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Students.Models

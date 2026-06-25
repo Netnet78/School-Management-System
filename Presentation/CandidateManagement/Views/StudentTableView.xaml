@@ -610,7 +610,7 @@
                                            SnapsToDevicePixels="True"
                                            UseLayoutRounding="True"
                                            RenderOptions.BitmapScalingMode="HighQuality"
-                                           Source="{Binding SelectedStudentPhoto, Converter={StaticResource PhotoPathToImageSourceConverter}}" />
+                                           Source="{Binding SelectedStudentPhotoPreview}" />
                                 </Viewbox>
 
                                 <Border Visibility="{Binding ValidPhotoPath, Converter={StaticResource BooleanToVisibilityConverterReversed}, FallbackValue=Visible}"

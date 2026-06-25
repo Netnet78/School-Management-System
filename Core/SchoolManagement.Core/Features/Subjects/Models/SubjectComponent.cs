@@ -1,16 +1,24 @@
-﻿using SchoolManagement.Core.Features.Accessments.Models;
-using SchoolManagement.Core.Shared.Contracts;
+﻿using SchoolManagement.Core.Shared.Contracts;
 using System.ComponentModel;
 
 namespace SchoolManagement.Core.Features.Subjects.Models
 {
     [Description("ផ្នែកនៃមុខវិជ្ជា")]
-    public class SubjectComponent : IEntity
+    public class SubjectComponent : IEntity, IAuditableEntity
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public int SubjectId { get; set; }
-        public Subject Subject { get; set; } = null!;
-        public ICollection<Score> Scores { get; set; } = [];
+        public string KhmerName { get; set; } = string.Empty;
+        public IEnumerable<SubjectMapper> Mappers { get; set; } = [];
+
+        public string CustomAuditDescription()
+        {
+            return "";
+        }
+
+        public string CustomAuditName()
+        {
+            return $"{KhmerName}";
+        }
     }
 }

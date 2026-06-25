@@ -40,7 +40,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("PermissionRole");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Features.Accessments.Models.Assessment", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Assessments.Models.Assessment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -75,7 +75,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.ToTable("Assessments");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Features.Accessments.Models.Score", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Assessments.Models.Score", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -83,7 +83,7 @@ namespace SchoolManagement.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AccessmentId")
+                    b.Property<int>("AssessmentId")
                         .HasColumnType("integer");
 
                     b.Property<decimal>("Amount")
@@ -859,7 +859,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Features.Accessments.Models.Assessment", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Assessments.Models.Assessment", b =>
                 {
                     b.HasOne("SchoolManagement.Core.Features.Classes.Models.ClassSubject", "ClassSubject")
                         .WithMany("Scores")
@@ -886,9 +886,9 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.Navigation("StudentClass");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Features.Accessments.Models.Score", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Assessments.Models.Score", b =>
                 {
-                    b.HasOne("SchoolManagement.Core.Features.Accessments.Models.Assessment", "Assessment")
+                    b.HasOne("SchoolManagement.Core.Features.Assessments.Models.Assessment", "Assessment")
                         .WithMany("Scores")
                         .HasForeignKey("AssessmentId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1126,7 +1126,7 @@ namespace SchoolManagement.Infrastructure.Migrations
                     b.Navigation("Subject");
                 });
 
-            modelBuilder.Entity("SchoolManagement.Core.Features.Accessments.Models.Assessment", b =>
+            modelBuilder.Entity("SchoolManagement.Core.Features.Assessments.Models.Assessment", b =>
                 {
                     b.Navigation("Scores");
                 });

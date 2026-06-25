@@ -20,7 +20,7 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Export
         private async Task ExportToStreamAsync(ReportResult data, MemoryStream stream, CancellationToken cancellationToken)
         {
             using var workbook = CreateWorkbook(data);
-            workbook.SaveAs(stream);
+            await Task.Run(() => workbook.SaveAs(stream), cancellationToken);
             await Task.CompletedTask;
         }
 
@@ -47,7 +47,7 @@ namespace SchoolManagement.Infrastructure.Features.Reports.Export
             where TReportResult : ReportResult
         {
             using var workbook = CreateWorkbook(data);
-            workbook.SaveAs(filePath);
+            await Task.Run(() => workbook.SaveAs(filePath), cancellationToken);
             await Task.CompletedTask;
         }
     }

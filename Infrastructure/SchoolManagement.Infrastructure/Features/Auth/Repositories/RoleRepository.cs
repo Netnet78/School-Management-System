@@ -15,4 +15,26 @@ public class RoleRepository : BaseRepository<Role>, IRoleRepository
     {
         return await Set.FirstOrDefaultAsync(r => r.Name == name);
     }
+
+    public async Task UpdateRolePermissionsAsync(int roleId, IEnumerable<int> permissionIds)
+    {
+        Role? role = await Set
+            .Include(r => r.Permissions)
+            .FirstOrDefaultAsync(r => r.Id == roleId);
+
+        if (role == null) return;
+
+        role.Permissions.Clear();
+
+        List<Permission> permissions = await Context.Permissions
+            .Where(p => permissionIds.Contains(p.Id))
+            .ToListAsync();
+
+        foreach (Permission permission in permissions)
+        {
+            role.Permissions.Add(permission);
+        }
+
+        await Context.SaveChangesAsync();
+    }
 }

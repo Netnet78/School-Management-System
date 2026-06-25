@@ -18,7 +18,7 @@ global using SchoolManagement.Core.Shared.Contracts;
 global using SchoolManagement.Core.Shared.Enums;
 global using SchoolManagement.Core.Shared.Extensions;
 global using SchoolManagement.Core.Shared.Models;
-global using SchoolManagement.Infrastructure.Features.Accessments.Contracts;
+global using SchoolManagement.Infrastructure.Features.Assessments.Contracts;
 global using SchoolManagement.Infrastructure.Features.Attendances.Contracts;
 global using SchoolManagement.Infrastructure.Features.AuditLogs.Contracts;
 global using SchoolManagement.Infrastructure.Features.Auth.Contracts;

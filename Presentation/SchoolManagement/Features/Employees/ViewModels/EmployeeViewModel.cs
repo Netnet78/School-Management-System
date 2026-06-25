@@ -15,6 +15,8 @@ namespace SchoolManagement.Presentation.Features.Employees.ViewModels
         private readonly IAuthorizationService _authorizationService;
         private readonly IMessageService _messageService;
         private readonly INavigationService _navigationService;
+        private readonly IDispatcherService _dispatcherService;
+        private readonly IEmployeeUserService _employeeUserService;
 
         private ObservableCollection<Employee> _allEmployees = [];
         private CancellationTokenSource? _cts;
@@ -30,6 +32,9 @@ namespace SchoolManagement.Presentation.Features.Employees.ViewModels
 
         [ObservableProperty]
         private bool _canManageEmployees;
+
+        [ObservableProperty]
+        private bool _canManageUsers;
 
         [ObservableProperty]
         private bool _canFilterDepartment;
@@ -70,13 +75,17 @@ namespace SchoolManagement.Presentation.Features.Employees.ViewModels
             IDepartmentService departmentService,
             IAuthorizationService authorizationService,
             IMessageService messageService,
-            INavigationService navigationService)
+            INavigationService navigationService,
+            IDispatcherService dispatcherService,
+            IEmployeeUserService employeeUserService)
         {
             _employeeService = employeeService;
             _departmentService = departmentService;
             _authorizationService = authorizationService;
             _messageService = messageService;
             _navigationService = navigationService;
+            _dispatcherService = dispatcherService;
+            _employeeUserService = employeeUserService;
         }
 
         public async Task LoadAsync()
@@ -90,6 +99,10 @@ namespace SchoolManagement.Presentation.Features.Employees.ViewModels
             }
 
             CanManageEmployees = true;
+
+            // Check ManageUsers permission separately
+            ReturnResponse userPermission = await _authorizationService.AuthorizeAsync(null, PermissionType.ManageUsers);
+            CanManageUsers = userPermission.Status == Status.Success;
 
             User? currentUser = _authorizationService.CurrentUser;
             if (currentUser == null)
@@ -133,6 +146,17 @@ namespace SchoolManagement.Presentation.Features.Employees.ViewModels
         }
 
         [RelayCommand]
+        private async Task ManageUserAsync(Employee? employee)
+        {
+            if (!CanManageUsers || employee == null)
+            {
+                return;
+            }
+
+            await _navigationService.NavigateAsync<EmployeeUserViewModel>(new EmployeeUserParams { Employee = employee });
+        }
+
+        [RelayCommand]
         private async Task DeleteEmployeeAsync(Employee? employee)
         {
             if (!CanManageEmployees || employee == null)
@@ -164,7 +188,7 @@ namespace SchoolManagement.Presentation.Features.Employees.ViewModels
                     if (response.Status == Status.Success)
                     {
                         _allEmployees.Remove(employee);
-                        ApplyFiltersAndPaging();
+                        await ApplyFiltersAndPaging();
                         _messageService.Show("Employee deleted successfully.", "Success", MessageButton.OK, MessageIcon.Success);
                     }
                     else
@@ -180,7 +204,7 @@ namespace SchoolManagement.Presentation.Features.Employees.ViewModels
                     if (response.Status == Status.Success)
                     {
                         _messageService.Show("Employee marked as inactive successfully.", "Success", MessageButton.OK, MessageIcon.Success);
-                        ApplyFiltersAndPaging();
+                        await ApplyFiltersAndPaging();
                     }
                     else
                     {
@@ -205,7 +229,7 @@ namespace SchoolManagement.Presentation.Features.Employees.ViewModels
             SelectedActiveFilter = null;
             SelectedDepartmentFilterId = CanFilterDepartment ? null : _authorizationService.CurrentUser?.Employee?.DepartmentId;
             CurrentPage = 1;
-            ApplyFiltersAndPaging();
+            await ApplyFiltersAndPaging();
         }
 
         async partial void OnSearchTextChanged(string value)
@@ -225,13 +249,13 @@ namespace SchoolManagement.Presentation.Features.Employees.ViewModels
         partial void OnSelectedDepartmentFilterIdChanged(int? value)
         {
             CurrentPage = 1;
-            ApplyFiltersAndPaging();
+            Task.Run(() => ApplyFiltersAndPaging());
         }
 
         partial void OnSelectedActiveFilterChanged(bool? value)
         {
             CurrentPage = 1;
-            ApplyFiltersAndPaging();
+            Task.Run(() => ApplyFiltersAndPaging());
         }
 
         partial void OnCurrentPageChanged(int oldValue, int newValue)
@@ -253,7 +277,7 @@ namespace SchoolManagement.Presentation.Features.Employees.ViewModels
                 return;
             }
 
-            ApplyFiltersAndPaging();
+            Task.Run(() => ApplyFiltersAndPaging());
         }
 
         private async Task LoadDepartmentsAsync()
@@ -338,7 +362,7 @@ namespace SchoolManagement.Presentation.Features.Employees.ViewModels
 
                 _allEmployees = new ObservableCollection<Employee>(response.Value);
                 CurrentPage = 1;
-                ApplyFiltersAndPaging();
+                await ApplyFiltersAndPaging();
             }
             catch (Exception ex)
             {
@@ -350,7 +374,7 @@ namespace SchoolManagement.Presentation.Features.Employees.ViewModels
             }
         }
 
-        private void ApplyFiltersAndPaging()
+        private async Task ApplyFiltersAndPaging()
         {
             IEnumerable<Employee> query = _allEmployees;
 
@@ -380,27 +404,33 @@ namespace SchoolManagement.Presentation.Features.Employees.ViewModels
                 .OrderBy(employee => employee.FullName)
                 .ToList();
 
-            TotalCount = filteredEmployees.Count;
-            MaxPage = Math.Max(1, (int)Math.Ceiling((double)TotalCount / DefaultPageSize));
-
-            if (CurrentPage > MaxPage)
+            await _dispatcherService.InvokeAsync(() =>
             {
-                CurrentPage = MaxPage;
-                return;
-            }
+                TotalCount = filteredEmployees.Count;
+                MaxPage = Math.Max(1, (int)Math.Ceiling((double)TotalCount / DefaultPageSize));
+
+                if (CurrentPage > MaxPage)
+                {
+                    CurrentPage = MaxPage;
+                    return;
+                }
+            });
 
             IEnumerable<Employee> pageEmployees = filteredEmployees
                 .Skip((CurrentPage - 1) * DefaultPageSize)
                 .Take(DefaultPageSize);
 
-            Employees.Clear();
-            foreach (Employee employee in pageEmployees)
+            await _dispatcherService.InvokeAsync(() =>
             {
-                Employees.Add(employee);
-            }
+                Employees.Clear();
+                foreach (Employee employee in pageEmployees)
+                {
+                    Employees.Add(employee);
+                }
 
-            CurrentPageTotalCount = Employees.Count;
-            PageCount = $"ទំព័រទី {CurrentPage} នៃ {MaxPage}";
+                CurrentPageTotalCount = Employees.Count;
+                PageCount = $"ទំព័រទី {CurrentPage} នៃ {MaxPage}";
+            });
         }
 
         [RelayCommand]
@@ -425,7 +455,7 @@ namespace SchoolManagement.Presentation.Features.Employees.ViewModels
         private async Task RefreshOnFilterAsync()
         {
             CurrentPage = 1;
-            ApplyFiltersAndPaging();
+            await ApplyFiltersAndPaging();
         }
     }
 }

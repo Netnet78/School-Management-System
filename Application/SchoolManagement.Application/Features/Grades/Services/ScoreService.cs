@@ -1,10 +1,10 @@
-using SchoolManagement.Core.Features.Accessments.Models;
+using SchoolManagement.Core.Features.Assessments.Models;
 
 namespace SchoolManagement.Application.Features.Grades.Services
 {
-    public class ScoreService : CrudServiceBase<Assessment>, IAccessmentService
+    public class ScoreService : CrudServiceBase<Score>, IScoreService
     {
-        public ScoreService(IAccessmentRepository repository) : base(repository)
+        public ScoreService(IScoreRepository repository) : base(repository)
         {
         }
     }

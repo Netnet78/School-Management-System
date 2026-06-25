@@ -25,10 +25,11 @@ namespace SchoolManagement.Application.Features.Users.Services
             {
                 DateTime lockedOutEnd = TimeHelper.ToLocalTimeZone(user.LockedOutEnd.Value);
                 string time = lockedOutEnd.TimeOfDay <= new TimeSpan(12, 0, 0) ? "ព្រឹក" : "ល្ងាច";
+                int minutes = (int)Math.Ceiling((user.LockedOutEnd.Value - DateTime.UtcNow).TotalMinutes);
                 return new()
                 {
                     Status = Status.Rejected,
-                    Message = $"ការចូលប្រើប្រាស់របស់អ្នក ត្រូវបានផ្អាកជាមុនសិន!\nសូមមេត្តារងចាំរហូតដល់ ម៉ោង{lockedOutEnd.Hour} : {lockedOutEnd.Minute}នាទី  ពេល{time} \nនៅសល់ {(user.LockedOutEnd.Value - DateTime.UtcNow).TotalMinutes} នាទីទៀត!",
+                    Message = $"ការចូលប្រើប្រាស់របស់អ្នក ត្រូវបានផ្អាកជាមុនសិន!\nសូមមេត្តារងចាំរហូតដល់ ម៉ោង{lockedOutEnd.Hour} : {lockedOutEnd.Minute}នាទី  ពេល{time} \nនៅសល់ {minutes} នាទីទៀត!",
                 };
             }
 

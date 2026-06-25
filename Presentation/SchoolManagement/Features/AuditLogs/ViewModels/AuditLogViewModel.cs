@@ -136,7 +136,7 @@ namespace SchoolManagement.Presentation.Features.AuditLogs.ViewModels
             }
         }
 
-        private IEnumerable<FilterCondition<AuditLog>> BuildFilter()
+        private List<FilterCondition<AuditLog>> BuildFilter()
         {
             List<FilterCondition<AuditLog>> filters = [];
 

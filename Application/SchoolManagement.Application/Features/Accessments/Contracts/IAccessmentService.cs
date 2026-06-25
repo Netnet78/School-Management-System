@@ -1,8 +1,9 @@
-using SchoolManagement.Core.Features.Accessments.Models;
+using SchoolManagement.Core.Features.Assessments.Models;
 
-namespace SchoolManagement.Application.Features.Accessments.Contracts
+namespace SchoolManagement.Application.Features.Assessments.Contracts
 {
-    public interface IAccessmentService : ICrudService<Assessment>
+    public interface IAssessmentService : ICrudService<Assessment>
     {
+        Task<ReturnResponse> UpsertRangeAsync(int examId, int classSubjectId, IEnumerable<(int StudentClassId, decimal TotalScore)> entries);
     }
 }

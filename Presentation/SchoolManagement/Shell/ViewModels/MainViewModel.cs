@@ -6,6 +6,9 @@ using SchoolManagement.Presentation.Features.Classes.ViewModels;
 using SchoolManagement.Presentation.Features.Dashboard.ViewModels;
 using SchoolManagement.Presentation.Features.Employees.ViewModels;
 using SchoolManagement.Presentation.Features.Reports.ViewModels;
+using SchoolManagement.Presentation.Features.Scores.ViewModels;
+using SchoolManagement.Presentation.Features.Roles.ViewModels;
+using SchoolManagement.Presentation.Features.Subjects.ViewModels;
 using SchoolManagement.Presentation.Features.Students.ViewModels;
 
 namespace SchoolManagement.Presentation.Shell.ViewModels
@@ -49,6 +52,15 @@ namespace SchoolManagement.Presentation.Shell.ViewModels
 
         [ObservableProperty]
         private bool _canAccessAuditLogView;
+
+        [ObservableProperty]
+        private bool _canAccessScoreEntry;
+
+        [ObservableProperty]
+        private bool _canAccessSubjectList;
+
+        [ObservableProperty]
+        private bool _canAccessRoleManagement;
 
         public MainViewModel(
             INavigationService navigationService,
@@ -109,6 +121,24 @@ namespace SchoolManagement.Presentation.Shell.ViewModels
         private async Task ShowAuditLogAsync()
         {
             await NavigateTo<AuditLogViewModel>().ConfigureAwait(false);
+        }
+
+        [RelayCommand]
+        private async Task ShowScoreEntryAsync()
+        {
+            await NavigateTo<ScoreViewModel>().ConfigureAwait(false);
+        }
+
+        [RelayCommand]
+        private async Task ShowSubjectListAsync()
+        {
+            await NavigateTo<SubjectListViewModel>().ConfigureAwait(false);
+        }
+
+        [RelayCommand]
+        private async Task ShowRoleManagementAsync()
+        {
+            await NavigateTo<RoleManagementViewModel>().ConfigureAwait(false);
         }
 
         private async Task NavigateTo<T>() where T : IViewModel
@@ -178,6 +208,9 @@ namespace SchoolManagement.Presentation.Shell.ViewModels
             CanAccessAnalyticsView = true;
             CanAccessEmployeeView = await HasPermission(PermissionType.ManageEmployees);
             CanAccessAuditLogView = _authorizationService.UserIsAdmin;
+            CanAccessScoreEntry = await HasPermission(PermissionType.ManageAssessments);
+            CanAccessSubjectList = await HasPermission(PermissionType.ManageSubjects);
+            CanAccessRoleManagement = await HasPermission(PermissionType.ManageRoles);
         }
 
         private async Task<bool> HasPermission(params PermissionType[] permissions)

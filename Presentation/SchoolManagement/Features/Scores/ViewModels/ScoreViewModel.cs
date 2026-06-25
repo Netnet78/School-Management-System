@@ -1,8 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SchoolManagement.Core.Features.Accessments.Models;
+using SchoolManagement.Application.Features.Classes.Authorization;
+using SchoolManagement.Core.Features.Assessments.Models;
 using SchoolManagement.Core.Features.Exams.Models;
 using SchoolManagement.Presentation.Features.Classes.ViewModels;
+using SchoolManagement.Presentation.Features.Dashboard.ViewModels;
+using SchoolManagement.Presentation.Shared.Features.Scores.Observables;
 using SchoolManagement.Presentation.Shared.Features.Scores.Params;
 using System.Collections.ObjectModel;
 
@@ -12,15 +15,41 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
     {
         private readonly IStudentClassService _studentClassService;
         private readonly IExamService _examService;
-        private readonly IAccessmentService _scoreService;
+        private readonly IAssessmentService _scoreService;
         private readonly IClassSubjectService _classSubjectService;
         private readonly INavigationService _navigationService;
         private readonly IMessageService _messageService;
         private readonly IAuthorizationService _authorizationService;
 
-        private Class _class = null!;
+        private Class? _preSelectedClass;
         private List<int> _studentClassIds = [];
         private Dictionary<int, int> _studentIdToStudentClassId = [];
+
+        // ====== Mode & UI state ======
+        [ObservableProperty]
+        private bool _isClassSelectionMode;
+
+        [ObservableProperty]
+        private bool _isScoreEntryMode;
+
+        [ObservableProperty]
+        private bool _isLoadingClasses;
+
+        [ObservableProperty]
+        private bool _isLoadingScores;
+
+        [ObservableProperty]
+        private bool _isSavingScores;
+
+        [ObservableProperty]
+        private bool _hasScores;
+
+        // ====== Class selection ======
+        [ObservableProperty]
+        private ObservableCollection<Class> _classes = [];
+
+        [ObservableProperty]
+        private Class? _selectedClass;
 
         [ObservableProperty]
         private string _className = string.Empty;
@@ -28,57 +57,32 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
         [ObservableProperty]
         private string _classInfo = string.Empty;
 
-        [ObservableProperty]
-        private ObservableCollection<Student> _students = [];
-
-        [ObservableProperty]
-        private bool _isLoadingStudents;
-
-        [ObservableProperty]
-        private ObservableCollection<Exam> _exams = [];
-
-        [ObservableProperty]
-        private Exam? _selectedExam;
-
-        [ObservableProperty]
-        private ObservableCollection<Assessment> _scores = [];
-
-        [ObservableProperty]
-        private bool _isLoadingScores;
-
-        [ObservableProperty]
-        private bool _hasScores;
-
-        [ObservableProperty]
-        private bool _canEditStudents;
-
-        [ObservableProperty]
-        private bool _showScoreForm;
-
-        [ObservableProperty]
-        private string _scoreStudentName = string.Empty;
-
+        // ====== Subject selection ======
         [ObservableProperty]
         private ObservableCollection<ClassSubject> _scoreSubjects = [];
 
         [ObservableProperty]
         private ClassSubject? _selectedScoreSubject;
 
+        // ====== Exam selection ======
         [ObservableProperty]
-        private Exam? _selectedScoreExam;
+        private ObservableCollection<Exam> _exams = [];
 
         [ObservableProperty]
-        private decimal _scoreAmount;
+        private Exam? _selectedExam;
 
+        // ====== Bulk scores ======
         [ObservableProperty]
-        private bool _isSavingScore;
+        private ObservableCollection<StudentScoreEntry> _scoreEntries = [];
 
-        private Student? _selectedStudentForScore;
+        // ====== Permissions ======
+        [ObservableProperty]
+        private bool _canEditScores;
 
         public ScoreViewModel(
             IStudentClassService studentClassService,
             IExamService examService,
-            IAccessmentService scoreService,
+            IAssessmentService scoreService,
             IClassSubjectService classSubjectService,
             INavigationService navigationService,
             IMessageService messageService,
@@ -95,70 +99,141 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
 
         public async Task OnNavigatedToAsync(INavigationParams @params)
         {
-            if (@params is not ScoreNavigationParams p || p.Class == null)
+            if (@params is ScoreNavigationParams p && p.Class != null)
             {
-                _messageService.Show("មិនអាចរកឃើញទិន្នន័យថ្នាក់!", "មានកំហុស!", MessageButton.OK, MessageIcon.Error);
-                return;
+                _preSelectedClass = p.Class;
+                ClassName = _preSelectedClass.GetKhmerName();
+                ClassInfo = $"ថ្នាក់: {_preSelectedClass.GetKhmerName()} | កម្រិត: {_preSelectedClass.Grade?.KhmerName} | ជំនាន់: {_preSelectedClass.Generation?.CohortNumber} | ផ្នែក: {_preSelectedClass.Generation?.Department?.KhmerName}";
             }
-
-            _class = p.Class;
-            ClassName = _class.GetKhmerName();
-            ClassInfo = $"ថ្នាក់: {_class.GetKhmerName()} | កម្រិត: {_class.Grade?.KhmerName} | ជំនាន់: {_class.Generation?.CohortNumber} | ផ្នែក: {_class.Generation?.Department?.KhmerName}";
         }
 
         public async Task LoadAsync()
         {
-            if (_class == null) return;
-
             User? user = _authorizationService.CurrentUser;
             if (user == null)
             {
                 _messageService.Show("Unable to determine the current user.", "Error", MessageButton.OK, MessageIcon.Error);
                 return;
             }
-            CanEditStudents = (await _authorizationService.AuthorizeAsync(null, PermissionType.EditStudents)).Status == Status.Success;
 
-            await LoadStudentsAsync();
+            CanEditScores = (await _authorizationService.AuthorizeAsync(null, PermissionType.ManageAssessments)).Status == Status.Success;
+
             await LoadExamsAsync();
+
+            if (_preSelectedClass != null)
+            {
+                IsClassSelectionMode = false;
+                IsScoreEntryMode = true;
+                SelectedClass = _preSelectedClass;
+                await LoadSubjectsForClassAsync(_preSelectedClass.Id);
+            }
+            else
+            {
+                IsClassSelectionMode = true;
+                IsScoreEntryMode = false;
+                await LoadTeacherClassesAsync();
+            }
         }
 
-        private async Task LoadStudentsAsync()
+        // ====== Load teacher's classes ======
+
+        private async Task LoadTeacherClassesAsync()
         {
-            IsLoadingStudents = true;
+            IsLoadingClasses = true;
 
             try
             {
-                var scResponse = await _studentClassService.GetAllAsync(
-                    filters: [new FilterCondition<StudentClass>(sc => sc.ClassId, FilterOperator.Equals, _class.Id)],
-                    page: 1,
-                    includes: ["Student.Candidate", "Student.Candidate.Skill"]);
-
-                Students.Clear();
-                _studentClassIds.Clear();
-                _studentIdToStudentClassId.Clear();
-
-                if (scResponse.Status == Status.Success && scResponse.Value != null)
+                User? user = _authorizationService.CurrentUser;
+                if (user?.EmployeeId == null)
                 {
-                    foreach (StudentClass sc in scResponse.Value)
+                    // Admin/HeadTeacher — load all classes
+                    var allClassesResponse = await _classSubjectService.GetAllAsync(includes: ["Class.Grade", "Class.Generation.Department"]);
+                    if (allClassesResponse.Status == Status.Success && allClassesResponse.Value != null)
                     {
-                        if (sc.Student != null)
+                        var classIds = new HashSet<int>();
+                        Classes.Clear();
+                        foreach (var cs in allClassesResponse.Value)
                         {
-                            Students.Add(sc.Student);
-                            _studentClassIds.Add(sc.Id);
-                            _studentIdToStudentClassId[sc.Student.Id] = sc.Id;
+                            if (cs.Class != null && classIds.Add(cs.Class.Id))
+                            {
+                                Classes.Add(cs.Class);
+                            }
+                        }
+                    }
+                    return;
+                }
+
+                // Teacher — load only classes they teach
+                var response = await _classSubjectService.GetAllAsync(
+                    filters: [new FilterCondition<ClassSubject>(cs => cs.TeacherId, FilterOperator.Equals, user.EmployeeId)],
+                    includes: ["Class.Grade", "Class.Generation.Department"]);
+
+                if (response.Status == Status.Success && response.Value != null)
+                {
+                    var classIds = new HashSet<int>();
+                    Classes.Clear();
+                    foreach (var cs in response.Value)
+                    {
+                        if (cs.Class != null && classIds.Add(cs.Class.Id))
+                        {
+                            Classes.Add(cs.Class);
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                _messageService.Show($"មានកំហុសក្នុងការទាញទិន្នន័យសិស្ស: {ex.Message}", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                _messageService.Show($"មានកំហុសក្នុងការទាញទិន្នន័យថ្នាក់: {ex.Message}", "កំហុស!", MessageButton.OK, MessageIcon.Error);
             }
             finally
             {
-                IsLoadingStudents = false;
+                IsLoadingClasses = false;
             }
         }
+
+        async partial void OnSelectedClassChanged(Class? value)
+        {
+            if (value == null) return;
+
+            ClassName = value.GetKhmerName();
+            ClassInfo = $"ថ្នាក់: {value.GetKhmerName()} | កម្រិត: {value.Grade?.KhmerName} | ជំនាន់: {value.Generation?.CohortNumber} | ផ្នែក: {value.Generation?.Department?.KhmerName}";
+
+            IsClassSelectionMode = false;
+            IsScoreEntryMode = true;
+
+            await LoadSubjectsForClassAsync(value.Id);
+            ClearScoreEntries();
+        }
+
+        private async Task LoadSubjectsForClassAsync(int classId)
+        {
+            User? user = _authorizationService.CurrentUser;
+            List<FilterCondition<ClassSubject>> filters = [new FilterCondition<ClassSubject>(cs => cs.ClassId, FilterOperator.Equals, classId)];
+
+            // If teacher, filter by their subjects
+            if (user?.EmployeeId != null && !user.IsAdmin() && !user.IsHeadTeacher())
+            {
+                filters.Add(new FilterCondition<ClassSubject>(cs => cs.TeacherId, FilterOperator.Equals, user.EmployeeId));
+            }
+
+            try
+            {
+                var response = await _classSubjectService.GetAllAsync(
+                    filters: filters,
+                    includes: ["Subject"]);
+
+                if (response.Status == Status.Success && response.Value != null)
+                {
+                    ScoreSubjects = new ObservableCollection<ClassSubject>(response.Value);
+                }
+            }
+            catch (Exception ex)
+            {
+                _messageService.Show($"មានកំហុសក្នុងការទាញទិន្នន័យមុខវិជ្ជា: {ex.Message}", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+            }
+        }
+
+        // ====== Load exams ======
 
         private async Task LoadExamsAsync()
         {
@@ -176,41 +251,79 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
             }
         }
 
+        // ====== Load bulk score entries ======
+
         async partial void OnSelectedExamChanged(Exam? value)
         {
-            if (value == null || _studentClassIds.Count == 0)
+            await LoadScoreEntriesAsync();
+        }
+
+        async partial void OnSelectedScoreSubjectChanged(ClassSubject? value)
+        {
+            await LoadScoreEntriesAsync();
+        }
+
+        private async Task LoadScoreEntriesAsync()
+        {
+            if (SelectedExam == null || SelectedScoreSubject == null || SelectedClass == null)
             {
-                Scores.Clear();
+                ScoreEntries.Clear();
                 HasScores = false;
                 return;
             }
 
-            await LoadScoresAsync(value.Id);
-        }
-
-        private async Task LoadScoresAsync(int examId)
-        {
             IsLoadingScores = true;
 
             try
             {
-                var response = await _scoreService.GetAllAsync(
+                // 1. Load students in the class
+                var scResponse = await _studentClassService.GetAllAsync(
+                    filters: [new FilterCondition<StudentClass>(sc => sc.ClassId, FilterOperator.Equals, SelectedClass.Id)],
+                    page: 1,
+                    includes: ["Student.Candidate", "Student.Candidate.Skill"]);
+
+                if (scResponse.Status != Status.Success || scResponse.Value == null)
+                {
+                    ScoreEntries.Clear();
+                    HasScores = false;
+                    return;
+                }
+
+                List<StudentClass> studentClasses = scResponse.Value.ToList();
+                _studentClassIds = studentClasses.Select(sc => sc.Id).ToList();
+                _studentIdToStudentClassId = studentClasses
+                    .Where(sc => sc.Student != null)
+                    .ToDictionary(sc => sc.Student!.Id, sc => sc.Id);
+
+                // 2. Load existing assessments for this exam + subject + class
+                var existingResponse = await _scoreService.GetAllAsync(
                     filters: [
-                        new FilterCondition<Assessment>(s => s.ExamId, FilterOperator.Equals, examId),
+                        new FilterCondition<Assessment>(s => s.ExamId, FilterOperator.Equals, SelectedExam.Id),
+                        new FilterCondition<Assessment>(s => s.ClassSubjectId, FilterOperator.Equals, SelectedScoreSubject.Id),
                         new FilterCondition<Assessment>(s => s.StudentClassId, FilterOperator.In, _studentClassIds.Cast<object>())
                     ],
-                    includes: ["StudentClass.Student.Candidate", "ClassSubject.Subject"]);
+                    includes: ["StudentClass.Student.Candidate"]);
 
-                if (response.Status == Status.Success && response.Value != null)
+                var existingByScId = new Dictionary<int, Assessment>();
+                if (existingResponse.Status == Status.Success && existingResponse.Value != null)
                 {
-                    Scores = new ObservableCollection<Assessment>(response.Value);
-                    HasScores = Scores.Count > 0;
+                    foreach (var a in existingResponse.Value)
+                    {
+                        existingByScId[a.StudentClassId] = a;
+                    }
                 }
-                else
+
+                // 3. Build score entries
+                ScoreEntries.Clear();
+                foreach (var sc in studentClasses)
                 {
-                    Scores.Clear();
-                    HasScores = false;
+                    if (sc.Student == null) continue;
+
+                    existingByScId.TryGetValue(sc.Id, out Assessment? existing);
+                    ScoreEntries.Add(new StudentScoreEntry(sc.Student, sc.Id, existing));
                 }
+
+                HasScores = ScoreEntries.Count > 0;
             }
             catch (Exception ex)
             {
@@ -222,159 +335,124 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
             }
         }
 
-        [RelayCommand]
-        private async Task AddScoreAsync(Student? student)
-        {
-            if (student == null) return;
+        // ====== Save All ======
 
-            if (!_studentIdToStudentClassId.ContainsKey(student.Id))
+        [RelayCommand]
+        private async Task SaveAllAsync()
+        {
+            if (SelectedExam == null || SelectedScoreSubject == null)
             {
-                _messageService.Show("សិស្សនេះមិនមានក្នុងថ្នាក់ទេ!", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                _messageService.Show("សូមជ្រើសរើសប្រឡង និងមុខវិជ្ជា!", "ព័ត៌មានមិនគ្រប់", MessageButton.OK, MessageIcon.Information);
                 return;
             }
 
-            _selectedStudentForScore = student;
-            ScoreStudentName = student.FullName;
-            SelectedScoreExam = null;
-            SelectedScoreSubject = null;
-            ScoreAmount = 0;
-
-            try
+            // Validate against MaxScore
+            decimal maxScore = SelectedScoreSubject.Subject?.MaxScore ?? 0;
+            foreach (var entry in ScoreEntries)
             {
-                var csResponse = await _classSubjectService.GetAllAsync(
-                    filters: [new FilterCondition<ClassSubject>(cs => cs.ClassId, FilterOperator.Equals, _class.Id)],
-                    includes: ["Subject"]);
-
-                if (csResponse.Status == Status.Success && csResponse.Value != null)
+                if (entry.ScoreAmount < 0)
                 {
-                    ScoreSubjects = new ObservableCollection<ClassSubject>(csResponse.Value);
+                    _messageService.Show($"ពិន្ទុរបស់ {entry.Student.FullName} មិនត្រឹមត្រូវទេ!", "ព័ត៌មានមិនគ្រប់", MessageButton.OK, MessageIcon.Information);
+                    return;
                 }
 
-                ShowScoreForm = true;
-            }
-            catch (Exception ex)
-            {
-                _messageService.Show($"មានកំហុសក្នុងការទាញទិន្នន័យមុខវិជ្ជា: {ex.Message}", "កំហុស!", MessageButton.OK, MessageIcon.Error);
-            }
-        }
-
-        [RelayCommand]
-        private async Task SaveScoreAsync()
-        {
-            if (_selectedStudentForScore == null) return;
-
-            if (SelectedScoreExam == null)
-            {
-                _messageService.Show("សូមជ្រើសរើសប្រឡង!", "ព័ត៌មានមិនគ្រប់", MessageButton.OK, MessageIcon.Information);
-                return;
+                if (maxScore > 0 && entry.ScoreAmount > maxScore)
+                {
+                    _messageService.Show($"ពិន្ទុរបស់ {entry.Student.FullName} លើសពី {maxScore}!", "ព័ត៌មានមិនគ្រប់", MessageButton.OK, MessageIcon.Information);
+                    return;
+                }
             }
 
-            if (SelectedScoreSubject == null)
-            {
-                _messageService.Show("សូមជ្រើសរើសមុខវិជ្ជា!", "ព័ត៌មានមិនគ្រប់", MessageButton.OK, MessageIcon.Information);
-                return;
-            }
-
-            if (ScoreAmount < 0)
-            {
-                _messageService.Show("សូមបញ្ចូលពិន្ទុត្រឹមត្រូវ!", "ព័ត៌មានមិនគ្រប់", MessageButton.OK, MessageIcon.Information);
-                return;
-            }
-
-            if (!_studentIdToStudentClassId.TryGetValue(_selectedStudentForScore.Id, out int studentClassId))
-            {
-                _messageService.Show("មិនអាចកំណត់ StudentClassID បានទេ!", "កំហុស!", MessageButton.OK, MessageIcon.Error);
-                return;
-            }
-
-            IsSavingScore = true;
+            IsSavingScores = true;
 
             try
             {
-                Assessment score = new()
-                {
-                    TotalScore = ScoreAmount,
-                    ExamId = SelectedScoreExam.Id,
-                    StudentClassId = studentClassId,
-                    ClassSubjectId = SelectedScoreSubject.Id
-                };
+                var entries = ScoreEntries
+                    .Where(e => e.ScoreAmount >= 0)
+                    .Select(e => (e.StudentClassId, e.ScoreAmount));
 
-                var response = await _scoreService.InsertAsync(score);
+                var response = await _scoreService.UpsertRangeAsync(SelectedExam.Id, SelectedScoreSubject.Id, entries);
 
                 if (response.Status == Status.Success)
                 {
-                    _messageService.Show("បានបន្ថែមពិន្ទុដោយជោគជ័យ!", "ជោគជ័យ", MessageButton.OK, MessageIcon.Success);
-
-                    ShowScoreForm = false;
-                    _selectedStudentForScore = null;
-
-                    if (SelectedExam != null)
-                    {
-                        await LoadScoresAsync(SelectedExam.Id);
-                    }
+                    _messageService.Show("បានរក្សាទុកពិន្ទុទាំងអស់ដោយជោគជ័យ!", "ជោគជ័យ", MessageButton.OK, MessageIcon.Success);
+                    await LoadScoreEntriesAsync();
                 }
                 else
                 {
-                    _messageService.Show(response.Message ?? "មានកំហុសបច្ចេកទេស​ក្នុងការរក្សាទុក!", "ERROR!", MessageButton.OK, MessageIcon.Error);
+                    _messageService.Show(response.Message ?? "មានកំហុសក្នុងការរក្សាទុក!", "កំហុស!", MessageButton.OK, MessageIcon.Error);
                 }
             }
             catch (Exception ex)
             {
-                _messageService.Show($"មានកំហុសបច្ចេកទេស: {ex.Message}", "ERROR!", MessageButton.OK, MessageIcon.Error);
+                _messageService.Show($"មានកំហុសបច្ចេកទេស: {ex.Message}", "កំហុស!", MessageButton.OK, MessageIcon.Error);
             }
             finally
             {
-                IsSavingScore = false;
+                IsSavingScores = false;
             }
         }
 
+        // ====== Change class (from score entry mode) ======
+
         [RelayCommand]
-        private void CancelScore()
+        private void ChangeClass()
         {
-            ShowScoreForm = false;
-            _selectedStudentForScore = null;
+            ClearScoreEntries();
+            SelectedClass = null;
+            SelectedExam = null;
+            SelectedScoreSubject = null;
+            IsScoreEntryMode = false;
+            IsClassSelectionMode = true;
         }
+
+        private void ClearScoreEntries()
+        {
+            ScoreEntries.Clear();
+            HasScores = false;
+            _studentClassIds.Clear();
+            _studentIdToStudentClassId.Clear();
+        }
+
+        // ====== Report ======
 
         [RelayCommand]
         private async Task GenerateReportAsync()
         {
-            if (Students.Count == 0)
+            if (ScoreEntries.Count == 0)
             {
-                _messageService.Show("មិនមានសិស្សក្នុងថ្នាក់ដើម្បីធ្វើរបាយការណ៍ទេ!", "ព័ត៌មាន", MessageButton.OK, MessageIcon.Information);
+                _messageService.Show("មិនមានទិន្នន័យដើម្បីធ្វើរបាយការណ៍ទេ!", "ព័ត៌មាន", MessageButton.OK, MessageIcon.Information);
                 return;
             }
 
             string report = $"=== របាយការណ៍ថ្នាក់: {ClassName} ===\n\n";
-            report += $"ចំនួនសិស្សសរុប: {Students.Count} នាក់\n";
-            report += $"ចំនួនប្រឡងសរុប: {Exams.Count} ដង\n\n";
+            report += $"ចំនួនសិស្សសរុប: {ScoreEntries.Count} នាក់\n";
 
-            if (SelectedExam != null && HasScores)
+            if (SelectedExam != null && SelectedScoreSubject != null)
             {
-                var examScores = Scores.Where(s => s.ExamId == SelectedExam.Id).ToList();
-                report += $"ប្រឡង: {SelectedExam.Name}\n";
-                report += $"ចំនួនពិន្ទុ: {examScores.Count}\n";
-                if (examScores.Count > 0)
+                report += $"ប្រឡង: {SelectedExam.KhmerName}\n";
+                report += $"មុខវិជ្ជា: {SelectedScoreSubject.Subject?.KhmerName}\n";
+
+                var scoredEntries = ScoreEntries.Where(e => e.ScoreAmount >= 0).ToList();
+                report += $"ចំនួនពិន្ទុ: {scoredEntries.Count}\n";
+                if (scoredEntries.Count > 0)
                 {
-                    report += $"ពិន្ទុមធ្យម: {examScores.Average(s => (double)s.TotalScore):F2}\n";
-                    report += $"ពិន្ទុខ្ពស់: {examScores.Max(s => s.TotalScore)}\n";
-                    report += $"ពិន្ទុទាប: {examScores.Min(s => s.TotalScore)}\n\n";
+                    report += $"ពិន្ទុមធ្យម: {scoredEntries.Average(e => (double)e.ScoreAmount):F2}\n";
+                    report += $"ពិន្ទុខ្ពស់បំផុត: {scoredEntries.Max(e => e.ScoreAmount)}\n";
+                    report += $"ពិន្ទុទាបតិចបំផុត: {scoredEntries.Min(e => e.ScoreAmount)}\n\n";
 
                     report += "បញ្ជីពិន្ទុ:\n";
-                    foreach (Assessment score in examScores.OrderBy(s => s.StudentClass?.Student?.FullName))
+                    foreach (var entry in scoredEntries.OrderBy(e => e.Student.FullName))
                     {
-                        string studentName = score.StudentClass?.Student?.FullName ?? "មិនស្គាល់";
-                        string subjectName = score.ClassSubject?.Subject?.KhmerName ?? "មិនស្គាល់";
-                        report += $"- {studentName} | {subjectName}: {score.TotalScore}\n";
+                        report += $"- {entry.Student.FullName}: {entry.ScoreAmount}\n";
                     }
                 }
-            }
-            else
-            {
-                report += "សូមជ្រើសរើសប្រឡងដើម្បីមើលពិន្ទុលម្អិត។\n";
             }
 
             _messageService.Show(report, $"របាយការណ៍: {ClassName}", MessageButton.OK, MessageIcon.Information);
         }
+
+        // ====== Navigation ======
 
         [RelayCommand]
         private async Task GoBackAsync()
@@ -386,7 +464,7 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
             }
             else
             {
-                await _navigationService.NavigateAsync<ClassViewModel>();
+                await _navigationService.NavigateAsync<DashboardViewModel>();
             }
         }
     }

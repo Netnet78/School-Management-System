@@ -163,6 +163,13 @@
                 </Button>
 
             </StackPanel>
+
+            <Button Margin="0 10 0 0" Command="{Binding GoBackCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="ChevronLeft" />
+                    <TextBlock Text="ត្រឡប់ទៅក្រោយវិញ"/>
+                </StackPanel>
+            </Button>
         </StackPanel>
     </Border>
 </UserControl>

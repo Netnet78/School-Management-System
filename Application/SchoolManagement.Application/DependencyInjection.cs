@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using SchoolManagement.Application.Features.Assessments.Services;
 using SchoolManagement.Application.Features.Reports;
 using SchoolManagement.Application.Features.Reports.Contracts;
 
@@ -26,13 +27,15 @@ namespace SchoolManagement.Application
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IPermissionService, PermissionService>();
             services.AddScoped<IRoleService, RoleService>();
-            services.AddScoped<IAccessmentService, ScoreService>();
+            services.AddScoped<IAssessmentService, AssessmentService>();
             services.AddScoped<ISkillService, SkillService>();
             services.AddScoped<IStudentClassService, StudentClassService>();
             services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<IStudentQRService, StudentQRService>();
             services.AddScoped<ISubjectService, SubjectService>();
+            services.AddScoped<IScoreService, ScoreService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IEmployeeUserService, EmployeeUserService>();
             services.AddScoped<IAuthorizationService, AuthorizationService>();
 
             // Permissions handlers
@@ -44,7 +47,9 @@ namespace SchoolManagement.Application
             services.AddScoped<IAuthorizationHandler, GradeAuthorizationHandler>();
             services.AddScoped<IAuthorizationHandler, ExamAuthorizationHandler>();
             services.AddScoped<IAuthorizationHandler, ScoreAuthorizationHandler>();
+            services.AddScoped<IAuthorizationHandler, SubjectAuthorizationHandler>();
             services.AddScoped<IAuthorizationHandler, AuditLogAuthorizationHandler>();
+            services.AddScoped<IAuthorizationHandler, UserAuthorizationHandler>();
 
             // Background workers
             services.AddScoped<FileSyncBackgroundWorker>();

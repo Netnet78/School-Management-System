@@ -23,6 +23,8 @@
               xmlns:auditLogVm="clr-namespace:SchoolManagement.Presentation.Features.AuditLogs.ViewModels"
               xmlns:auditLogViews="clr-namespace:SchoolManagement.Presentation.Features.AuditLogs.Views"
               xmlns:subjectViews="clr-namespace:SchoolManagement.Presentation.Features.Subjects.Views"
+             xmlns:roleVm="clr-namespace:SchoolManagement.Presentation.Features.Roles.ViewModels"
+             xmlns:roleViews="clr-namespace:SchoolManagement.Presentation.Features.Roles.Views"
              xmlns:rosterFilterVm="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewProviders.StudentRoster"
              xmlns:attendanceFilterVm="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewProviders.Attendance"
               xmlns:scoreFilterVm="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewProviders.Score"
@@ -114,8 +116,23 @@
             <DataTemplate DataType="{x:Type subjectVm:SubjectAssignmentViewModel}">
                 <subjectViews:SubjectAssignmentView />
             </DataTemplate>
+            <DataTemplate DataType="{x:Type subjectVm:SubjectListViewModel}">
+                <subjectViews:SubjectListView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type subjectVm:AddSubjectViewModel}">
+                <subjectViews:AddSubjectView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type subjectVm:EditSubjectViewModel}">
+                <subjectViews:EditSubjectView />
+            </DataTemplate>
             <DataTemplate DataType="{x:Type auditLogVm:AuditLogViewModel}">
                 <auditLogViews:AuditLogView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type employeeVm:EmployeeUserViewModel}">
+                <employeeViews:EmployeeUserView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type roleVm:RoleManagementViewModel}">
+                <roleViews:RoleManagementView />
             </DataTemplate>
 
             <!-- Report Filter ViewModels -->

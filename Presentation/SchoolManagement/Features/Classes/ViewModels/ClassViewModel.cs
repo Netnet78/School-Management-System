@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SchoolManagement.Application.Features.Classes.Authorization;
 using System.Collections.ObjectModel;
 
 namespace SchoolManagement.Presentation.Features.Classes.ViewModels
@@ -9,6 +10,7 @@ namespace SchoolManagement.Presentation.Features.Classes.ViewModels
         private readonly IClassService _classService;
         private readonly IMessageService _messageService;
         private readonly INavigationService _navigationService;
+        private User? _currentUser;
 
         // ====== Permission properties ======
         [ObservableProperty]
@@ -46,6 +48,7 @@ namespace SchoolManagement.Presentation.Features.Classes.ViewModels
         public async Task LoadAsync()
         {
             var permissions = await _classService.GetPermissionsAsync();
+            _currentUser = permissions.CurrentUser;
             CanViewClasses = permissions.CanView;
             CanInsertClasses = permissions.CanInsert;
             CanEditClasses = permissions.CanEdit;
@@ -69,7 +72,23 @@ namespace SchoolManagement.Presentation.Features.Classes.ViewModels
 
             try
             {
+                List<FilterCondition<Class>> filters = [];
+
+                if (_currentUser?.IsHeadTeacher() == true)
+                {
+                    int? departmentId = _currentUser.Employee?.DepartmentId;
+                    if (departmentId.HasValue)
+                        filters.Add(new FilterCondition<Class>(c => c.Generation.DepartmentId, FilterOperator.Equals, departmentId.Value));
+                }
+                else if (_currentUser?.IsAdmin() != true)
+                {
+                    int? teacherId = _currentUser?.EmployeeId;
+                    if (teacherId.HasValue)
+                        filters.Add(new FilterCondition<Class>(c => c.TeacherId, FilterOperator.Equals, teacherId.Value));
+                }
+
                 ReturnResponse<IEnumerable<Class>> response = await _classService.GetAllAsync(
+                    filters: filters,
                     orderBy: [new SortCriteria<Class>("Id")]);
 
                 if (response.Status != Status.Success)

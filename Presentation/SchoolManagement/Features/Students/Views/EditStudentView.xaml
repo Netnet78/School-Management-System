@@ -11,7 +11,7 @@
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" 
              d:DataContext="{d:DesignInstance Type=viewmodels:EditStudentViewModel}"
              mc:Ignorable="d" 
-             d:DesignHeight="1900" d:DesignWidth="800">
+             d:DesignHeight="2100" d:DesignWidth="800">
     <UserControl.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" Collapse="True" />
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverterReversed" Collapse="True" IsReversed="True" />
@@ -21,6 +21,7 @@
         <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" CollapseWhenNull="True" />
         <conv:ValidPathToVisibilityConverter x:Key="ValidPathToVisibilityConverter" Reversed="False" />
         <conv:ValidPathToVisibilityConverter x:Key="ValidPathToVisibilityConverterReversed" Reversed="True" />
+        <conv:PhotoPathToImageSourceConverter x:Key="PhotoPathToImageSourceConverter" />
     </UserControl.Resources>
     <Grid Background="White">
         <Grid.RowDefinitions>
@@ -79,7 +80,8 @@
                                             SelectedDateFormat="Long"
                                             Padding="8" FontSize="16"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="3" Margin="5" Visibility="{Binding CanSetSkill}">
+                            <StackPanel Grid.Row="3" Margin="5" 
+                                        IsEnabled="{Binding CanSetSkill}">
                                 <TextBlock Text="ជំនាញ" FontSize="16" Margin="0,0,0,3"/>
                                 <ComboBox ItemsSource="{Binding Skills}"
                                           SelectedValue="{Binding StudentForm.SkillId}"
@@ -109,19 +111,19 @@
                         </StackPanel>
                         <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" TextElement.FontFamily="{StaticResource NotoSansKhmer}">
                             <StackPanel Margin="5">
-                                <TextBlock Text="ភូមិ" FontSize="16" Margin="0,0,0,3"/>
+                                <TextBlock Text="ភូមិកំណើត" FontSize="16" Margin="0,0,0,3"/>
                                 <TextBox Text="{Binding StudentForm.BirthVillage, UpdateSourceTrigger=PropertyChanged}" Padding="8" FontSize="16"/>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Margin="5">
-                                <TextBlock Text="ឃុំ" FontSize="16" Margin="0,0,0,3"/>
+                                <TextBlock Text="ឃុំកំណើត" FontSize="16" Margin="0,0,0,3"/>
                                 <TextBox Text="{Binding StudentForm.BirthCommune, UpdateSourceTrigger=PropertyChanged}" Padding="8" FontSize="16"/>
                             </StackPanel>
                             <StackPanel Grid.Row="1" Margin="5">
-                                <TextBlock Text="ស្រុក" FontSize="16" Margin="0,0,0,3"/>
+                                <TextBlock Text="ស្រុកកំណើត" FontSize="16" Margin="0,0,0,3"/>
                                 <TextBox Text="{Binding StudentForm.BirthDistrict, UpdateSourceTrigger=PropertyChanged}" Padding="8" FontSize="16"/>
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="1" Margin="5">
-                                <TextBlock Text="ខេត្ត" FontSize="16" Margin="0,0,0,3"/>
+                                <TextBlock Text="ខេត្តកំណើត" FontSize="16" Margin="0,0,0,3"/>
                                 <TextBox Text="{Binding StudentForm.BirthProvince, UpdateSourceTrigger=PropertyChanged}" Padding="8" FontSize="16"/>
                             </StackPanel>
                             <StackPanel Grid.Row="2" Margin="5">
@@ -181,7 +183,8 @@
                             </StackPanel>
                             <StackPanel Grid.Row="1" Margin="5">
                                 <TextBlock Text="ថ្ងៃខែឆ្នាំប្រឡង" FontSize="16" Margin="0,0,0,3"/>
-                                <DatePicker SelectedDate="{Binding StudentForm.ExamDate}" Padding="8" FontSize="16"/>
+                                <DatePicker SelectedDate="{Binding StudentForm.ExamDate, Converter={StaticResource DateOnlyToDateTimeConverter}}" 
+                                            Padding="8" FontSize="16"/>
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="1" Margin="5">
                                 <TextBlock Text="លេខតុ" FontSize="16" Margin="0,0,0,3"/>
@@ -228,11 +231,11 @@
                                                 <CheckBox IsChecked="{Binding IsChecked}" VerticalAlignment="Center" Margin="0,0,10,0" 
                                                           Background="{DynamicResource MaterialDesign.Brush.Primary}" />
                                                 <StackPanel>
-                                                    <TextBlock Text="{Binding Class.Name}" FontSize="15" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{Binding Class.KhmerName}" FontSize="15" FontWeight="SemiBold" />
                                                     <StackPanel Orientation="Horizontal" TextElement.FontSize="13" TextElement.Foreground="#CCC">
-                                                        <TextBlock Text="{Binding Class.Grade.Name, StringFormat='Grade: {0}'}" Margin="0,0,15,0" />
-                                                        <TextBlock Text="{Binding Class.Generation.Department.Name, StringFormat='Dept: {0}'}" Margin="0,0,15,0" />
-                                                        <TextBlock Text="{Binding Class.Teacher.FullName, StringFormat='Teacher: {0}'}" />
+                                                        <TextBlock Text="{Binding Class.Grade.KhmerName, StringFormat='កម្រិត: {0}'}" Margin="0,0,15,0" />
+                                                        <TextBlock Text="{Binding Class.Generation.Department.KhmerName, StringFormat='ផ្នែក: {0}'}" Margin="0,0,15,0" />
+                                                        <TextBlock Text="{Binding Class.Teacher.FullName, StringFormat='គ្រូបន្ទុក: {0}'}" />
                                                     </StackPanel>
                                                 </StackPanel>
                                             </StackPanel>
@@ -256,34 +259,50 @@
                                     BorderBrush="White" 
                                     BorderThickness="1">
                             <Grid>
+                                <Border Background="{DynamicResource MaterialDesignPaper}"
+                                        Opacity="0.85"
+                                        TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
+                                        Visibility="{Binding IsPhotoLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="Loading"
+                                                                 Width="64"
+                                                                 Height="64"
+                                                                 HorizontalAlignment="Center"/>
+                                        <TextBlock Text="កំពុងទាញយករូបថត..."
+                                                   FontWeight="SemiBold"
+                                                   FontSize="18"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,10,0,0"/>
+                                    </StackPanel>
+                                </Border>
+
                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                                             Visibility="{Binding CurrentPhoto, 
-                                            Converter={StaticResource ValidPathToVisibilityConverterReversed},
-                                            ConverterParameter='IsReversed', FallbackValue=Collapsed}">
+                                            Converter={StaticResource ValidPathToVisibilityConverterReversed}}">
                                     <TextBlock Text="មិនទាន់មានរូបថតទេ សូមធ្វើការជ្រើសរើសរូបថត"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"
                                            FontSize="18"
                                            Margin="0 20"/>
-                                    <Button Background="{DynamicResource MaterialDesign.Brush.Secondary}">
+                                    <Button Background="{DynamicResource MaterialDesign.Brush.Secondary}"
+                                            Command="{Binding UploadPhotoCommand}">
                                         ជ្រើសរើសរូបថត
                                     </Button>
                                 </StackPanel>
                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                                            Visibility="{Binding StudentForm.PhotoKey, 
-                                            Converter={StaticResource NullToVisibilityConverter}}">
+                                            Visibility="{Binding CurrentPhoto, 
+                                            Converter={StaticResource ValidPathToVisibilityConverter}}">
                                     <Border BorderBrush="White"
                                             Height="125"
                                             Width="100"
                                             Margin="0 0 0 10"
-                                            BorderThickness="1"
-                                            Visibility="{Binding CurrentPhoto,
-                                            Converter={StaticResource ValidPathToVisibilityConverter}}">
+                                            BorderThickness="1">
                                         <Image 
                                             RenderOptions.BitmapScalingMode="HighQuality"
-                                            Source="{Binding CurrentPhoto}"/>
+                                            Source="{Binding CurrentPhotoPreview, Converter={StaticResource PhotoPathToImageSourceConverter}}"/>
                                     </Border>
                                     <UniformGrid Rows="1" Columns="2">
                                         <Button Command="{Binding UploadPhotoCommand}"
+                                            Margin="5 0"
                                             Background="{DynamicResource MaterialDesign.Brush.Secondary}">
                                             <StackPanel Orientation="Horizontal">
                                                 <materialDesign:PackIcon Kind="Edit" />
@@ -291,6 +310,7 @@
                                             </StackPanel>
                                         </Button>
                                         <Button Command="{Binding DeletePhotoCommand}"
+                                            Margin="5 0"
                                             Background="{DynamicResource MaterialDesign.Brush.Secondary}">
                                             <StackPanel Orientation="Horizontal">
                                                 <materialDesign:PackIcon Kind="Delete" />

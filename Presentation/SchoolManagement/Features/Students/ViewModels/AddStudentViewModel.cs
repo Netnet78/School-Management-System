@@ -37,7 +37,7 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
         [RelayCommand]
         private async Task SaveAsync()
         {
-            if (StudentForm.Skill == null)
+            if (StudentForm.SkillId <= 0)
             {
                 _messageService.Show("សូមជ្រើសរើសជំនាញ មុននឹងធ្វើការរក្សាទុក!", "ឈប់សិន! មួយៗ!", MessageButton.OK, MessageIcon.Information);
                 return;
@@ -154,10 +154,13 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
             if (user.IsAdmin())
             {
                 CanSetSkill = true;
-                return;
             }
 
-            StudentForm.Skill = user.Employee?.Department?.Skill;
+            if (user.Employee?.Department?.Skill != null)
+            {
+                StudentForm.Skill = user.Employee.Department.Skill;
+                StudentForm.SkillId = StudentForm.Skill.Id;
+            }
 
             if (user.IsHeadTeacher())
             {

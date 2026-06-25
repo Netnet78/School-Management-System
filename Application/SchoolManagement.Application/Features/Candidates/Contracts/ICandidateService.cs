@@ -1,6 +1,8 @@
+using SchoolManagement.Application.Features.Shared.Contracts;
+
 namespace SchoolManagement.Application.Features.Candidates.Contracts
 {
-    public interface ICandidateService
+    public interface ICandidateService : ICrudService<Candidate>
     {
         Task<ReturnResponse<IEnumerable<Candidate>>> GetAllAsync(int page, int pageSize,
             IEnumerable<FilterCondition<Candidate>>? filters,

@@ -118,6 +118,7 @@
                                         XAxes="{Binding StudentsPerClassChart.XAxes}"
                                         YAxes="{Binding StudentsPerClassChart.YAxes}"
                                         Height="200"
+                                        FontFamily="{StaticResource NotoSansKhmer}"
                                         Visibility="{Binding StudentsPerClassChart.IsEmpty,
                                             Converter={StaticResource BooleanToVisibilityConverterReversed}}"/>
 

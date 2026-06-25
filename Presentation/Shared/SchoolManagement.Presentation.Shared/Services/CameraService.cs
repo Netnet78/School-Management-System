@@ -3,6 +3,7 @@ using AForge.Video.DirectShow;
 using SchoolManagement.Presentation.Shared.Converters;
 using System.Drawing;
 
+namespace SchoolManagement.Presentation.Shared.Services;
 public class CameraService : ICameraService
 {
     private VideoCaptureDevice? _device;

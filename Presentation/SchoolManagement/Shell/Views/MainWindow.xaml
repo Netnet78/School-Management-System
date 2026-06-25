@@ -76,91 +76,129 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <StackPanel Grid.Row="1">
-                            <Button Margin="0 0 0 20" Command="{Binding ShowDashboardCommand}"
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel Margin="0 0 10 0">
+                                <Button Margin="0 0 0 20" Command="{Binding ShowDashboardCommand}"
                                     Visibility="{Binding CanAccessDashboard, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <Grid TextElement.FontSize="16" Width="231">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0" Kind="TabletDashboard" VerticalAlignment="Center" Width="20" Height="20"/>
-                                    <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">ផ្នាំងគ្រប់គ្រង</TextBlock>
-                                </Grid>
-                            </Button>
+                                    <Grid TextElement.FontSize="16" Width="231">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Grid.Column="0" Kind="TabletDashboard" VerticalAlignment="Center" Width="20" Height="20"/>
+                                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">ផ្នាំងគ្រប់គ្រង</TextBlock>
+                                    </Grid>
+                                </Button>
 
-                            <Button Margin="0 0 0 20" Command="{Binding ShowStudentListCommand}"
+                                <Button Margin="0 0 0 20" Command="{Binding ShowStudentListCommand}"
                                     Visibility="{Binding CanAccessStudentListView, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <Grid TextElement.FontSize="16" Width="231">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0" Kind="Table" VerticalAlignment="Center" Width="20" Height="20"/>
-                                    <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">គ្រប់គ្រងសិស្សានុសិស្ស</TextBlock>
-                                </Grid>
-                            </Button>
+                                    <Grid TextElement.FontSize="16" Width="231">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Grid.Column="0" Kind="Table" VerticalAlignment="Center" Width="20" Height="20"/>
+                                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">គ្រប់គ្រងសិស្សានុសិស្ស</TextBlock>
+                                    </Grid>
+                                </Button>
 
-                            <Button Margin="0 0 0 20" Command="{Binding ShowClassCommand}"
+                                <Button Margin="0 0 0 20" Command="{Binding ShowClassCommand}"
                                     Visibility="{Binding CanAccessClassView, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <Grid TextElement.FontSize="16" Width="231">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0" Kind="School" VerticalAlignment="Center" Width="20" Height="20"/>
-                                    <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">គ្រប់គ្រងថ្នាក់រៀន</TextBlock>
-                                </Grid>
-                            </Button>
+                                    <Grid TextElement.FontSize="16" Width="231">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Grid.Column="0" Kind="School" VerticalAlignment="Center" Width="20" Height="20"/>
+                                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">គ្រប់គ្រងថ្នាក់រៀន</TextBlock>
+                                    </Grid>
+                                </Button>
 
-                            <Button Margin="0 0 0 20" Command="{Binding ShowAttendanceCommand}"
+                                <Button Margin="0 0 0 20" Command="{Binding ShowAttendanceCommand}"
                                     Visibility="{Binding CanAccessAttendanceView, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <Grid TextElement.FontSize="16" Width="231">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0" Kind="UserCheck" VerticalAlignment="Center" Width="20" Height="20"/>
-                                    <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="គ្រប់គ្រងវត្តមានសិស្ស" />
-                                </Grid>
-                            </Button>
+                                    <Grid TextElement.FontSize="16" Width="231">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Grid.Column="0" Kind="UserCheck" VerticalAlignment="Center" Width="20" Height="20"/>
+                                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="គ្រប់គ្រងវត្តមានសិស្ស" />
+                                    </Grid>
+                                </Button>
 
-                            <Button Margin="0 0 0 20" Command="{Binding ShowReportCommand}"
+                                <Button Margin="0 0 0 20" Command="{Binding ShowReportCommand}"
                                     Visibility="{Binding CanAccessAnalyticsView, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <Grid TextElement.FontSize="16" Width="231">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0" Kind="DocumentSign" VerticalAlignment="Center" Width="20" Height="20"/>
-                                    <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">មើលរបាយការណ៍</TextBlock>
-                                </Grid>
-                            </Button>
+                                    <Grid TextElement.FontSize="16" Width="231">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Grid.Column="0" Kind="DocumentSign" VerticalAlignment="Center" Width="20" Height="20"/>
+                                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">មើលរបាយការណ៍</TextBlock>
+                                    </Grid>
+                                </Button>
 
-                            <Button Margin="0 0 0 20" Command="{Binding ShowEmployeeCommand}"
+                                <Button Margin="0 0 0 20" Command="{Binding ShowScoreEntryCommand}"
+                                    Visibility="{Binding CanAccessScoreEntry, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Grid TextElement.FontSize="16" Width="231">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Grid.Column="0" Kind="FileDocument" VerticalAlignment="Center" Width="20" Height="20"/>
+                                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">បញ្ចូលពិន្ទុ</TextBlock>
+                                    </Grid>
+                                </Button>
+
+                                <Button Margin="0 0 0 20" Command="{Binding ShowSubjectListCommand}"
+                                    Visibility="{Binding CanAccessSubjectList, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Grid TextElement.FontSize="16" Width="231">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Grid.Column="0" Kind="BookOpenVariant" VerticalAlignment="Center" Width="20" Height="20"/>
+                                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">គ្រប់គ្រងមុខវិជ្ជា</TextBlock>
+                                    </Grid>
+                                </Button>
+
+                                <Button Margin="0 0 0 20" Command="{Binding ShowEmployeeCommand}"
                                     Visibility="{Binding CanAccessEmployeeView, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <Grid TextElement.FontSize="16" Width="231">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0" Kind="Users" VerticalAlignment="Center" Width="20" Height="20"/>
-                                    <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">គ្រប់គ្រងបុគ្គលិក</TextBlock>
-                                </Grid>
-                            </Button>
+                                    <Grid TextElement.FontSize="16" Width="231">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Grid.Column="0" Kind="Users" VerticalAlignment="Center" Width="20" Height="20"/>
+                                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">គ្រប់គ្រងបុគ្គលិក</TextBlock>
+                                    </Grid>
+                                </Button>
 
-                            <Button Margin="0 0 0 20" Command="{Binding ShowAuditLogCommand}"
+                                <Button Margin="0 0 0 20" Command="{Binding ShowRoleManagementCommand}"
+                                    Visibility="{Binding CanAccessRoleManagement, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Grid TextElement.FontSize="16" Width="231">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Grid.Column="0" Kind="AccountKey" VerticalAlignment="Center" Width="20" Height="20"/>
+                                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">គ្រប់គ្រងតួនាទី</TextBlock>
+                                    </Grid>
+                                </Button>
+
+                                <Button Margin="0 0 0 20" Command="{Binding ShowAuditLogCommand}"
                                     Visibility="{Binding CanAccessAuditLogView, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <Grid TextElement.FontSize="16" Width="231">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0" Kind="History" VerticalAlignment="Center" Width="20" Height="20"/>
-                                    <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">ប្រវត្តិប្រតិបត្តិការ</TextBlock>
-                                </Grid>
-                            </Button>
-                        </StackPanel>
+                                    <Grid TextElement.FontSize="16" Width="231">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Grid.Column="0" Kind="History" VerticalAlignment="Center" Width="20" Height="20"/>
+                                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">ប្រវត្តិប្រតិបត្តិការ</TextBlock>
+                                    </Grid>
+                                </Button>
+                            </StackPanel>
+                        </ScrollViewer>
                     </Grid>
 
                     <Grid Grid.Row="1" Margin="20 20" RowDefinitions="* *">

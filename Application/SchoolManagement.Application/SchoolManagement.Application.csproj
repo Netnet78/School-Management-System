@@ -13,4 +13,8 @@
     <ProjectReference Include="..\..\Infrastructure\SchoolManagement.Infrastructure\SchoolManagement.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Subjects\Authorization\" />
+  </ItemGroup>
+
 </Project>
