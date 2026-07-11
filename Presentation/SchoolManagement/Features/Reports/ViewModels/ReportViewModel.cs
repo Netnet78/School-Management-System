@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Windows.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -8,6 +7,7 @@ using SchoolManagement.Application.Features.Reports.Models;
 using SchoolManagement.Infrastructure.Features.Reports.Contracts;
 using SchoolManagement.Presentation.Features.Reports.Contracts;
 using SchoolManagement.Presentation.Features.Reports.Models;
+using SchoolManagement.Presentation.Features.Reports.Providers;
 
 namespace SchoolManagement.Presentation.Features.Reports.ViewModels
 {
@@ -165,7 +165,17 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewModels
                     CurrentFilterViewModel.FilterChanged -= OnFilterChanged;
                 }
 
+                if (_currentProvider is System.ComponentModel.INotifyPropertyChanged oldNpc)
+                {
+                    oldNpc.PropertyChanged -= OnProviderPropertyChanged;
+                }
+
                 _currentProvider = provider;
+                
+                if (_currentProvider is System.ComponentModel.INotifyPropertyChanged newNpc)
+                {
+                    newNpc.PropertyChanged += OnProviderPropertyChanged;
+                }
                 OnPropertyChanged(nameof(Exporters));
                 HasData = false;
                 SummaryText = string.Empty;
@@ -229,6 +239,14 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewModels
             await GenerateWithProviderAsync(CurrentFilterViewModel.GetFilterData());
         }
 
+        private void OnProviderPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "ShowSelectedOnly" && sender is SchoolManagement.Presentation.Features.Reports.Providers.CardTableReportProvider cardProvider)
+            {
+                ShowPageOption = !cardProvider.ShowSelectedOnly && CurrentFilterViewModel?.GetFilterData() is IPagedFilter;
+            }
+        }
+
         private async void OnFilterChanged()
         {
             try
@@ -250,7 +268,8 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewModels
 
             if (filter is IPagedFilter paged)
             {
-                ShowPageOption = true;
+                bool isSelectedOnly = _currentProvider is ISelectableItemReport { ShowSelectedOnly: true };
+                ShowPageOption = !isSelectedOnly;
                 paged.Page = CurrentPage;
                 paged.PageSize = PageSize;
             }

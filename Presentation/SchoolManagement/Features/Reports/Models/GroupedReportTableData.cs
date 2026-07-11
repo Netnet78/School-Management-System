@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-
 namespace SchoolManagement.Presentation.Features.Reports.Models
 {
     public class GroupedReportTableData

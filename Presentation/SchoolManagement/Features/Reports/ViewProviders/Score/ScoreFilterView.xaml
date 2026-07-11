@@ -8,36 +8,44 @@
               d:DataContext="{d:DesignInstance Type=local:ScoreFilterViewModel}"
               d:DesignHeight="80" d:DesignWidth="1000"
               TextElement.FontSize="16">
-     <StackPanel Orientation="Horizontal">
-         <StackPanel Orientation="Horizontal" Margin="0 0 25 0">
-             <TextBlock Text="ស្វែងរក" VerticalAlignment="Center" Margin="0 0 8 0"/>
-             <TextBox Width="180"
-                      Padding="6"
-                      Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged, Delay=400}"/>
-         </StackPanel>
-         <StackPanel Orientation="Horizontal" Margin="0 0 25 0">
-             <TextBlock Text="ថ្នាក់" VerticalAlignment="Center" Margin="0 0 8 0"/>
-             <ComboBox Width="180"
-                       Padding="6"
-                       ItemsSource="{Binding Classes}"
-                       SelectedItem="{Binding SelectedClass}"
-                       DisplayMemberPath="KhmerName"/>
-         </StackPanel>
-         <StackPanel Orientation="Horizontal" Margin="0 0 25 0">
-             <TextBlock Text="មុខវិជ្ជា" VerticalAlignment="Center" Margin="0 0 8 0"/>
-             <ComboBox Width="180"
-                       Padding="6"
-                       ItemsSource="{Binding Subjects}"
-                       SelectedItem="{Binding SelectedSubject}"
-                       DisplayMemberPath="Subject.KhmerName"/>
-         </StackPanel>
+     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
          <StackPanel Orientation="Horizontal">
-             <TextBlock Text="ប្រលង" VerticalAlignment="Center" Margin="0 0 8 0"/>
-             <ComboBox Width="180"
-                       Padding="6"
-                       ItemsSource="{Binding Exams}"
-                       SelectedItem="{Binding SelectedExam}"
-                       DisplayMemberPath="KhmerName"/>
+             <StackPanel Orientation="Horizontal" Margin="0 0 25 0">
+                 <TextBlock Text="ប្រលង" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                 <ComboBox Width="180"
+                           Padding="6"
+                           ItemsSource="{Binding Exams}"
+                           SelectedItem="{Binding SelectedExam}"
+                           DisplayMemberPath="KhmerName"/>
+             </StackPanel>
+             <StackPanel Orientation="Horizontal" Margin="0 0 25 0">
+                 <TextBlock Text="ថ្នាក់" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                 <ListBox ItemsSource="{Binding SelectableClasses}"
+                          BorderThickness="1"
+                          MinWidth="160" MaxHeight="40">
+                     <ListBox.ItemTemplate>
+                         <DataTemplate DataType="{x:Type local:SelectableClass}">
+                             <CheckBox IsChecked="{Binding IsSelected}"
+                                       Content="{Binding Class.KhmerName}"
+                                       FontSize="14"/>
+                         </DataTemplate>
+                     </ListBox.ItemTemplate>
+                 </ListBox>
+             </StackPanel>
+             <StackPanel Orientation="Horizontal" Margin="0 0 25 0">
+                 <TextBlock Text="មុខវិជ្ជា" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                 <ComboBox Width="180"
+                           Padding="6"
+                           ItemsSource="{Binding Subjects}"
+                           SelectedItem="{Binding SelectedSubject}"
+                           DisplayMemberPath="Subject.KhmerName"/>
+             </StackPanel>
+             <StackPanel Orientation="Horizontal">
+                 <TextBlock Text="ស្វែងរក" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                 <TextBox Width="180"
+                          Padding="6"
+                          Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged, Delay=400}"/>
+             </StackPanel>
          </StackPanel>
-     </StackPanel>
+     </ScrollViewer>
 </UserControl>

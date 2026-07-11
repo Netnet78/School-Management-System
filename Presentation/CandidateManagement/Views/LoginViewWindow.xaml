@@ -1,4 +1,4 @@
-﻿<Window x:Class="CandidateManagement.Views.LoginViewWindow"
+<Window x:Class="CandidateManagement.Views.LoginViewWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -49,7 +49,7 @@
         <!-- Card-like container background -->
         <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFFFF" />
         <DropShadowEffect x:Key="CardShadow" BlurRadius="12" ShadowDepth="2" Opacity="0.15" />
-        <Storyboard x:Key="FormAnimation">
+        <Storyboard x:Key="FormAnimation" BeginTime="0:0:0.2">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="border" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)">
                 <EasingDoubleKeyFrame KeyTime="00:00:00" Value="500">
                     <EasingDoubleKeyFrame.EasingFunction>
@@ -63,7 +63,7 @@
                 </EasingDoubleKeyFrame>
             </DoubleAnimationUsingKeyFrames>
         </Storyboard>
-        <Storyboard x:Key="ImageAnimation">
+        <Storyboard x:Key="ImageAnimation" BeginTime="0:0:0.2">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PictureBorder" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)">
                 <EasingDoubleKeyFrame KeyTime="00:00:00" Value="360" />
                 <EasingDoubleKeyFrame KeyTime="00:00:01" Value="360">
@@ -143,7 +143,8 @@
         CornerRadius="1"
         BorderThickness="3"
         Width="360"
-        Height="460" BorderBrush="White" RenderTransformOrigin="0.5,0.5">
+        Height="460" BorderBrush="White" RenderTransformOrigin="0.5,0.5"
+        CacheMode="BitmapCache">
                     <Border.RenderTransform>
                         <TransformGroup>
                             <ScaleTransform />
@@ -152,11 +153,11 @@
                             <TranslateTransform />
                         </TransformGroup>
                     </Border.RenderTransform>
-                    <Image x:Name="image" Source="pack://application:,,,/SchoolManagement.Assets;component/Images/computer_students.jpg"
-           Stretch="UniformToFill"
-           HorizontalAlignment="Center"
-           VerticalAlignment="Center"
-           SnapsToDevicePixels="True" />
+                    <Image x:Name="image" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center" SnapsToDevicePixels="True">
+                        <Image.Source>
+                            <BitmapImage UriSource="pack://application:,,,/SchoolManagement.Assets;component/Images/computer_students.jpg" DecodePixelWidth="400" CacheOption="OnLoad" />
+                        </Image.Source>
+                    </Image>
                 </Border>
 
                 <!-- Right: card containing form -->
@@ -164,7 +165,8 @@
                     <Border x:Name="border" Background="{StaticResource CardBackgroundBrush}"
             CornerRadius="8"
             Padding="28"
-            Effect="{StaticResource CardShadow}">
+            Effect="{StaticResource CardShadow}"
+            CacheMode="BitmapCache">
                         <Border.RenderTransform>
                             <TransformGroup>
                                 <ScaleTransform />

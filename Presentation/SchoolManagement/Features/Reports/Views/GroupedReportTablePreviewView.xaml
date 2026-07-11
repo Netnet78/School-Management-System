@@ -18,6 +18,7 @@
     </UserControl.Resources>
 
     <TabControl x:Name="GroupTabControl"
+                VirtualizingPanel.IsVirtualizing="True"
                 Visibility="{Binding GroupedTableData.HasData, Converter={StaticResource BooleanToVisibilityConverter}}">
     </TabControl>
 </UserControl>

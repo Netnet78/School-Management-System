@@ -4,7 +4,6 @@ using SchoolManagement.Application.Features.Files.Contracts;
 using SchoolManagement.Application.Features.Reports.Generators;
 using SchoolManagement.Application.Features.Reports.Models;
 using SchoolManagement.Core.Features.Reports.Models;
-using SchoolManagement.Infrastructure.Features.Students.Contracts;
 using SchoolManagement.Infrastructure.Features.Shared.Models;
 
 namespace SchoolManagement.Tests.Features.Reports

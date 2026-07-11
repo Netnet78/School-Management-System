@@ -1,5 +1,4 @@
-﻿using QuestPDF.Fluent;
-using QuestPDF.Infrastructure;
+﻿using QuestPDF.Infrastructure;
 using SchoolManagement.Core.Features.Reports.Models;
 
 namespace SchoolManagement.Infrastructure.Features.Reports.Contracts

@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SchoolManagement.Core.Features.Subjects.Models;
+using SchoolManagement.Presentation.Shared.Features.Subjects.Observables;
 using SchoolManagement.Presentation.Shared.Features.Subjects.Params;
 
 namespace SchoolManagement.Presentation.Features.Subjects.ViewModels
@@ -11,7 +12,8 @@ namespace SchoolManagement.Presentation.Features.Subjects.ViewModels
         private readonly IMessageService _messageService;
         private readonly INavigationService _navigationService;
 
-        private Subject _subject = null!;
+        private int _subjectId;
+        private Subject? _subject;
 
         [ObservableProperty]
         private string _name = string.Empty;
@@ -28,6 +30,9 @@ namespace SchoolManagement.Presentation.Features.Subjects.ViewModels
         [ObservableProperty]
         private bool _isSaving;
 
+        [ObservableProperty]
+        private ObservableCollection<ComponentEntry> _components = [];
+
         public EditSubjectViewModel(
             ISubjectService subjectService,
             IMessageService messageService,
@@ -42,17 +47,49 @@ namespace SchoolManagement.Presentation.Features.Subjects.ViewModels
         {
             if (@params is EditSubjectNavigationParams p && p.Subject != null)
             {
-                _subject = p.Subject;
-                Name = _subject.Name;
-                KhmerName = _subject.KhmerName;
-                MaxScore = _subject.MaxScore;
-                IsActive = _subject.IsActive;
+                _subjectId = p.Subject.Id;
             }
 
             return Task.CompletedTask;
         }
 
-        public Task LoadAsync() => Task.CompletedTask;
+        public async Task LoadAsync()
+        {
+            if (_subjectId <= 0) return;
+
+            var response = await _subjectService.GetByIdAsync(_subjectId);
+            if (response.Status != Status.Success || response.Value == null)
+            {
+                _messageService.Show("មិនអាចទាញទិន្នន័យមុខវិជ្ជាបានទេ!", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                return;
+            }
+
+            _subject = response.Value;
+            Name = _subject.Name;
+            KhmerName = _subject.KhmerName;
+            MaxScore = _subject.MaxScore;
+            IsActive = _subject.IsActive;
+
+            Components.Clear();
+            var mappers = await _subjectService.GetMappersForSubjectAsync(_subjectId);
+            foreach (SubjectMapper m in mappers)
+            {
+                Components.Add(new ComponentEntry(m.Component?.Name ?? string.Empty, m.Component?.KhmerName ?? string.Empty));
+            }
+        }
+
+        [RelayCommand]
+        private void AddComponent()
+        {
+            Components.Add(new ComponentEntry());
+        }
+
+        [RelayCommand]
+        private void RemoveComponent(ComponentEntry? entry)
+        {
+            if (entry != null)
+                Components.Remove(entry);
+        }
 
         [RelayCommand]
         private async Task SaveAsync()
@@ -79,12 +116,29 @@ namespace SchoolManagement.Presentation.Features.Subjects.ViewModels
 
             try
             {
-                _subject.Name = Name.Trim();
-                _subject.KhmerName = KhmerName.Trim();
-                _subject.MaxScore = MaxScore;
-                _subject.IsActive = IsActive;
+                var mappers = Components
+                    .Where(c => !string.IsNullOrWhiteSpace(c.Name))
+                    .Select(c => new SubjectMapper
+                    {
+                        Component = new SubjectComponent
+                        {
+                            Name = c.Name.Trim(),
+                            KhmerName = c.KhmerName.Trim()
+                        }
+                    })
+                    .ToList();
 
-                var response = await _subjectService.UpdateAsync(_subject);
+                Subject subject = new()
+                {
+                    Id = _subjectId,
+                    Name = Name.Trim(),
+                    KhmerName = KhmerName.Trim(),
+                    MaxScore = MaxScore,
+                    IsActive = IsActive,
+                    Mappers = mappers
+                };
+
+                var response = await _subjectService.UpdateAsync(subject);
 
                 if (response.Status == Status.Success)
                 {

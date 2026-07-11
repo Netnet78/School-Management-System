@@ -1,8 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SchoolManagement.Core.Features.Attendances.Models;
-using SchoolManagement.Core.Shared.Extensions;
-using System.Collections.ObjectModel;
 
 namespace SchoolManagement.Presentation.Features.Attendances.ViewModels
 {
@@ -46,19 +43,13 @@ namespace SchoolManagement.Presentation.Features.Attendances.ViewModels
         private DateTime? _dateToFilter;
 
         [ObservableProperty]
-        private int _currentPage = 1;
-
-        [ObservableProperty]
-        private int _maxPage = 1;
-
-        [ObservableProperty]
-        private int _totalCount;
-
-        [ObservableProperty]
-        private int _currentPageTotalCount;
+        private int _pageIndex = 1;
 
         [ObservableProperty]
         private string _pageCount = string.Empty;
+
+        private (DateTime? Date, int? Id) _currentCursor = (null, null);
+        private readonly Stack<(DateTime? Date, int? Id)> _previousCursors = new();
 
         public IEnumerable<object> StatusOptions { get; } = Enum.GetValues<AttendanceStatus>()
             .Select(s => new { Value = (AttendanceStatus?)s, Description = s.GetDescription() })
@@ -91,14 +82,14 @@ namespace SchoolManagement.Presentation.Features.Attendances.ViewModels
             CanManageAttendances = true;
 
             await LoadClassesAsync();
-            CurrentPage = 1;
+            ResetPagination();
             await LoadAttendancesAsync();
         }
 
         [RelayCommand]
         private async Task RefreshAsync()
         {
-            CurrentPage = 1;
+            ResetPagination();
             await LoadAttendancesAsync();
         }
 
@@ -179,7 +170,8 @@ namespace SchoolManagement.Presentation.Features.Attendances.ViewModels
             StatusFilter = null;
             DateFromFilter = null;
             DateToFilter = null;
-            CurrentPage = 1;
+            ResetPagination();
+            await LoadAttendancesAsync();
         }
 
         async partial void OnSearchTextChanged(string value)
@@ -191,51 +183,41 @@ namespace SchoolManagement.Presentation.Features.Attendances.ViewModels
             try
             {
                 await Task.Delay(300, token);
-                CurrentPage = 1;
+                ResetPagination();
+                _ = LoadAttendancesAsync();
             }
             catch (TaskCanceledException) { }
         }
 
         partial void OnClassFilterIdChanged(int? value)
         {
-            CurrentPage = 1;
+            ResetPagination();
+            _ = LoadAttendancesAsync();
         }
 
         partial void OnStatusFilterChanged(AttendanceStatus? value)
         {
-            CurrentPage = 1;
+            ResetPagination();
+            _ = LoadAttendancesAsync();
         }
 
         partial void OnDateFromFilterChanged(DateTime? value)
         {
-            CurrentPage = 1;
+            ResetPagination();
+            _ = LoadAttendancesAsync();
         }
 
         partial void OnDateToFilterChanged(DateTime? value)
         {
-            CurrentPage = 1;
+            ResetPagination();
+            _ = LoadAttendancesAsync();
         }
 
-        partial void OnCurrentPageChanged(int oldValue, int newValue)
+        private void ResetPagination()
         {
-            if (_isLoadingAttendances)
-            {
-                return;
-            }
-
-            if (newValue < 1)
-            {
-                CurrentPage = 1;
-                return;
-            }
-
-            if (newValue > MaxPage)
-            {
-                CurrentPage = MaxPage;
-                return;
-            }
-
-            _ = LoadAttendancesAsync();
+            _currentCursor = (null, null);
+            _previousCursors.Clear();
+            PageIndex = 1;
         }
 
         private async Task LoadClassesAsync()
@@ -278,27 +260,11 @@ namespace SchoolManagement.Presentation.Features.Attendances.ViewModels
             {
                 List<FilterCondition<Attendance>> filters = BuildFilters();
 
-                ReturnResponse<int> countResponse = await _attendanceService.GetAllCountAsync(filters: filters);
-
-                if (countResponse.Status != Status.Success)
-                {
-                    _messageService.Show(countResponse.Message ?? "Unable to load attendances.", "Error", MessageButton.OK, MessageIcon.Error);
-                    return;
-                }
-
-                int totalCount = countResponse.Value;
-                int maxPage = Math.Max(1, (int)Math.Ceiling((double)totalCount / DefaultPageSize));
-
-                MaxPage = maxPage;
-                TotalCount = totalCount;
-
-                int page = Math.Min(CurrentPage, maxPage);
-
-                ReturnResponse<IEnumerable<Attendance>> response = await _attendanceService.GetAllAsync(
+                ReturnResponse<IEnumerable<Attendance>> response = await _attendanceService.GetAttendancesWithCursorAsync(
                     filters: filters,
-                    page: page,
+                    lastDate: _currentCursor.Date,
+                    lastId: _currentCursor.Id,
                     pageSize: DefaultPageSize,
-                    orderBy: [new SortCriteria<Attendance>("AttendanceDateTime", OrderDirection.Descending)],
                     includes: ["StudentClass", "StudentClass.Student", "StudentClass.Student.Candidate", "StudentClass.Class", "MarkedByEmployee"]);
 
                 if (response.Status != Status.Success || response.Value == null)
@@ -313,13 +279,7 @@ namespace SchoolManagement.Presentation.Features.Attendances.ViewModels
                     Attendances.Add(attendance);
                 }
 
-                CurrentPageTotalCount = Attendances.Count;
-                PageCount = $"ទំព័រ {page} នៃ {maxPage}";
-
-                if (CurrentPage != page)
-                {
-                    CurrentPage = page;
-                }
+                PageCount = $"ទំព័រ {PageIndex}";
             }
             catch (Exception ex)
             {
@@ -382,18 +342,24 @@ namespace SchoolManagement.Presentation.Features.Attendances.ViewModels
         [RelayCommand]
         private async Task NextPageAsync()
         {
-            if (CurrentPage < MaxPage)
+            if (Attendances.Count == DefaultPageSize)
             {
-                CurrentPage++;
+                var lastItem = Attendances.Last();
+                _previousCursors.Push(_currentCursor);
+                _currentCursor = (lastItem.AttendanceDateTime, lastItem.Id);
+                PageIndex++;
+                await LoadAttendancesAsync();
             }
         }
 
         [RelayCommand]
         private async Task PreviousPageAsync()
         {
-            if (CurrentPage > 1)
+            if (_previousCursors.Count > 0)
             {
-                CurrentPage--;
+                _currentCursor = _previousCursors.Pop();
+                PageIndex--;
+                await LoadAttendancesAsync();
             }
         }
     }

@@ -18,7 +18,7 @@ namespace SchoolManagement.Core.Features.Generations.Models
         public int AcademicEndYear { get; set; }
         public int DepartmentId { get; set; }
         public Department Department { get; set; } = null!;
-        public ICollection<Class> Classes { get; set; } = [];
+        public List<Class> Classes { get; set; } = [];
         public string KhmerName => $"ជំនាន់ទី {CohortNumber}";
     }
 }

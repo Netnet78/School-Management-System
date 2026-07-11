@@ -11,6 +11,6 @@ namespace SchoolManagement.Core.Features.Auth.Models
         [Description("ឈ្មោះ")]
         public string Name { get; set; } = "";
         [Description("មុខងារ")]
-        public ICollection<Role> Roles { get; set; } = [];
+        public List<Role> Roles { get; set; } = [];
     }
 }

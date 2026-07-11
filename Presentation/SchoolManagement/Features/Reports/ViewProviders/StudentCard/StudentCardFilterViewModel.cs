@@ -1,7 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using SchoolManagement.Application.Features.Classes.Authorization;
 using SchoolManagement.Application.Features.Reports.Models;
-using SchoolManagement.Presentation.Features.Reports.Contracts;
 
 namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.StudentCard
 {

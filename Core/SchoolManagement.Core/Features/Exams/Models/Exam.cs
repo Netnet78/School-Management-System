@@ -10,6 +10,6 @@ namespace SchoolManagement.Core.Features.Exams.Models
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string KhmerName { get; set; } = string.Empty;
-        public ICollection<Assessment> Scores { get; set; } = [];
+        public List<Assessment> Scores { get; set; } = [];
     }
 }

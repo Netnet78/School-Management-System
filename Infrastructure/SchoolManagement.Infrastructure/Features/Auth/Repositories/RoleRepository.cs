@@ -24,16 +24,11 @@ public class RoleRepository : BaseRepository<Role>, IRoleRepository
 
         if (role == null) return;
 
-        role.Permissions.Clear();
-
         List<Permission> permissions = await Context.Permissions
             .Where(p => permissionIds.Contains(p.Id))
             .ToListAsync();
 
-        foreach (Permission permission in permissions)
-        {
-            role.Permissions.Add(permission);
-        }
+        role.Permissions = permissions;
 
         await Context.SaveChangesAsync();
     }

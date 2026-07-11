@@ -1,7 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SchoolManagement.Application.Features.Classes.Authorization;
-using System.Collections.ObjectModel;
 
 namespace SchoolManagement.Presentation.Features.Classes.ViewModels
 {

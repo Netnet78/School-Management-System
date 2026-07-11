@@ -70,7 +70,8 @@ namespace CandidateManagement.ViewModels
 
         public async Task LoadAsync()
         {
-            SkillOptions = await _skillRepository.GetAllAsync();
+            SkillOptions = await _skillRepository.FindAsync(
+                filters: [new(s => s.IsActive)]);
 
             _soundService.Load(_errorSound);
 
@@ -100,14 +101,14 @@ namespace CandidateManagement.ViewModels
                 {
                     if (string.IsNullOrWhiteSpace(value))
                     {
-                        await TriggerError("Please enter the student's name!", "Name error");
+                        await TriggerError("សូមមេត្តាកុំភ្លេចបំពេញឈ្មោះ សិស្សប្អូន!", "កុំលឿនពេក!!");
                         return;
                     }
                 }
 
                 if (Data.Age < 12)
                 {
-                    await TriggerError("Please make sure that you enter a valid date of birth!", "Birthday error");
+                    await TriggerError("សូមប្អូនត្រួតពិនិត្យមើលឱ្យបានច្បាស់ទាក់ទងនឹងព័ត៌មានថ្ងៃខែឆ្នាំកំណើត", "Birthday error");
                     return;
                 }
 
@@ -129,7 +130,7 @@ namespace CandidateManagement.ViewModels
 
                 await _dispatcherService.InvokeAsync(() =>
                 {
-                    _messageService.Show("Successfully added the candidate!", "Insert Success!", MessageButton.OK, MessageIcon.Information);
+                    _messageService.Show($"បេក្ខជនឈ្មោះ {Data.FullName} ត្រូវបានបញ្ចូលជាការស្រេច", "Success!", MessageButton.OK, MessageIcon.Information);
                 });
 
                 DateOnly? previousExamDate = Data.ExamDate;

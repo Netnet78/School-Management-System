@@ -1,5 +1,3 @@
-using SchoolManagement.Application.Features.Shared.Contracts;
-
 namespace SchoolManagement.Application.Features.Candidates.Contracts
 {
     public interface ICandidateService : ICrudService<Candidate>
@@ -14,5 +12,6 @@ namespace SchoolManagement.Application.Features.Candidates.Contracts
             StudentDataStateFilterOptions dataState);
         Task<ReturnResponse> DeleteCandidateAsync(int candidateId);
         Task<ReturnResponse> UpdateCandidateAsync(Candidate candidate);
+        Task<ReturnResponse<CandidateDashboardMetrics>> GetDashboardMetricsAsync(int? daysFilter);
     }
 }

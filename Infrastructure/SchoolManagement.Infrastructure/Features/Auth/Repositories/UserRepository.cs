@@ -13,11 +13,10 @@ public class UserRepository : BaseRepository<User>, IUserRepository
 
     protected override IQueryable<User> CreateQuery()
     {
-        return Set
-            .Include(u => u.Role)
+        return Set.Include(u => u.Role)
             .ThenInclude(r => r.Permissions)
             .Include(u => u.Employee)
-            .ThenInclude(e => e.Department);
+            .ThenInclude(e => e != null ? e.Department : null!);
     }
 
     public override async Task<User?> GetByIdAsync(int id)

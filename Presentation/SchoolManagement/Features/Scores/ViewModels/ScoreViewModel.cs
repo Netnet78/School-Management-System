@@ -3,11 +3,9 @@ using CommunityToolkit.Mvvm.Input;
 using SchoolManagement.Application.Features.Classes.Authorization;
 using SchoolManagement.Core.Features.Assessments.Models;
 using SchoolManagement.Core.Features.Exams.Models;
-using SchoolManagement.Presentation.Features.Classes.ViewModels;
-using SchoolManagement.Presentation.Features.Dashboard.ViewModels;
+using SchoolManagement.Core.Features.Subjects.Models;
 using SchoolManagement.Presentation.Shared.Features.Scores.Observables;
 using SchoolManagement.Presentation.Shared.Features.Scores.Params;
-using System.Collections.ObjectModel;
 
 namespace SchoolManagement.Presentation.Features.Scores.ViewModels
 {
@@ -17,13 +15,17 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
         private readonly IExamService _examService;
         private readonly IAssessmentService _scoreService;
         private readonly IClassSubjectService _classSubjectService;
+        private readonly ISubjectService _subjectService;
         private readonly INavigationService _navigationService;
         private readonly IMessageService _messageService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly IDispatcherService _dispatcherService;
+        private readonly IClassService _classService;
 
         private Class? _preSelectedClass;
         private List<int> _studentClassIds = [];
         private Dictionary<int, int> _studentIdToStudentClassId = [];
+        private List<SubjectMapper> _cachedMappers = [];
 
         // ====== Mode & UI state ======
         [ObservableProperty]
@@ -71,6 +73,10 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
         [ObservableProperty]
         private Exam? _selectedExam;
 
+        // ====== Mappers for the selected subject ======
+        [ObservableProperty]
+        private ObservableCollection<SubjectMapper> _mappers = [];
+
         // ====== Bulk scores ======
         [ObservableProperty]
         private ObservableCollection<StudentScoreEntry> _scoreEntries = [];
@@ -84,17 +90,23 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
             IExamService examService,
             IAssessmentService scoreService,
             IClassSubjectService classSubjectService,
+            ISubjectService subjectService,
             INavigationService navigationService,
             IMessageService messageService,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService,
+            IDispatcherService dispatcherService,
+            IClassService classService)
         {
             _studentClassService = studentClassService;
             _examService = examService;
             _scoreService = scoreService;
             _classSubjectService = classSubjectService;
+            _subjectService = subjectService;
             _navigationService = navigationService;
             _messageService = messageService;
             _authorizationService = authorizationService;
+            _dispatcherService = dispatcherService;
+            _classService = classService;
         }
 
         public async Task OnNavigatedToAsync(INavigationParams @params)
@@ -112,25 +124,38 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
             User? user = _authorizationService.CurrentUser;
             if (user == null)
             {
-                _messageService.Show("Unable to determine the current user.", "Error", MessageButton.OK, MessageIcon.Error);
+                _dispatcherService.Invoke(() =>
+                {
+                    _messageService.Show("Unable to determine the current user.", "Error", MessageButton.OK, MessageIcon.Error);
+                });
                 return;
             }
 
-            CanEditScores = (await _authorizationService.AuthorizeAsync(null, PermissionType.ManageAssessments)).Status == Status.Success;
+            var authResult = await _authorizationService.AuthorizeAsync(null, PermissionType.ManageAssessments);
+            _dispatcherService.Invoke(() =>
+            {
+                CanEditScores = authResult.Status == Status.Success;
+            });
 
             await LoadExamsAsync();
 
             if (_preSelectedClass != null)
             {
-                IsClassSelectionMode = false;
-                IsScoreEntryMode = true;
-                SelectedClass = _preSelectedClass;
+                _dispatcherService.Invoke(() =>
+                {
+                    IsClassSelectionMode = false;
+                    IsScoreEntryMode = true;
+                    SelectedClass = _preSelectedClass;
+                });
                 await LoadSubjectsForClassAsync(_preSelectedClass.Id);
             }
             else
             {
-                IsClassSelectionMode = true;
-                IsScoreEntryMode = false;
+                _dispatcherService.Invoke(() =>
+                {
+                    IsClassSelectionMode = true;
+                    IsScoreEntryMode = false;
+                });
                 await LoadTeacherClassesAsync();
             }
         }
@@ -139,55 +164,105 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
 
         private async Task LoadTeacherClassesAsync()
         {
-            IsLoadingClasses = true;
+            _dispatcherService.Invoke(() => IsLoadingClasses = true);
 
             try
             {
                 User? user = _authorizationService.CurrentUser;
-                if (user?.EmployeeId == null)
+                if (user != null && user.IsAdmin())
                 {
-                    // Admin/HeadTeacher — load all classes
-                    var allClassesResponse = await _classSubjectService.GetAllAsync(includes: ["Class.Grade", "Class.Generation.Department"]);
+                    // Admin — load all classes
+                    var allClassesResponse = await _classService.GetAllAsync(
+                        filters: null,
+                        page: 1,
+                        pageSize: int.MaxValue,
+                        orderBy: null,
+                        includes: ["Grade", "Generation", "Generation.Department"]);
+
                     if (allClassesResponse.Status == Status.Success && allClassesResponse.Value != null)
                     {
-                        var classIds = new HashSet<int>();
-                        Classes.Clear();
-                        foreach (var cs in allClassesResponse.Value)
+                        _dispatcherService.Invoke(() =>
                         {
-                            if (cs.Class != null && classIds.Add(cs.Class.Id))
+                            var classIds = new HashSet<int>();
+                            Classes.Clear();
+                            foreach (var c in allClassesResponse.Value)
                             {
-                                Classes.Add(cs.Class);
+                                if (classIds.Add(c.Id))
+                                {
+                                    Classes.Add(c);
+                                }
                             }
-                        }
+                            Classes = new ObservableCollection<Class>(Classes.OrderBy(c => c.KhmerName));
+                        });
                     }
                     return;
                 }
 
-                // Teacher — load only classes they teach
-                var response = await _classSubjectService.GetAllAsync(
-                    filters: [new FilterCondition<ClassSubject>(cs => cs.TeacherId, FilterOperator.Equals, user.EmployeeId)],
-                    includes: ["Class.Grade", "Class.Generation.Department"]);
-
-                if (response.Status == Status.Success && response.Value != null)
+                if (user != null && user.IsHeadTeacher())
                 {
-                    var classIds = new HashSet<int>();
-                    Classes.Clear();
-                    foreach (var cs in response.Value)
+                    // Head teacher
+                    var allClassesResponse = await _classService.GetAllAsync(
+                        filters: [new(c => c.Generation.DepartmentId, FilterOperator.Equals, user.Employee?.DepartmentId)],
+                        page: 1,
+                        pageSize: int.MaxValue,
+                        orderBy: null,
+                        includes: ["Grade", "Generation", "Generation.Department"]);
+
+                    if (allClassesResponse.Status == Status.Success && allClassesResponse.Value != null)
                     {
-                        if (cs.Class != null && classIds.Add(cs.Class.Id))
+                        _dispatcherService.Invoke(() =>
                         {
-                            Classes.Add(cs.Class);
-                        }
+                            var classIds = new HashSet<int>();
+                            Classes.Clear();
+                            foreach (var c in allClassesResponse.Value)
+                            {
+                                if (classIds.Add(c.Id))
+                                {
+                                    Classes.Add(c);
+                                }
+                            }
+                            Classes = new ObservableCollection<Class>(Classes.OrderBy(c => c.KhmerName));
+                        });
+                        return;
                     }
+
+                    // Teacher — load only classes they teach
+                    var response = await _classSubjectService.GetAllAsync(
+                        filters: [new FilterCondition<ClassSubject>(cs => cs.TeacherId, FilterOperator.Equals, user.EmployeeId)],
+                        includes: ["Class.Grade", "Class.Generation.Department"]);
+
+                    if (response.Status == Status.Success && response.Value != null)
+                    {
+                        _dispatcherService.Invoke(() =>
+                        {
+                            var classIds = new HashSet<int>();
+                            Classes.Clear();
+                            foreach (var cs in response.Value)
+                            {
+                                if (cs.Class != null && classIds.Add(cs.Class.Id))
+                                {
+                                    Classes.Add(cs.Class);
+                                }
+                            }
+                        });
+                    }
+
+                    _dispatcherService.Invoke(() =>
+                    {
+                        Classes = new ObservableCollection<Class>(Classes.OrderBy(c => c.KhmerName));
+                    });
                 }
             }
             catch (Exception ex)
             {
-                _messageService.Show($"មានកំហុសក្នុងការទាញទិន្នន័យថ្នាក់: {ex.Message}", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                _dispatcherService.Invoke(() =>
+                {
+                    _messageService.Show($"មានកំហុសក្នុងការទាញទិន្នន័យថ្នាក់: {ex.Message}", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                });
             }
             finally
             {
-                IsLoadingClasses = false;
+                _dispatcherService.Invoke(() => IsLoadingClasses = false);
             }
         }
 
@@ -195,14 +270,17 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
         {
             if (value == null) return;
 
-            ClassName = value.GetKhmerName();
-            ClassInfo = $"ថ្នាក់: {value.GetKhmerName()} | កម្រិត: {value.Grade?.KhmerName} | ជំនាន់: {value.Generation?.CohortNumber} | ផ្នែក: {value.Generation?.Department?.KhmerName}";
+            _dispatcherService.Invoke(() =>
+            {
+                ClassName = value.GetKhmerName();
+                ClassInfo = $"ថ្នាក់: {value.GetKhmerName()} | កម្រិត: {value.Grade?.KhmerName} | ជំនាន់: {value.Generation?.CohortNumber} | ផ្នែក: {value.Generation?.Department?.KhmerName}";
 
-            IsClassSelectionMode = false;
-            IsScoreEntryMode = true;
+                IsClassSelectionMode = false;
+                IsScoreEntryMode = true;
+            });
 
             await LoadSubjectsForClassAsync(value.Id);
-            ClearScoreEntries();
+            _dispatcherService.Invoke(ClearScoreEntries);
         }
 
         private async Task LoadSubjectsForClassAsync(int classId)
@@ -224,12 +302,18 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
 
                 if (response.Status == Status.Success && response.Value != null)
                 {
-                    ScoreSubjects = new ObservableCollection<ClassSubject>(response.Value);
+                    _dispatcherService.Invoke(() =>
+                    {
+                        ScoreSubjects = new ObservableCollection<ClassSubject>(response.Value);
+                    });
                 }
             }
             catch (Exception ex)
             {
-                _messageService.Show($"មានកំហុសក្នុងការទាញទិន្នន័យមុខវិជ្ជា: {ex.Message}", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                _dispatcherService.Invoke(() =>
+                {
+                    _messageService.Show($"មានកំហុសក្នុងការទាញទិន្នន័យមុខវិជ្ជា: {ex.Message}", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                });
             }
         }
 
@@ -242,37 +326,77 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
                 var response = await _examService.GetAllAsync(1);
                 if (response.Status == Status.Success && response.Value != null)
                 {
-                    Exams = new ObservableCollection<Exam>(response.Value);
+                    _dispatcherService.Invoke(() =>
+                    {
+                        Exams = new ObservableCollection<Exam>(response.Value);
+                    });
                 }
             }
             catch (Exception ex)
             {
-                _messageService.Show($"មានកំហុសក្នុងការទាញទិន្នន័យប្រឡង: {ex.Message}", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                _dispatcherService.Invoke(() =>
+                {
+                    _messageService.Show($"មានកំហុសក្នុងការទាញទិន្នន័យប្រឡង: {ex.Message}", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                });
             }
         }
 
-        // ====== Load bulk score entries ======
+        // ====== Load mappers when subject changes ======
+
+        async partial void OnSelectedScoreSubjectChanged(ClassSubject? value)
+        {
+            await LoadMappersAsync(value);
+            await LoadScoreEntriesAsync();
+        }
 
         async partial void OnSelectedExamChanged(Exam? value)
         {
             await LoadScoreEntriesAsync();
         }
 
-        async partial void OnSelectedScoreSubjectChanged(ClassSubject? value)
+        private async Task LoadMappersAsync(ClassSubject? classSubject)
         {
-            await LoadScoreEntriesAsync();
+            _dispatcherService.Invoke(() =>
+            {
+                Mappers.Clear();
+                _cachedMappers.Clear();
+            });
+
+            if (classSubject?.Subject == null) return;
+
+            try
+            {
+                var mappers = await _subjectService.GetMappersForSubjectAsync(classSubject.Subject.Id);
+                _dispatcherService.Invoke(() =>
+                {
+                    _cachedMappers = mappers.ToList();
+                    Mappers = new ObservableCollection<SubjectMapper>(_cachedMappers);
+                });
+            }
+            catch (Exception ex)
+            {
+                _dispatcherService.Invoke(() =>
+                {
+                    _messageService.Show($"មានកំហុសក្នុងការទាញទិន្នន័យសមាសភាគ: {ex.Message}", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                });
+            }
         }
+
+        // ====== Load bulk score entries ======
 
         private async Task LoadScoreEntriesAsync()
         {
             if (SelectedExam == null || SelectedScoreSubject == null || SelectedClass == null)
             {
-                ScoreEntries.Clear();
-                HasScores = false;
+                _dispatcherService.Invoke(() =>
+                {
+                    ScoreEntries.Clear();
+                    HasScores = false;
+                });
                 return;
             }
 
-            IsLoadingScores = true;
+            _dispatcherService.Invoke(() => IsLoadingScores = true);
 
             try
             {
@@ -284,14 +408,17 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
 
                 if (scResponse.Status != Status.Success || scResponse.Value == null)
                 {
-                    ScoreEntries.Clear();
-                    HasScores = false;
+                    _dispatcherService.Invoke(() =>
+                    {
+                        ScoreEntries.Clear();
+                        HasScores = false;
+                    });
                     return;
                 }
 
                 List<StudentClass> studentClasses = scResponse.Value.ToList();
-                _studentClassIds = studentClasses.Select(sc => sc.Id).ToList();
-                _studentIdToStudentClassId = studentClasses
+                var studentClassIds = studentClasses.Select(sc => sc.Id).ToList();
+                var studentIdToStudentClassId = studentClasses
                     .Where(sc => sc.Student != null)
                     .ToDictionary(sc => sc.Student!.Id, sc => sc.Id);
 
@@ -300,9 +427,9 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
                     filters: [
                         new FilterCondition<Assessment>(s => s.ExamId, FilterOperator.Equals, SelectedExam.Id),
                         new FilterCondition<Assessment>(s => s.ClassSubjectId, FilterOperator.Equals, SelectedScoreSubject.Id),
-                        new FilterCondition<Assessment>(s => s.StudentClassId, FilterOperator.In, _studentClassIds.Cast<object>())
+                        new FilterCondition<Assessment>(s => s.StudentClassId, FilterOperator.In, studentClassIds.Cast<object>())
                     ],
-                    includes: ["StudentClass.Student.Candidate"]);
+                    includes: ["Scores", "StudentClass.Student.Candidate"]);
 
                 var existingByScId = new Dictionary<int, Assessment>();
                 if (existingResponse.Status == Status.Success && existingResponse.Value != null)
@@ -313,25 +440,55 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
                     }
                 }
 
-                // 3. Build score entries
-                ScoreEntries.Clear();
-                foreach (var sc in studentClasses)
+                // 3. Build score entries with per-component scores
+                _dispatcherService.Invoke(() =>
                 {
-                    if (sc.Student == null) continue;
+                    _studentClassIds = studentClassIds;
+                    _studentIdToStudentClassId = studentIdToStudentClassId;
 
-                    existingByScId.TryGetValue(sc.Id, out Assessment? existing);
-                    ScoreEntries.Add(new StudentScoreEntry(sc.Student, sc.Id, existing));
-                }
+                    ScoreEntries.Clear();
+                    foreach (var sc in studentClasses)
+                    {
+                        if (sc.Student == null) continue;
 
-                HasScores = ScoreEntries.Count > 0;
+                        existingByScId.TryGetValue(sc.Id, out Assessment? existing);
+
+                        var entry = new StudentScoreEntry(sc.Student, sc.Id, existing);
+
+                        foreach (var mapper in _cachedMappers)
+                        {
+                            decimal existingAmount = 0;
+                            if (existing != null)
+                            {
+                                Score? score = existing.Scores.FirstOrDefault(s => s.MapperId == mapper.Id);
+                                if (score != null)
+                                    existingAmount = score.Amount;
+                            }
+
+                            entry.ComponentScores.Add(new ComponentScoreEntry(
+                                mapper.Id,
+                                mapper.ComponentId,
+                                mapper.Component?.Name ?? string.Empty,
+                                mapper.Component?.KhmerName ?? string.Empty,
+                                existingAmount));
+                        }
+
+                        ScoreEntries.Add(entry);
+                    }
+
+                    HasScores = ScoreEntries.Count > 0;
+                });
             }
             catch (Exception ex)
             {
-                _messageService.Show($"មានកំហុសក្នុងការទាញទិន្នន័យពិន្ទុ: {ex.Message}", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                _dispatcherService.Invoke(() =>
+                {
+                    _messageService.Show($"មានកំហុសក្នុងការទាញទិន្នន័យពិន្ទុ: {ex.Message}", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                });
             }
             finally
             {
-                IsLoadingScores = false;
+                _dispatcherService.Invoke(() => IsLoadingScores = false);
             }
         }
 
@@ -342,54 +499,76 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
         {
             if (SelectedExam == null || SelectedScoreSubject == null)
             {
-                _messageService.Show("សូមជ្រើសរើសប្រឡង និងមុខវិជ្ជា!", "ព័ត៌មានមិនគ្រប់", MessageButton.OK, MessageIcon.Information);
+                _dispatcherService.Invoke(() =>
+                {
+                    _messageService.Show("សូមជ្រើសរើសប្រឡង និងមុខវិជ្ជា!", "ព័ត៌មានមិនគ្រប់", MessageButton.OK, MessageIcon.Information);
+                });
                 return;
             }
 
-            // Validate against MaxScore
-            decimal maxScore = SelectedScoreSubject.Subject?.MaxScore ?? 0;
+            if (_cachedMappers.Count == 0)
+            {
+                _dispatcherService.Invoke(() =>
+                {
+                    _messageService.Show("មុខវិជ្ជានេះមិនទាន់មានសមាសភាគទេ!", "ព័ត៌មានមិនគ្រប់", MessageButton.OK, MessageIcon.Information);
+                });
+                return;
+            }
+
+            // Validate against MaxScore per component
             foreach (var entry in ScoreEntries)
             {
-                if (entry.ScoreAmount < 0)
+                foreach (var comp in entry.ComponentScores)
                 {
-                    _messageService.Show($"ពិន្ទុរបស់ {entry.Student.FullName} មិនត្រឹមត្រូវទេ!", "ព័ត៌មានមិនគ្រប់", MessageButton.OK, MessageIcon.Information);
-                    return;
-                }
-
-                if (maxScore > 0 && entry.ScoreAmount > maxScore)
-                {
-                    _messageService.Show($"ពិន្ទុរបស់ {entry.Student.FullName} លើសពី {maxScore}!", "ព័ត៌មានមិនគ្រប់", MessageButton.OK, MessageIcon.Information);
-                    return;
+                    if (comp.ScoreAmount < 0)
+                    {
+                        _dispatcherService.Invoke(() =>
+                        {
+                            _messageService.Show($"ពិន្ទុរបស់ {entry.Student.FullName} មិនត្រឹមត្រូវទេ!", "ព័ត៌មានមិនគ្រប់", MessageButton.OK, MessageIcon.Information);
+                        });
+                        return;
+                    }
                 }
             }
 
-            IsSavingScores = true;
+            _dispatcherService.Invoke(() => IsSavingScores = true);
 
             try
             {
                 var entries = ScoreEntries
-                    .Where(e => e.ScoreAmount >= 0)
-                    .Select(e => (e.StudentClassId, e.ScoreAmount));
+                    .Where(e => e.ComponentScores.Count > 0)
+                    .SelectMany(e => e.ComponentScores
+                        .Where(c => c.ScoreAmount >= 0)
+                        .Select(c => (e.StudentClassId, c.MapperId, c.ComponentId, c.ScoreAmount)));
 
                 var response = await _scoreService.UpsertRangeAsync(SelectedExam.Id, SelectedScoreSubject.Id, entries);
 
                 if (response.Status == Status.Success)
                 {
-                    _messageService.Show("បានរក្សាទុកពិន្ទុទាំងអស់ដោយជោគជ័យ!", "ជោគជ័យ", MessageButton.OK, MessageIcon.Success);
+                    _dispatcherService.Invoke(() =>
+                    {
+                        _messageService.Show("បានរក្សាទុកពិន្ទុទាំងអស់ដោយជោគជ័យ!", "ជោគជ័យ", MessageButton.OK, MessageIcon.Success);
+                    });
                     await LoadScoreEntriesAsync();
                 }
                 else
                 {
-                    _messageService.Show(response.Message ?? "មានកំហុសក្នុងការរក្សាទុក!", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                    _dispatcherService.Invoke(() =>
+                    {
+                        _messageService.Show(response.Message ?? "មានកំហុសក្នុងការរក្សាទុក!", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                    });
                 }
             }
             catch (Exception ex)
             {
-                _messageService.Show($"មានកំហុសបច្ចេកទេស: {ex.Message}", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                _dispatcherService.Invoke(() =>
+                {
+                    _messageService.Show($"មានកំហុសបច្ចេកទេស: {ex.Message}", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                });
             }
             finally
             {
-                IsSavingScores = false;
+                _dispatcherService.Invoke(() => IsSavingScores = false);
             }
         }
 
@@ -398,12 +577,17 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
         [RelayCommand]
         private void ChangeClass()
         {
-            ClearScoreEntries();
-            SelectedClass = null;
-            SelectedExam = null;
-            SelectedScoreSubject = null;
-            IsScoreEntryMode = false;
-            IsClassSelectionMode = true;
+            _dispatcherService.Invoke(() =>
+            {
+                ClearScoreEntries();
+                SelectedClass = null;
+                SelectedExam = null;
+                SelectedScoreSubject = null;
+                Mappers.Clear();
+                _cachedMappers.Clear();
+                IsScoreEntryMode = false;
+                IsClassSelectionMode = true;
+            });
         }
 
         private void ClearScoreEntries()
@@ -433,18 +617,66 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
                 report += $"ប្រឡង: {SelectedExam.KhmerName}\n";
                 report += $"មុខវិជ្ជា: {SelectedScoreSubject.Subject?.KhmerName}\n";
 
-                var scoredEntries = ScoreEntries.Where(e => e.ScoreAmount >= 0).ToList();
-                report += $"ចំនួនពិន្ទុ: {scoredEntries.Count}\n";
-                if (scoredEntries.Count > 0)
+                int scoredCount = 0;
+                foreach (var entry in ScoreEntries)
                 {
-                    report += $"ពិន្ទុមធ្យម: {scoredEntries.Average(e => (double)e.ScoreAmount):F2}\n";
-                    report += $"ពិន្ទុខ្ពស់បំផុត: {scoredEntries.Max(e => e.ScoreAmount)}\n";
-                    report += $"ពិន្ទុទាបតិចបំផុត: {scoredEntries.Min(e => e.ScoreAmount)}\n\n";
+                    if (entry.ComponentScores.Any(c => c.ScoreAmount >= 0))
+                        scoredCount++;
+                }
+
+                report += $"ចំនួនពិន្ទុ: {scoredCount}\n";
+
+                double totalSum = 0;
+                int totalCount = 0;
+                double maxAmount = 0;
+                double minAmount = double.MaxValue;
+                foreach (var entry in ScoreEntries)
+                {
+                    double studentTotal = 0;
+                    bool hasScore = false;
+
+                    foreach (var comp in entry.ComponentScores)
+                    {
+                        if (comp.ScoreAmount >= 0)
+                        {
+                            studentTotal += (double)comp.ScoreAmount;
+                            hasScore = true;
+                        }
+                    }
+
+                    if (hasScore)
+                    {
+                        totalSum += studentTotal;
+                        totalCount++;
+                        if (studentTotal > maxAmount) maxAmount = studentTotal;
+                        if (studentTotal < minAmount) minAmount = studentTotal;
+                    }
+                }
+
+                if (totalCount > 0)
+                {
+                    report += $"ពិន្ទុមធ្យម: {totalSum / totalCount:F2}\n";
+                    report += $"ពិន្ទុខ្ពស់បំផុត: {maxAmount}\n";
+                    report += $"ពិន្ទុទាបតិចបំផុត: {(minAmount == double.MaxValue ? 0 : minAmount)}\n\n";
 
                     report += "បញ្ជីពិន្ទុ:\n";
-                    foreach (var entry in scoredEntries.OrderBy(e => e.Student.FullName))
+                    foreach (var entry in ScoreEntries.OrderBy(e => e.Student.FullName))
                     {
-                        report += $"- {entry.Student.FullName}: {entry.ScoreAmount}\n";
+                        var parts = entry.ComponentScores
+                            .Where(c => c.ScoreAmount >= 0)
+                            .Select(c => $"{c.ComponentKhmerName}: {c.ScoreAmount}");
+                        
+                        if (parts.Any())
+                        {
+                            double studentTotal = entry.ComponentScores
+                                .Where(c => c.ScoreAmount >= 0)
+                                .Sum(c => (double)c.ScoreAmount);
+                            report += $"- {entry.Student.FullName}: {string.Join(" | ", parts)} (សរុប: {studentTotal})\n";
+                        }
+                        else
+                        {
+                            report += $"- {entry.Student.FullName}: មិនមានពិន្ទុ\n";
+                        }
                     }
                 }
             }
@@ -457,15 +689,7 @@ namespace SchoolManagement.Presentation.Features.Scores.ViewModels
         [RelayCommand]
         private async Task GoBackAsync()
         {
-            IViewModel? previous = _navigationService.PreviousViewModel;
-            if (previous != null)
-            {
-                await _navigationService.NavigateAsync(previous.GetType());
-            }
-            else
-            {
-                await _navigationService.NavigateAsync<DashboardViewModel>();
-            }
+            await _navigationService.NavigateAsync<ScoreViewModel>();
         }
     }
 }

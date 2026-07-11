@@ -12,5 +12,6 @@ namespace SchoolManagement.Infrastructure.Features.Candidates.Contracts
         Task<int> GetCountAsync(
             IEnumerable<FilterCondition<Candidate>>? filters,
             StudentDataStateFilterOptions dataState);
+        Task<CandidateDashboardMetrics> GetDashboardMetricsAsync(int? daysFilter, DateTime todayUtc);
     }
 }

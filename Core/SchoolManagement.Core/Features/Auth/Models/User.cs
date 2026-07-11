@@ -27,6 +27,6 @@ namespace SchoolManagement.Core.Features.Auth.Models
         public Role Role { get; set; } = null!;
         public int? EmployeeId { get; set; }
         public Employee? Employee { get; set; }
-        public ICollection<AuditLog> AuditLogs { get; set; } = [];
+        public List<AuditLog> AuditLogs { get; set; } = [];
     }
 }

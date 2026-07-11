@@ -12,7 +12,7 @@ namespace SchoolManagement.Core.Features.Subjects.Models
         public string KhmerName { get; set; } = string.Empty;
         public decimal MaxScore { get; set; }
         public bool IsActive { get; set; } = true;
-        public ICollection<ClassSubject> ClassSubjects { get; set; } = [];
-        public ICollection<SubjectMapper> Components { get; set; } = [];
+        public List<ClassSubject> ClassSubjects { get; set; } = [];
+        public List<SubjectMapper> Mappers { get; set; } = [];
     }
 }

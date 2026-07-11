@@ -3,7 +3,6 @@ using QuestPDF.Infrastructure;
 using SchoolManagement.Assets;
 using SchoolManagement.Core.Features.Reports.Enums;
 using SchoolManagement.Core.Features.Reports.Models;
-using SchoolManagement.Core.Shared.Models;
 using SchoolManagement.Infrastructure.Features.Reports.Contracts;
 using SchoolManagement.Infrastructure.Features.Reports.Models;
 using SkiaSharp;

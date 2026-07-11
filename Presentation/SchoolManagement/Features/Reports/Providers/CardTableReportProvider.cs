@@ -55,6 +55,7 @@ public partial class CardTableReportProvider : ObservableObject, IReportViewProv
     private readonly object _selectionLock = new();
     private bool _isBatchUpdating;
     private bool _optionsChangedSinceLastGeneration;
+    private readonly SemaphoreSlim _generationLock = new(1, 1);
 
     public CardTableReportProvider(
         string reportTypeKey,
@@ -195,7 +196,17 @@ public partial class CardTableReportProvider : ObservableObject, IReportViewProv
             _optionsChangedSinceLastGeneration = false;
         }
 
-        var result = await _generator.GenerateAsync(request, cancellationToken).ConfigureAwait(false);
+        ReportResult result;
+        await _generationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            result = await _generator.GenerateAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            _generationLock.Release();
+        }
 
         if (cancellationToken.IsCancellationRequested || generationId != Volatile.Read(ref _generationId))
             return;
@@ -254,7 +265,7 @@ public partial class CardTableReportProvider : ObservableObject, IReportViewProv
     {
         if (_originalFilter == null) return;
 
-        if (value)
+        if (value == true)
         {
             HashSet<int> selectedIds = GetSelectedIdSnapshot();
             if (selectedIds.Count == 0)
@@ -346,7 +357,18 @@ public partial class CardTableReportProvider : ObservableObject, IReportViewProv
                 SelectedStudentIds = selectedIdsSnapshot.ToList(),
             };
             var request = MergeOptionsIntoFilter(selectFilter);
-            _lastResult = await _generator.GenerateAsync(request, cancellationToken).ConfigureAwait(false);
+            
+            await _generationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                _lastResult = await _generator.GenerateAsync(request, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _generationLock.Release();
+            }
+            
             _optionsChangedSinceLastGeneration = false;
         }
 

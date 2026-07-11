@@ -4,7 +4,6 @@ using SchoolManagement.Application.Features.Classes.Authorization;
 using SchoolManagement.Core.Features.Departments.Models;
 using SchoolManagement.Core.Features.Generations.Models;
 using SchoolManagement.Presentation.Shared.Features.Students.Observables;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 
 namespace SchoolManagement.Presentation.Features.Classes.ViewModels
@@ -23,7 +22,6 @@ namespace SchoolManagement.Presentation.Features.Classes.ViewModels
         private const int PageSize = 50;
         private List<Student>? _allFilteredStudents;
         private readonly SemaphoreSlim _loadLock = new(1, 1);
-        private bool _isInitialized;
         private bool _isInitializing;
         private bool _suppressStudentReload;
 
@@ -154,8 +152,6 @@ namespace SchoolManagement.Presentation.Features.Classes.ViewModels
             {
                 _isInitializing = false;
             }
-
-            _isInitialized = true;
         }
 
         private async void OnFiltersUpdated(object? sender, PropertyChangedEventArgs e)

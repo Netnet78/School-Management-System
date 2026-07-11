@@ -31,12 +31,12 @@ public class StudentClassRepository : BaseRepository<StudentClass>, IStudentClas
             .ThenInclude(g => g.Department)
             .Include(c => c.Grade)
             .Where(c => c.Generation.AcademicStartYear >= fromYear &&
-                c.Generation.AcademicStartYear <= toYear && c.Students.Count > 0)
+                c.Generation.AcademicStartYear <= toYear && c.Students.Count() > 0)
             .Select(c => new ClassStudentCountDto
             {
                 ClassName = $"{c.Grade.KhmerName} {c.Generation.Department.KhmerName} ជំនាន់ទី " +
                 $"{c.Generation.CohortNumber}",
-                Count = c.Students.Count
+                Count = c.Students.Count()
             })
             .ToListAsync();
     }

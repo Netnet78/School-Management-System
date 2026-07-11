@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Windows.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using SchoolManagement.Application.Features.Reports.Contracts;
@@ -38,6 +37,7 @@ namespace SchoolManagement.Presentation.Features.Reports.Providers
 
         private object? _lastFilter;
         private int _generationId;
+        private readonly SemaphoreSlim _generationLock = new(1, 1);
 
         public GroupedTableReportProvider(
             string reportTypeKey,
@@ -54,7 +54,17 @@ namespace SchoolManagement.Presentation.Features.Reports.Providers
         {
             int generationId = Interlocked.Increment(ref _generationId);
 
-            var result = await _generator.GenerateAsync(filter, cancellationToken).ConfigureAwait(false);
+            ReportResult result;
+            await _generationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                result = await _generator.GenerateAsync(filter, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _generationLock.Release();
+            }
 
             if (cancellationToken.IsCancellationRequested || generationId != Volatile.Read(ref _generationId))
                 return;

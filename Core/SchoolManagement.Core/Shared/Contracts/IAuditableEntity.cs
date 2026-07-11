@@ -9,7 +9,15 @@
     /// identify the entity involved in an operation.</remarks>
     public interface IAuditableEntity
     {
+        /// <summary>
+        /// Gets the custom audit name used for audit logging.
+        /// </summary>
+        /// <returns>A string representing the custom audit name.</returns>
         string CustomAuditName();
+        /// <summary>
+        /// Gets a custom audit description for the current context.
+        /// </summary>
+        /// <returns>A string that represents the custom audit description.</returns>
         string CustomAuditDescription();
     }
 }

@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="CandidateManagement.Views.InsertStudentView"
+<UserControl x:Class="CandidateManagement.Views.InsertStudentView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -9,16 +9,13 @@
              xmlns:viewmodels="clr-namespace:CandidateManagement.ViewModels"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=viewmodels:InsertStudentViewModel}"
-             d:Width="1234"
-             d:Height="740"
              Background="{DynamicResource MaterialDesign.Brush.Background}">
 
-    <!-- ===================== RESOURCES ===================== -->
     <UserControl.Resources>
         <conv:IntEqualsToVisibilityConverter x:Key="IntEqualsToVisibilityConverter" />
         <conv:DateOnlyToDateTimeConverter x:Key="DateOnlyToDateTimeConverter" />
         <conv:PhotoPathToImageSourceConverter x:Key="PhotoPathToImageSourceConverter" />
-        <conv:ValidPathToVisibilityConverter x:Key="ValidPathToVisibilityConverter" />
+        <conv:ValidPathToVisibilityConverter x:Key="ValidPathToVisibilityConverter" Reversed="False" />
         <conv:ValidPathToVisibilityConverter x:Key="ValidPathToVisibilityConverterReversed" Reversed="True"/>
     </UserControl.Resources>
 
@@ -28,238 +25,193 @@
         <KeyBinding Key="Enter" Command="{Binding AddStudentCommand}" />
     </UserControl.InputBindings>
 
-    <!-- ===================== ROOT ===================== -->
-    <Grid>
+    <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- ===================== HEADER ===================== -->
-        <Grid Grid.Row="0"
-              Height="80"
-              Background="{DynamicResource MaterialDesign.Brush.Primary}"
-              TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Primary.Foreground}">
-            <StackPanel Orientation="Horizontal"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center">
-                <materialDesign:PackIcon Kind="AccountStudent"
-                                         Width="40"
-                                         Height="40"/>
-                <TextBlock Text="ទម្រង់បញ្ចូល​សិស្សានុសិស្ស"
-                           FontSize="30"
-                           FontWeight="Bold"
-                           Padding="12,0"/>
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{DynamicResource MaterialDesign.Brush.Primary}" CornerRadius="8" Padding="16" Margin="0 0 0 16">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <materialDesign:PackIcon Kind="AccountPlus" Foreground="{DynamicResource MaterialDesign.Brush.Primary.Foreground}" Width="48" Height="48" Margin="0 0 16 0"/>
+                <TextBlock Text="ទម្រង់បញ្ចូលសិស្សានុសិស្សថ្មី" 
+                           Foreground="{DynamicResource MaterialDesign.Brush.Primary.Foreground}" 
+                           FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
             </StackPanel>
-        </Grid>
+        </Border>
 
-        <!-- ===================== CONTENT ===================== -->
-        <ScrollViewer Grid.Row="1" Margin="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-            <Grid Margin="24">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <!-- MAIN FORM -->
-                <Grid Grid.Row="0"
-                  TextElement.FontFamily="{StaticResource NotoSansKhmer}"
-                  TextElement.FontSize="20">
-
-                    <Grid.Resources>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Margin" Value="0 20 0 0"/>
-                        </Style>
-                    </Grid.Resources>
-
-                    <!-- ================= STEP 0 ================= -->
-                    <StackPanel Visibility="{Binding CurrentStep, Converter={StaticResource IntEqualsToVisibilityConverter}, ConverterParameter=0}">
-                        <TextBlock Text="ព័ត៌មានផ្ទាល់ខ្លួន" FontWeight="Bold" Margin="0,0,0,12"/>
-                        <StackPanel Orientation="Horizontal">
-                            <StackPanel Width="360">
-                                <TextBlock FontWeight="Bold" Text="គោត្តនាម"/>
-                                <TextBox Text="{Binding Data.LastName, Mode=TwoWay}"/>
-
-                                <TextBlock FontWeight="Bold" Text="នាម"/>
-                                <TextBox Text="{Binding Data.FirstName, Mode=TwoWay}"/>
-
-                                <TextBlock FontWeight="Bold" Text="គោត្តនាម (ឡាតាំង)"/>
-                                <TextBox Text="{Binding Data.LatinLastName, Mode=TwoWay}"/>
-
-                                <TextBlock FontWeight="Bold" Text="នាម (ឡាតាំង)"/>
-                                <TextBox Text="{Binding Data.LatinFirstName, Mode=TwoWay}"/>
-
-                                <TextBlock FontWeight="Bold" Text="ភេទ"/>
-                                <ComboBox ItemsSource="{Binding GenderOptions}"
-                              DisplayMemberPath="Description"
-                              SelectedValuePath="Value"
-                              SelectedValue="{Binding Data.Gender}"/>
-
-                                <TextBlock FontWeight="Bold" Text="កាលបរិច្ឆេទ​កំណើត"/>
-                                <DatePicker SelectedDate="{Binding Data.DateOfBirth, Converter={StaticResource DateOnlyToDateTimeConverter}}"/>
+        <!-- Form Content in a Card -->
+        <materialDesign:Card Grid.Row="1" Padding="24" UniformCornerRadius="8" TextElement.FontSize="16" TextElement.FontFamily="{StaticResource NotoSansKhmer}">
+            <Grid>
+                <!-- Step 0: Personal -->
+                <ScrollViewer Visibility="{Binding CurrentStep, Converter={StaticResource IntEqualsToVisibilityConverter}, ConverterParameter=0}" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="ព័ត៌មានផ្ទាល់ខ្លួន" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource MaterialDesign.Brush.Primary}" Margin="0,0,0,16"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBox Text="{Binding Data.LastName, Mode=TwoWay}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="គោត្តនាម" Margin="0,8"/>
+                                <TextBox Text="{Binding Data.LatinLastName, Mode=TwoWay}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="គោត្តនាមជាអក្សរឡាតាំង" Margin="0,8"/>
+                                <TextBox Text="{Binding Data.FirstName, Mode=TwoWay}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="នាម" Margin="0,8"/>
+                                <TextBox Text="{Binding Data.LatinFirstName, Mode=TwoWay}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="នាមជាអក្សរឡាតាំង" Margin="0,8"/>
+                                
+                                <ComboBox SelectedValue="{Binding Data.Gender}" Style="{StaticResource MaterialDesignFloatingHintComboBox}" materialDesign:HintAssist.Hint="ភេទ" IsEditable="False" DisplayMemberPath="KhmerName" SelectedValuePath="Value" ItemsSource="{Binding GenderOptions}" Margin="0,8"/>
+                                
+                                <DatePicker SelectedDate="{Binding Data.DateOfBirth, Converter={StaticResource DateOnlyToDateTimeConverter}}" Style="{StaticResource MaterialDesignFloatingHintDatePicker}" materialDesign:HintAssist.Hint="កាលបរិច្ឆេទកំណើត" Margin="0,8"/>
                             </StackPanel>
 
-                            <StackPanel Width="360" Margin="30,0,0,0">
-                                <TextBlock FontWeight="Bold" Text="ជំនាញ"/>
-                                <ComboBox ItemsSource="{Binding SkillOptions}"
-                              DisplayMemberPath="KhmerName"
-                              SelectedValuePath="Id"
-                              SelectedValue="{Binding Data.SkillId}"/>
-
-                                <TextBlock FontWeight="Bold" Text="សាសនា"/>
-                                <TextBox Text="{Binding Data.Religion}"/>
-
-                                <TextBlock FontWeight="Bold" Text="ចំនួនបងប្អូន"/>
-                                <TextBox Text="{Binding Data.SiblingsCount}"/>
-
-                                <TextBlock FontWeight="Bold" Text="លេខទូរស័ព្ទ"/>
-                                <TextBox Text="{Binding Data.PhoneNumber}"/>
+                            <StackPanel Grid.Column="2">
+                                <ComboBox SelectedValue="{Binding Data.SkillId}" Style="{StaticResource MaterialDesignFloatingHintComboBox}" materialDesign:HintAssist.Hint="ជំនាញ" DisplayMemberPath="KhmerName" SelectedValuePath="Id" IsEditable="False" ItemsSource="{Binding SkillOptions}" Margin="0,8"/>
+                                <TextBox Text="{Binding Data.Religion}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="សាសនា" Margin="0,8"/>
+                                <TextBox Text="{Binding Data.SiblingsCount}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="ចំនួនបងប្អូន (រាប់ទាំងសមីខ្លួន)" Margin="0,8"/>
+                                <TextBox Text="{Binding Data.PhoneNumber}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="លេខទូរស័ព្ទ" Margin="0,8"/>
                             </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
 
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="30 15 0 0">
-                                <TextBlock Text="រូបថតសិស្សានុសិស្ស" HorizontalAlignment="Center" Margin="0 0 0 20" FontWeight="Bold"/>
-                                <Image Width="220" Height="220"
-                                   Stretch="Uniform"
-                                   Visibility="{Binding CurrentPhoto, Converter={StaticResource ValidPathToVisibilityConverter}, FallbackValue='Collapsed'}"
-                                   Source="{Binding CurrentPhoto, Converter={StaticResource PhotoPathToImageSourceConverter}}"
-                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                <!-- Step 1: Birth location -->
+                <ScrollViewer Visibility="{Binding CurrentStep, Converter={StaticResource IntEqualsToVisibilityConverter}, ConverterParameter=1}" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="ទីកន្លែងកំណើត" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource MaterialDesign.Brush.Primary}" Margin="0,0,0,16"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBox Text="{Binding Data.BirthVillage}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="ភូមិ" Margin="0,8"/>
+                                <TextBox Text="{Binding Data.BirthCommune}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="ឃុំ/សង្កាត់" Margin="0,8"/>
+                                <TextBox Text="{Binding Data.BirthDistrict}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="ស្រុក/ក្រុង" Margin="0,8"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBox Text="{Binding Data.BirthProvince}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="ខេត្ត" Margin="0,8"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
 
-                                <Border Width="180" Height="220"
-                                    BorderThickness="2"
-                                    BorderBrush="{DynamicResource MaterialDesign.Brush.Secondary}"
-                                    Visibility="{Binding CurrentPhoto, Converter={StaticResource ValidPathToVisibilityConverterReversed}}">
-                                    <TextBlock Text="?"
-                                        FontSize="72"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"/>
-                                </Border>
+                <!-- Step 2: Father / Mother info -->
+                <ScrollViewer Visibility="{Binding CurrentStep, Converter={StaticResource IntEqualsToVisibilityConverter}, ConverterParameter=2}" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="ឪពុក និង ម្ដាយ" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource MaterialDesign.Brush.Primary}" Margin="0,0,0,16"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBox Text="{Binding Data.MotherName}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="ឈ្មោះម្ដាយ" Margin="0,8"/>
+                                <TextBox Text="{Binding Data.MotherOccupation}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="មុខរបរម្ដាយ" Margin="0,8"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBox Text="{Binding Data.FatherName}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="ឈ្មោះឪពុក" Margin="0,8"/>
+                                <TextBox Text="{Binding Data.FatherOccupation}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="មុខរបរឪពុក" Margin="0,8"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
 
-                                <Button Command="{Binding UploadPhotoCommand}" Margin="0 20 0 0">
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="Image"/>
-                                        <TextBlock Text="បង្ហោះរូបភាព" Margin="6,0,0,0"/>
+                <!-- Step 3: Exam & Other -->
+                <ScrollViewer Visibility="{Binding CurrentStep, Converter={StaticResource IntEqualsToVisibilityConverter}, ConverterParameter=3}" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="ព័ត៌មានប្រឡង និង ផ្សេងៗ" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource MaterialDesign.Brush.Primary}" Margin="0,0,0,16"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBox Text="{Binding Data.ExamCenter}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="មណ្ឌលប្រឡង" Margin="0,8"/>
+                                <DatePicker SelectedDate="{Binding Data.ExamDate, Converter={StaticResource DateOnlyToDateTimeConverter}}" Style="{StaticResource MaterialDesignFloatingHintDatePicker}" materialDesign:HintAssist.Hint="កាលបរិច្ឆេទប្រឡង" Margin="0,8"/>
+                                <TextBox Text="{Binding Data.ExamTable}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="លេខតុ" Margin="0,8"/>
+                                <TextBox Text="{Binding Data.ExamRoom}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="លេខបន្ទប់" Margin="0,8"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBox Text="{Binding Data.FromSchool}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="មកពីសាលារៀន" Margin="0,8"/>
+                                <ComboBox ItemsSource="{Binding StayTypeOptions}" DisplayMemberPath="Description" SelectedValuePath="Value" SelectedValue="{Binding Data.StayType}" Style="{StaticResource MaterialDesignFloatingHintComboBox}" materialDesign:HintAssist.Hint="ការស្នាក់នៅ" IsEditable="False" Margin="0,8"/>
+                                <TextBox Text="{Binding Data.OtherInfo}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="ផ្សេងៗ" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Height="80" Margin="0,8"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Step 4: Picture -->
+                <ScrollViewer Visibility="{Binding CurrentStep, Converter={StaticResource IntEqualsToVisibilityConverter}, ConverterParameter=4}" VerticalScrollBarVisibility="Auto">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="ព័ត៌មានរូបភាព" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource MaterialDesign.Brush.Primary}" Margin="0,0,0,24" HorizontalAlignment="Center"/>
+                        
+                        <materialDesign:Card Width="240" Height="300" Padding="8" UniformCornerRadius="8" Background="{DynamicResource MaterialDesign.Brush.Surface}">
+                            <Grid>
+                                <Image Stretch="UniformToFill"
+                                       SnapsToDevicePixels="True"
+                                       UseLayoutRounding="True"
+                                       RenderOptions.BitmapScalingMode="HighQuality"
+                                       Visibility="{Binding CurrentPhoto, Converter={StaticResource ValidPathToVisibilityConverter}, FallbackValue=Collapsed}"
+                                       Source="{Binding CurrentPhoto, Converter={StaticResource PhotoPathToImageSourceConverter}}">
+                                    <Image.Clip>
+                                        <RectangleGeometry Rect="0,0,224,284" RadiusX="8" RadiusY="8"/>
+                                    </Image.Clip>
+                                </Image>
+                                
+                                <Border BorderBrush="{DynamicResource MaterialDesign.Brush.Secondary}"
+                                        BorderThickness="2" CornerRadius="8"
+                                        Visibility="{Binding CurrentPhoto, Converter={StaticResource ValidPathToVisibilityConverterReversed}, FallbackValue='Visible'}">
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="AccountBoxOutline" Width="96" Height="96" Foreground="{DynamicResource MaterialDesign.Brush.Secondary}" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="គ្មានរូបភាព" FontSize="18" Foreground="{DynamicResource MaterialDesign.Brush.Secondary}" HorizontalAlignment="Center" Margin="0 8 0 0"/>
                                     </StackPanel>
-                                </Button>
+                                </Border>
+                            </Grid>
+                        </materialDesign:Card>
+                        
+                        <Button Margin="0 24 0 0" Command="{Binding UploadPhotoCommand}" Width="200" Style="{StaticResource MaterialDesignRaisedButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="ImageEdit" Margin="0 0 8 0"/>
+                                <TextBlock Text="បង្ហោះរូបភាព" />
                             </StackPanel>
-
-                        </StackPanel>
-                    </StackPanel>
-
-                    <!-- ================= STEP 1 ================= -->
-                    <StackPanel Visibility="{Binding CurrentStep, Converter={StaticResource IntEqualsToVisibilityConverter}, ConverterParameter=1}">
-                        <TextBlock Text="ទីកន្លែងកំណើត" FontWeight="Bold" Margin="0,0,0,12"/>
-                        <WrapPanel>
-                            <StackPanel Width="360">
-                                <TextBlock FontWeight="Bold" Text="ភូមិ"/>
-                                <TextBox Text="{Binding Data.BirthVillage}"/>
-
-                                <TextBlock FontWeight="Bold" Text="ឃុំ / សង្កាត់"/>
-                                <TextBox Text="{Binding Data.BirthCommune}"/>
-
-                                <TextBlock FontWeight="Bold" Text="ស្រុក / ក្រុង"/>
-                                <TextBox Text="{Binding Data.BirthDistrict}"/>
-                            </StackPanel>
-
-                            <StackPanel Width="360" Margin="30,0,0,0">
-                                <TextBlock FontWeight="Bold" Text="ខេត្ត"/>
-                                <TextBox Text="{Binding Data.BirthProvince}"/>
-                            </StackPanel>
-                        </WrapPanel>
-                    </StackPanel>
-
-                    <!-- ================= STEP 2 ================= -->
-                    <StackPanel Visibility="{Binding CurrentStep, Converter={StaticResource IntEqualsToVisibilityConverter}, ConverterParameter=2}">
-                        <TextBlock Text="ឪពុក និង ម្ដាយ" FontWeight="Bold" Margin="0,0,0,12"/>
-                        <WrapPanel>
-                            <StackPanel Width="360">
-                                <TextBlock FontWeight="Bold" Text="ឈ្មោះម្ដាយ"/>
-                                <TextBox Text="{Binding Data.MotherName}"/>
-
-                                <TextBlock FontWeight="Bold" Text="មុខរបរ"/>
-                                <TextBox Text="{Binding Data.MotherOccupation}"/>
-                            </StackPanel>
-
-                            <StackPanel Width="360" Margin="30,0,0,0">
-                                <TextBlock FontWeight="Bold" Text="ឈ្មោះឪពុក"/>
-                                <TextBox Text="{Binding Data.FatherName}"/>
-
-                                <TextBlock FontWeight="Bold" Text="មុខរបរ"/>
-                                <TextBox Text="{Binding Data.FatherOccupation}"/>
-                            </StackPanel>
-                        </WrapPanel>
-                    </StackPanel>
-
-                    <!-- ================= STEP 3 ================= -->
-                    <StackPanel Visibility="{Binding CurrentStep, Converter={StaticResource IntEqualsToVisibilityConverter}, ConverterParameter=3}">
-                        <TextBlock Text="ព័ត៌មានប្រឡង និង ផ្សេងៗ" FontWeight="Bold" Margin="0,0,0,12"/>
-                        <WrapPanel>
-                            <StackPanel Width="360">
-                                <TextBlock FontWeight="Bold" Text="មណ្ឌលប្រឡង"/>
-                                <TextBox Text="{Binding Data.ExamCenter}"/>
-
-                                <TextBlock FontWeight="Bold" Text="កាលបរិច្ឆេទ"/>
-                                <DatePicker SelectedDate="{Binding Data.ExamDate, Converter={StaticResource DateOnlyToDateTimeConverter}}"/>
-
-                                <TextBlock FontWeight="Bold" Text="លេខតុ"/>
-                                <TextBox Text="{Binding Data.ExamTable}"/>
-
-                                <TextBlock FontWeight="Bold" Text="លេខបន្ទប់"/>
-                                <TextBox Text="{Binding Data.ExamRoom}"/>
-                            </StackPanel>
-
-                            <StackPanel Width="360" Margin="30,0,0,0">
-                                <TextBlock FontWeight="Bold" Text="មកពីសាលារៀន"/>
-                                <TextBox Text="{Binding Data.FromSchool}"/>
-
-                                <TextBlock FontWeight="Bold" Text="ការស្នាក់នៅ"/>
-                                <ComboBox ItemsSource="{Binding StayTypeOptions}"
-                              DisplayMemberPath="Description"
-                              SelectedValuePath="Value"
-                              SelectedValue="{Binding Data.StayType}"/>
-
-                                <TextBlock FontWeight="Bold" Text="ផ្សេងៗ"/>
-                                <TextBox Text="{Binding Data.OtherInfo}"
-                             AcceptsReturn="True"
-                             Height="120"/>
-                            </StackPanel>
-                        </WrapPanel>
-                    </StackPanel>
-                </Grid>
-
-                <!-- ===================== FOOTER ===================== -->
-                <Grid Grid.Row="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Orientation="Horizontal">
-                        <Button Command="{Binding BackCommand}" Margin="0 0 20 0" ToolTip="Ctrl + Q">
-                            <WrapPanel>
-                                <materialDesign:PackIcon Kind="ArrowBack"/>
-                                <TextBlock Text="Back" Margin="6,0,0,0"/>
-                            </WrapPanel>
-                        </Button>
-
-                        <Button Command="{Binding NextCommand}" Margin="0 0 20 0" ToolTip="Ctrl + E">
-                            <WrapPanel>
-                                <TextBlock Text="Next" Margin="0,0,6,0"/>
-                                <materialDesign:PackIcon Kind="ArrowForward"/>
-                            </WrapPanel>
                         </Button>
                     </StackPanel>
-
-                    <Button Grid.Column="1"
-                HorizontalAlignment="Right"
-                Command="{Binding AddStudentCommand}"
-                ToolTip="Enter">
-                        <WrapPanel>
-                            <materialDesign:PackIcon Kind="AddBold"/>
-                            <TextBlock Text="Add Student" Margin="6,0,0,0"/>
-                        </WrapPanel>
-                    </Button>
-                </Grid>
+                </ScrollViewer>
             </Grid>
-        </ScrollViewer>
+        </materialDesign:Card>
+
+        <!-- Footer: navigation -->
+        <Border Grid.Row="2" Background="{DynamicResource MaterialDesign.Brush.Surface}" CornerRadius="8" Padding="16" Margin="0 16 0 0">
+            <Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <Button Margin="0,0,8,0" Command="{Binding BackCommand}" ToolTip="Ctrl + Q" Style="{StaticResource MaterialDesignOutlinedButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ArrowLeft" Margin="0 0 8 0"/>
+                            <TextBlock Text="ត្រលប់ក្រោយ" />
+                        </StackPanel>
+                    </Button>
+                    <Button Margin="0" Command="{Binding NextCommand}" ToolTip="Ctrl + E" Style="{StaticResource MaterialDesignRaisedButton}" Width="120">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="បន្ទាប់" Margin="0 0 8 0"/>
+                            <materialDesign:PackIcon Kind="ArrowRight" />
+                        </StackPanel>  
+                    </Button>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Margin="0" Command="{Binding AddStudentCommand}" ToolTip="Enter" Style="{StaticResource MaterialDesignRaisedButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ContentSave" Margin="0 0 8 0"/>
+                            <TextBlock Text="បញ្ចូលសិស្ស" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

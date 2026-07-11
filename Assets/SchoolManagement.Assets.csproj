@@ -65,4 +65,10 @@
 	  </Resource>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Content Update="Spreadsheets\attendance_report.xlsx">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
 </Project>

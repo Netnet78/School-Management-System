@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SchoolManagement.Core.Features.Assessments.Models;
 using SchoolManagement.Core.Features.Auth.Models;
 
@@ -127,6 +127,8 @@ namespace SchoolManagement.Infrastructure.Data
                     .WithMany(s => s.ClassSubjects)
                     .HasForeignKey(cs => cs.SubjectId);
             });
+
+            modelBuilder.HasDefaultSchema("public");
 
             base.OnModelCreating(modelBuilder);
         }

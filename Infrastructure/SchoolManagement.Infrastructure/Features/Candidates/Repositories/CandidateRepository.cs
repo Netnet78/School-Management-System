@@ -175,4 +175,52 @@ public class CandidateRepository : BaseRepository<Candidate>, ICandidateReposito
                 : query.OrderByDescending(x => x.Id),
         };
     }
+
+    public async Task<CandidateDashboardMetrics> GetDashboardMetricsAsync(int? daysFilter, DateTime todayUtc)
+    {
+        var metrics = new CandidateDashboardMetrics();
+        var query = CreateQuery();
+        
+        // Genders
+        var genderGroups = await query.GroupBy(c => c.Gender).Select(g => new { Gender = g.Key, Count = g.Count() }).ToListAsync();
+        foreach (var g in genderGroups)
+        {
+            metrics.GenderDistribution[g.Gender.ToString()] = g.Count;
+        }
+
+        // Skills
+        var skillGroups = await query.GroupBy(c => c.Skill.KhmerName).Select(g => new { Skill = g.Key, Count = g.Count() }).ToListAsync();
+        foreach (var s in skillGroups)
+        {
+            metrics.SkillDistribution[s.Skill] = s.Count;
+        }
+
+        // Joined Rate
+        var joinedQuery = query;
+        if (daysFilter.HasValue)
+        {
+            var cutoffDate = todayUtc.Date.AddDays(-daysFilter.Value);
+            joinedQuery = joinedQuery.Where(c => c.CreatedAt >= cutoffDate);
+        }
+
+        var joinedGroups = await joinedQuery
+            .GroupBy(c => c.CreatedAt.Date)
+            .Select(g => new { Date = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        foreach (var j in joinedGroups)
+        {
+            metrics.JoinedRate[j.Date] = j.Count;
+        }
+
+        // Inserted Today
+        var todayStart = todayUtc.Date;
+        var tomorrowStart = todayStart.AddDays(1);
+        metrics.InsertedToday = await query
+            .Where(c => c.CreatedAt >= todayStart && c.CreatedAt < tomorrowStart)
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync();
+
+        return metrics;
+    }
 }

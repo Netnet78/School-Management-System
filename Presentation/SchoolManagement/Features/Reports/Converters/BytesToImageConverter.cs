@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Windows.Data;
-using System.Windows.Media.Imaging;
 using SchoolManagement.Presentation.Shared.Converters;
 
 namespace SchoolManagement.Presentation.Features.Reports.Converters;

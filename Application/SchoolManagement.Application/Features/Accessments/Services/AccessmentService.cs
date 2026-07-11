@@ -1,6 +1,4 @@
 ﻿using SchoolManagement.Core.Features.Assessments.Models;
-using SchoolManagement.Core.Shared.Models;
-using SchoolManagement.Infrastructure.Features.Assessments.Contracts;
 
 namespace SchoolManagement.Application.Features.Assessments.Services
 {
@@ -13,7 +11,7 @@ namespace SchoolManagement.Application.Features.Assessments.Services
             _assessmentRepository = repository;
         }
 
-        public async Task<ReturnResponse> UpsertRangeAsync(int examId, int classSubjectId, IEnumerable<(int StudentClassId, decimal TotalScore)> entries)
+        public async Task<ReturnResponse> UpsertRangeAsync(int examId, int classSubjectId, IEnumerable<(int StudentClassId, int MapperId, int ComponentId, decimal ScoreAmount)> entries)
         {
             try
             {

@@ -14,9 +14,11 @@
     <Project Path="Presentation/Shared/SchoolManagement.Presentation.Shared/SchoolManagement.Presentation.Shared.csproj" />
   </Folder>
   <Folder Name="/Tests/">
+    <File Path="script.ps1" />
     <Project Path="Tests/SchoolManagement.Tests/SchoolManagement.Tests.csproj" />
     <Project Path="Tests/TestConsole/TestConsole/TestConsole.csproj" />
   </Folder>
+  <Project Path="../Documenter/Documenter.csproj" Id="f07750c8-dc28-4c59-8aa1-ff0541352ede" />
   <Project Path="Application/SchoolManagement.Application/SchoolManagement.Application.csproj" />
   <Project Path="Assets/SchoolManagement.Assets.csproj" Id="b00d533c-6eb5-4e57-a838-e3d3155ce53c" />
   <Project Path="Core/SchoolManagement.Core/SchoolManagement.Core.csproj" />

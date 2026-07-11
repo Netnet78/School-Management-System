@@ -9,6 +9,7 @@
     <UserSecretsId>08b41a90-f04f-4607-ae4a-c6897de17c00</UserSecretsId>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <ApplicationIcon>dbs-app-logo.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -66,6 +67,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="dbs-app-logo.ico" />
     <Content Include="Sources\Spreadsheets\candidate_list.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

@@ -3,9 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using SchoolManagement.Application.Features.Classes.Authorization;
 using SchoolManagement.Core.Features.Departments.Models;
 using SchoolManagement.Core.Features.Employees.Enums;
-using SchoolManagement.Core.Features.Files.Models;
-using SchoolManagement.Core.Shared.Extensions;
-using System.Collections.ObjectModel;
 
 namespace SchoolManagement.Presentation.Features.Employees.ViewModels
 {

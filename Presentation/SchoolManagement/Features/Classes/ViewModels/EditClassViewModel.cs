@@ -5,7 +5,6 @@ using SchoolManagement.Core.Features.Generations.Models;
 using SchoolManagement.Core.Features.Grades.Models;
 using SchoolManagement.Presentation.Features.Subjects.ViewModels;
 using SchoolManagement.Presentation.Shared.Features.Subjects.Params;
-using System.Collections.ObjectModel;
 
 namespace SchoolManagement.Presentation.Features.Classes.ViewModels
 {

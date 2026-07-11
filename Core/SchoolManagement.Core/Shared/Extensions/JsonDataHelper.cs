@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using SchoolManagement.Core.Shared.Attributes;
 using System.Reflection;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -12,6 +13,7 @@ namespace SchoolManagement.Core.Shared.Extensions
         private static readonly JsonSerializerOptions _jsonOptions = new()
         {
             WriteIndented = false,
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             Converters =
                 {
                     new JsonStringEnumConverter()

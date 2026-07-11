@@ -36,6 +36,10 @@
             <StackPanel>
                 <TextBlock Text="ទម្រង់​កែប្រែទិន្នន័យសិស្ស" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding StudentName, StringFormat='កំពុងកែប្រែ​សិស្សឈ្មោះ៖ {0}'}" FontSize="16" Opacity=".6" Margin="0 4 0 0"/>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding StudentForm.Id, StringFormat='SID: SDBS{0:0000000}'}" FontSize="16" Opacity=".6" Margin="0 4 4 0" />
+                    <TextBlock Text="{Binding StudentForm.CandidateId, StringFormat='CID: SDBS{0:0000000}'}" FontSize="16" Opacity=".6" Margin="0 4 0 0" />
+                </StackPanel>
             </StackPanel>
         </StackPanel>
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="20,0,20,20">

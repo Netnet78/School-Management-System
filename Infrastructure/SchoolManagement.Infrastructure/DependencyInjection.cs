@@ -58,7 +58,8 @@ namespace SchoolManagement.Infrastructure
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<IPermissionRepository, PermissionRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
-            services.AddScoped<IAssessmentRepository, ScoreRepository>();
+            services.AddScoped<IAssessmentRepository, AssessmentRepository>();
+            services.AddScoped<IScoreRepository, ScoreRepository>();
             services.AddScoped<ISkillRepository, SkillRepository>();
             services.AddScoped<IStudentClassRepository, StudentClassRepository>();
             services.AddScoped<IStudentQRRepository, StudentQRRepository>();
@@ -81,6 +82,7 @@ namespace SchoolManagement.Infrastructure
             services.AddScoped<IPhotoSyncService, PhotoSyncService>();
 
             // Report renderers
+            services.AddTransient<IExcelRenderer, AttendanceExcelRenderer>();
             services.AddTransient<IExcelRenderer, DefaultExcelTemplateRenderer>();
             services.AddTransient<IExcelRenderer, StudentRosterRenderer>();
             services.AddTransient<ICardPdfRenderer, StudentCardRenderer>();

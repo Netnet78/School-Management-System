@@ -17,7 +17,7 @@ namespace SchoolManagement.Core.Features.Classes.Models
         public int SubjectId { get; set; }
         public Subject Subject { get; set; } = null!;
 
-        public ICollection<Assessment> Scores { get; set; } = [];
+        public List<Assessment> Scores { get; set; } = [];
 
         public string CustomAuditDescription()
         {

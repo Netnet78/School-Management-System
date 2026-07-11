@@ -146,7 +146,7 @@ namespace CandidateManagement.Reports
             ws.Cell(newStartRow + 1, 5).SetValue(student.DateOfBirth?.Month);
             ws.Cell(newStartRow, 5).SetValue(student.DateOfBirth?.Year);
             // Exam Degree
-            ws.Cell(newStartRow, 6).SetValue("??????? (?????????)");
+            ws.Cell(newStartRow, 6).SetValue("ឌីប្លូម (ថ្នាក់ទី៩)");
             // Place of Birth
             ws.Cell(newStartRow, 7).SetValue(student.BirthVillage);
             ws.Cell(newStartRow, 8).SetValue(student.BirthCommune);
@@ -158,13 +158,13 @@ namespace CandidateManagement.Reports
             ws.Cell(newStartRow, 13).SetValue(student.MotherName);
             ws.Cell(newStartRow, 14).SetValue(student.MotherOccupation);
             // Siblings
-            if (student.SiblingsCount > 0)
+            if (student.SiblingsCount > 1)
             {
                 ws.Cell(newStartRow, 15).SetValue(student.SiblingsCount);
             }
             else
             {
-                ws.Cell(newStartRow, 15).SetValue("??????");
+                ws.Cell(newStartRow, 15).SetValue("កូនទោល");
             }
             // Religion
             ws.Cell(newStartRow, 16).SetValue(student.Religion);

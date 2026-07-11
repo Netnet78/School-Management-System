@@ -1,6 +1,5 @@
 using SchoolManagement.Core.Shared.Contracts;
 using SchoolManagement.Infrastructure.Shared.Contracts;
-using System.Collections;
 using System.ComponentModel;
 using System.Reflection;
 
@@ -183,7 +182,7 @@ namespace SchoolManagement.Application.Features.Shared.Services
 
             try
             {
-                if (_authorizationService != null && DeletePermission is { } permission)
+                if (_authorizationService != null && EditPermission is { } permission)
                 {
                     Type entityType = typeof(TEntity);
                     if (!await CanProceed(permission)) return new()

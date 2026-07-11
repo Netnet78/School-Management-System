@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SchoolManagement.Core.Features.Subjects.Models;
+using SchoolManagement.Presentation.Shared.Features.Subjects.Observables;
 
 namespace SchoolManagement.Presentation.Features.Subjects.ViewModels
 {
@@ -25,6 +26,9 @@ namespace SchoolManagement.Presentation.Features.Subjects.ViewModels
         [ObservableProperty]
         private bool _isSaving;
 
+        [ObservableProperty]
+        private ObservableCollection<ComponentEntry> _components = [];
+
         public AddSubjectViewModel(
             ISubjectService subjectService,
             IMessageService messageService,
@@ -36,6 +40,19 @@ namespace SchoolManagement.Presentation.Features.Subjects.ViewModels
         }
 
         public Task LoadAsync() => Task.CompletedTask;
+
+        [RelayCommand]
+        private void AddComponent()
+        {
+            Components.Add(new ComponentEntry());
+        }
+
+        [RelayCommand]
+        private void RemoveComponent(ComponentEntry? entry)
+        {
+            if (entry != null)
+                Components.Remove(entry);
+        }
 
         [RelayCommand]
         private async Task SaveAsync()
@@ -62,12 +79,25 @@ namespace SchoolManagement.Presentation.Features.Subjects.ViewModels
 
             try
             {
+                var mappers = Components
+                    .Where(c => !string.IsNullOrWhiteSpace(c.Name))
+                    .Select(c => new SubjectMapper
+                    {
+                        Component = new SubjectComponent
+                        {
+                            Name = c.Name.Trim(),
+                            KhmerName = c.KhmerName.Trim()
+                        }
+                    })
+                    .ToList();
+
                 Subject subject = new()
                 {
                     Name = Name.Trim(),
                     KhmerName = KhmerName.Trim(),
                     MaxScore = MaxScore,
-                    IsActive = IsActive
+                    IsActive = IsActive,
+                    Mappers = mappers
                 };
 
                 var response = await _subjectService.InsertAsync(subject);
@@ -79,12 +109,12 @@ namespace SchoolManagement.Presentation.Features.Subjects.ViewModels
                 }
                 else
                 {
-                    _messageService.Show(response.Message ?? "មានកំហុសក្នុងការរក្សាទុក!", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                    _messageService.Show(response.Message ?? "មានកំហុសក្នុងការរក្សាទុកទិន្នន័យមុខវិជ្ជា!", "កំហុសក្នុងប្រតិបត្តិការ​មុខវិជ្ជា!", MessageButton.OK, MessageIcon.Error);
                 }
             }
             catch (Exception ex)
             {
-                _messageService.Show($"មានកំហុសបច្ចេកទេស: {ex.Message}", "កំហុស!", MessageButton.OK, MessageIcon.Error);
+                _messageService.Show($"មានកំហុសបច្ចេកទេស: {ex.Message}", "ERROR!", MessageButton.OK, MessageIcon.Error);
             }
             finally
             {

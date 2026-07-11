@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using SchoolManagement.Core.Features.Skills.Models;
 using SchoolManagement.Presentation.Shared.Features.Classes.Observables;
 using SchoolManagement.Presentation.Shared.Features.Students.Observables;
-using System.Collections.ObjectModel;
 
 namespace SchoolManagement.Presentation.Features.Students.ViewModels
 {

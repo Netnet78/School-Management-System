@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SchoolManagement.Core.Features.Attendances.Models;
 using SchoolManagement.Core.Features.Classes.Models;
-using SchoolManagement.Core.Features.Students.Models;
 using SchoolManagement.Infrastructure.Data;
 
 internal class Program

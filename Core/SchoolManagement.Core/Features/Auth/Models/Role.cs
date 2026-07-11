@@ -13,7 +13,7 @@ namespace SchoolManagement.Core.Features.Auth.Models
         [Description("ព័ត៌មានបន្ថែម")]
         public string? Description { get; set; }
         [Description("ការអនុញ្ញាត")]
-        public ICollection<Permission> Permissions { get; set; } = [];
-        public ICollection<User> Users { get; set; } = [];
+        public List<Permission> Permissions { get; set; } = [];
+        public List<User> Users { get; set; } = [];
     }
 }

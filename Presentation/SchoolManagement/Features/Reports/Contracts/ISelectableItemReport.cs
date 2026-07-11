@@ -10,6 +10,7 @@ namespace SchoolManagement.Presentation.Features.Reports.Contracts;
 public interface ISelectableItemReport
 {
     bool IsAllSelected { get; }
+    bool ShowSelectedOnly { get; }
     void SelectItem(int id);
     void DeselectItem(int id);
     void ToggleSelectAll();

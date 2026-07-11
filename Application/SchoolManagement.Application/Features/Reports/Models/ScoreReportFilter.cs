@@ -2,7 +2,7 @@ namespace SchoolManagement.Application.Features.Reports.Models
 {
     public class ScoreReportFilter : IPagedFilter
     {
-        public int? ClassId { get; set; }
+        public List<int> ClassIds { get; set; } = [];
 
         public int? SubjectId { get; set; }
 

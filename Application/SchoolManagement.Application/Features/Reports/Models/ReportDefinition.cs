@@ -1,5 +1,3 @@
-using SchoolManagement.Core.Features.Reports.Models;
-
 namespace SchoolManagement.Application.Features.Reports.Models
 {
     public class ReportDefinition

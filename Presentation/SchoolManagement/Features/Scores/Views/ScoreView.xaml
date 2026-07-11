@@ -8,7 +8,8 @@
              xmlns:viewmodels="clr-namespace:SchoolManagement.Presentation.Features.Scores.ViewModels"
              d:DataContext="{d:DesignInstance Type=viewmodels:ScoreViewModel}"
              mc:Ignorable="d"
-             d:DesignHeight="800" d:DesignWidth="1100">
+             d:DesignHeight="800" d:DesignWidth="1100"
+             DataContextChanged="OnDataContextChanged">
     <UserControl.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" Collapse="True" />
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverterReversed" IsReversed="True" Collapse="True" />
@@ -37,182 +38,259 @@
         </StackPanel>
 
         <!-- ====== CONTENT ====== -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="20,0,20,20">
+        <Grid Grid.Row="1">
+            
+            <!-- ====== CLASS SELECTION MODE ====== -->
+            <Border Background="{DynamicResource MaterialDesign.Brush.Secondary}"
+                    Padding="20" CornerRadius="4" Margin="20"
+                    VerticalAlignment="Top"
+                    TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"
+                    Visibility="{Binding IsClassSelectionMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                        <materialDesign:PackIcon Kind="School" Width="22" Height="22" Margin="0,0,8,0"/>
+                        <TextBlock Text="ជ្រើសរើសថ្នាក់" FontSize="20" FontWeight="Bold"/>
+                    </StackPanel>
 
-                <!-- ====== CLASS SELECTION MODE ====== -->
-                <Border Background="{DynamicResource MaterialDesign.Brush.Secondary}"
-                        TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"
-                        Padding="20" CornerRadius="4"
-                        Visibility="{Binding IsClassSelectionMode, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                            <materialDesign:PackIcon Kind="School" Width="22" Height="22" Margin="0,0,8,0"/>
-                            <TextBlock Text="ជ្រើសរើសថ្នាក់" FontSize="20" FontWeight="Bold"/>
+                    <Grid Visibility="{Binding IsLoadingClasses, Converter={StaticResource BooleanToVisibilityConverter}}"
+                          Height="60">
+                        <ProgressBar IsIndeterminate="True" Height="20" Width="300"/>
+                    </Grid>
+
+                    <!-- Class Cards Gallery -->
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="600"
+                                  Visibility="{Binding IsLoadingClasses, Converter={StaticResource BooleanToVisibilityConverterReversed}}">
+                        <ListBox ItemsSource="{Binding Classes}"
+                                 SelectedItem="{Binding SelectedClass}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Margin" Value="0"/>
+                                <Setter Property="Padding" Value="4"/>
+                                <Setter Property="Cursor" Value="Hand"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    SnapsToDevicePixels="True">
+                                                <ContentPresenter Margin="{TemplateBinding Padding}"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#15FFFFFF"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="210" MinHeight="110"
+                                        CornerRadius="8"
+                                        Background="White"
+                                        BorderBrush="#D0D0D0"
+                                        BorderThickness="1"
+                                        Padding="14">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Primary}"/>
+                                                    <Setter Property="BorderThickness" Value="2"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                            <Border Width="32" Height="32" CornerRadius="6"
+                                                    Background="{DynamicResource MaterialDesign.Brush.Primary}"
+                                                    VerticalAlignment="Top" Margin="0,0,8,0">
+                                                <materialDesign:PackIcon Kind="SchoolOutline"
+                                                                         Width="18" Height="18"
+                                                                         Foreground="{DynamicResource MaterialDesign.Brush.Primary.Foreground}"
+                                                                         HorizontalAlignment="Center"
+                                                                         VerticalAlignment="Center"/>
+                                            </Border>
+                                            <TextBlock Text="{Binding Grade.KhmerName}"
+                                                       FontSize="17" FontWeight="Bold"
+                                                       Foreground="#222"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding Generation.Department.KhmerName}"
+                                                   FontSize="13" Foreground="#666"
+                                                   Margin="0,0,0,2"/>
+                                        <TextBlock FontSize="12" Foreground="#999">
+                                            <Run Text="ជំនាន់ទី"/>
+                                            <Run Text="{Binding Generation.CohortNumber}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    </ScrollViewer>
+                </StackPanel>
+            </Border>
+
+            <!-- ====== SCORE ENTRY MODE ====== -->
+            <Grid Visibility="{Binding IsScoreEntryMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- TOP TOOLBAR -->
+                <Border Grid.Row="0" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="15,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/> <!-- Change Class / Name -->
+                            <ColumnDefinition Width="Auto"/> <!-- Separator -->
+                            <ColumnDefinition Width="Auto"/> <!-- Subject -->
+                            <ColumnDefinition Width="Auto"/> <!-- Exam -->
+                            <ColumnDefinition Width="*"/>    <!-- Spacer -->
+                            <ColumnDefinition Width="Auto"/> <!-- Report -->
+                            <ColumnDefinition Width="Auto"/> <!-- Save -->
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Class Info -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button Command="{Binding ChangeClassCommand}"
+                                    Style="{StaticResource MaterialDesignToolButton}"
+                                    ToolTip="ប្តូរថ្នាក់" Margin="0,0,10,0" Padding="4">
+                                <materialDesign:PackIcon Kind="SwapHorizontal" Width="24" Height="24" Foreground="#FF9800"/>
+                            </Button>
+                            <TextBlock Text="{Binding ClassName, StringFormat='ថ្នាក់: {0}'}" FontSize="18" FontWeight="Bold" Foreground="#333" VerticalAlignment="Center"/>
                         </StackPanel>
 
-                        <Grid Visibility="{Binding IsLoadingClasses, Converter={StaticResource BooleanToVisibilityConverter}}"
-                              Height="60">
-                            <ProgressBar IsIndeterminate="True" Height="20" Width="300"/>
-                        </Grid>
+                        <Border Grid.Column="1" Width="1" Background="#D0D0D0" Margin="15,5"/>
 
-                        <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,10"
-                              Visibility="{Binding IsLoadingClasses, Converter={StaticResource BooleanToVisibilityConverterReversed}}">
-                            <TextBlock Text="ថ្នាក់:" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <ComboBox Grid.Column="1"
-                                      ItemsSource="{Binding Classes}"
-                                      SelectedItem="{Binding SelectedClass}"
+                        <!-- Subject -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,15,0">
+                            <TextBlock Text="មុខវិជ្ជា:" FontSize="15" Foreground="#666" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ComboBox ItemsSource="{Binding ScoreSubjects}"
+                                      SelectedItem="{Binding SelectedScoreSubject}"
+                                      DisplayMemberPath="Subject.KhmerName"
+                                      materialDesign:HintAssist.Hint="ជ្រើសរើសមុខវិជ្ជា"
+                                      Width="220" FontSize="15" Padding="6"/>
+                        </StackPanel>
+
+                        <!-- Exam -->
+                        <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="ប្រឡង:" FontSize="15" Foreground="#666" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ComboBox ItemsSource="{Binding Exams}"
+                                      SelectedItem="{Binding SelectedExam}"
                                       DisplayMemberPath="KhmerName"
-                                      Padding="6" FontSize="14"
-                                      MinWidth="300"
-                                      materialDesign:HintAssist.Hint="ជ្រើសរើសថ្នាក់"/>
-                        </Grid>
-                    </StackPanel>
+                                      materialDesign:HintAssist.Hint="ជ្រើសរើសប្រឡង"
+                                      Width="220" FontSize="15" Padding="6"/>
+                        </StackPanel>
+
+                        <!-- Actions -->
+                        <Button Grid.Column="5" Command="{Binding GenerateReportCommand}"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                BorderBrush="#2196F3" Foreground="#2196F3"
+                                Margin="15,0,15,0" Padding="12,6" Height="38">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="FileChartOutline" Width="20" Height="20" Margin="0,0,6,0"/>
+                                <TextBlock Text="របាយការណ៍" FontSize="14" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        
+                        <Button Grid.Column="6" Command="{Binding SaveAllCommand}"
+                                Background="#4CAF50" Foreground="White" BorderThickness="0"
+                                Padding="16,6" Height="38"
+                                IsEnabled="{Binding HasScores}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="ContentSave" Width="20" Height="20" Margin="0,0,6,0"/>
+                                <TextBlock Text="រក្សាទុកទាំងអស់" FontSize="14" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
                 </Border>
 
-                <!-- ====== SCORE ENTRY MODE ====== -->
-                <StackPanel Visibility="{Binding IsScoreEntryMode, Converter={StaticResource BooleanToVisibilityConverter}}">
-
-                    <!-- Class info bar -->
-                    <Border Background="{DynamicResource MaterialDesign.Brush.Secondary}"
-                            TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"
-                            Padding="15" CornerRadius="4" Margin="0,0,0,15">
-                        <StackPanel Orientation="Horizontal">
-                            <Button Command="{Binding ChangeClassCommand}"
-                                    Padding="8,4" Margin="0,0,10,0"
-                                    Background="#FF9800" Foreground="White" FontSize="13"
-                                    ToolTip="ប្តូរថ្នាក់">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="SwapHorizontal" Width="16" Height="16" Margin="0,0,4,0"/>
-                                    <TextBlock Text="ប្តូរថ្នាក់"/>
-                                </StackPanel>
-                            </Button>
-                            <TextBlock Text="{Binding ClassName, StringFormat='ថ្នាក់: {0}'}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+                <!-- WORKSPACE CONTENT -->
+                <Grid Grid.Row="1" Background="White">
+                    
+                    <!-- Loading overlay for Scores -->
+                    <Grid Panel.ZIndex="10" Background="#99FFFFFF" Visibility="{Binding IsLoadingScores, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <ProgressBar IsIndeterminate="True" Width="200" Height="20"/>
+                            <TextBlock Text="កំពុងទាញយកទិន្នន័យ..." FontSize="16" FontWeight="SemiBold" Foreground="#333" HorizontalAlignment="Center" Margin="0,15,0,0"/>
                         </StackPanel>
-                    </Border>
+                    </Grid>
 
-                    <!-- Subject & Exam selection -->
-                    <Border Background="{DynamicResource MaterialDesign.Brush.Secondary}"
-                            TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"
-                            Padding="15" CornerRadius="4" Margin="0,0,0,15">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                <materialDesign:PackIcon Kind="FilterVariant" Width="20" Height="20" Margin="0,0,8,0"/>
-                                <TextBlock Text="ជ្រើសរើសមុខវិជ្ជា និងប្រឡង" FontSize="18" FontWeight="Bold"/>
-                            </StackPanel>
+                    <!-- Empty State Placeholder -->
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                                Visibility="{Binding HasScores, Converter={StaticResource BooleanToVisibilityConverterReversed}}">
+                        <materialDesign:PackIcon Kind="ClipboardTextSearchOutline" Width="100" Height="100" Foreground="#B0BEC5" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                        <TextBlock Text="សូមជ្រើសរើសមុខវិជ្ជា និងប្រឡង" FontSize="22" FontWeight="Bold" Foreground="#78909C" HorizontalAlignment="Center"/>
+                        <TextBlock Text="ទិន្នន័យពិន្ទុនឹងបង្ហាញនៅទីនេះបន្ទាប់ពីជ្រើសរើសរួច" FontSize="15" Foreground="#90A4AE" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                    </StackPanel>
 
-                            <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto">
-                                <!-- Subject -->
-                                <TextBlock Text="មុខវិជ្ជា:" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                <ComboBox Grid.Column="1" Margin="0,0,20,0"
-                                          ItemsSource="{Binding ScoreSubjects}"
-                                          SelectedItem="{Binding SelectedScoreSubject}"
-                                          DisplayMemberPath="Subject.KhmerName"
-                                          Padding="6" FontSize="14" MinWidth="250"/>
-
-                                <!-- Exam -->
-                                <TextBlock Grid.Column="2" Text="ប្រឡង:" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                <ComboBox Grid.Column="3"
-                                          ItemsSource="{Binding Exams}"
-                                          SelectedItem="{Binding SelectedExam}"
-                                          DisplayMemberPath="KhmerName"
-                                          Padding="6" FontSize="14" MinWidth="250"/>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Bulk scores grid -->
-                    <Border Background="{DynamicResource MaterialDesign.Brush.Secondary}"
-                            TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"
-                            Padding="15" CornerRadius="4" Margin="0,0,0,15">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                <materialDesign:PackIcon Kind="AccountMultiple" Width="20" Height="20" Margin="0,0,8,0"/>
-                                <TextBlock Text="{Binding ScoreEntries.Count, StringFormat='បញ្ចូលពិន្ទុសិស្ស ({0} នាក់)'}" FontSize="18" FontWeight="Bold"/>
-                            </StackPanel>
-
-                            <!-- Loading -->
-                            <Grid Visibility="{Binding IsLoadingScores, Converter={StaticResource BooleanToVisibilityConverter}}" Height="60">
-                                <ProgressBar IsIndeterminate="True" Height="20" Width="300"/>
-                            </Grid>
-
-                            <!-- Hint to select subject + exam -->
-                            <TextBlock Text="សូមជ្រើសរើសមុខវិជ្ជា និងប្រឡងដើម្បីចាប់ផ្តើម"
-                                       FontSize="14" FontStyle="Italic" Margin="0,10,0,0"
-                                       Visibility="{Binding HasScores, Converter={StaticResource BooleanToVisibilityConverterReversed}}"/>
-
-                            <!-- Scores DataGrid -->
-                            <DataGrid ItemsSource="{Binding ScoreEntries}"
-                                      Margin="0 10 0 0"
-                                      AutoGenerateColumns="False"
-                                      IsReadOnly="False"
-                                      FontSize="14"
-                                      FontFamily="{StaticResource NotoSansKhmer}"
-                                      MaxHeight="500"
-                                      Visibility="{Binding IsLoadingScores, Converter={StaticResource BooleanToVisibilityConverterReversed}}">
-                                <DataGrid.Resources>
-                                    <Style TargetType="DataGridCell">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                    </Style>
-                                </DataGrid.Resources>
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="ឈ្មោះសិស្ស" Binding="{Binding Student.FullName}" Width="250" IsReadOnly="True"/>
-                                    <DataGridTextColumn Header="ពិន្ទុដែលមានស្រាប់" Binding="{Binding ExistingAssessment.TotalScore}" Width="150" IsReadOnly="True"/>
-                                    <DataGridTemplateColumn Header="បញ្ចូលពិន្ទុ" Width="150">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBox Text="{Binding ScoreAmount, UpdateSourceTrigger=PropertyChanged}"
-                                                         Padding="4" FontSize="14" Width="100" HorizontalAlignment="Left"/>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                </DataGrid.Columns>
-                            </DataGrid>
-
-                            <!-- Save All button -->
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0"
-                                        Visibility="{Binding IsLoadingScores, Converter={StaticResource BooleanToVisibilityConverterReversed}}">
-                                <Button Command="{Binding SaveAllCommand}"
-                                        Padding="12,6" FontSize="14"
-                                        Background="#4CAF50" Foreground="White">
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="ContentSave" Width="18" Height="18" Margin="0,0,6,0"/>
-                                        <TextBlock Text="រក្សាទុកទាំងអស់"/>
-                                    </StackPanel>
-                                </Button>
-                            </StackPanel>
-
-                            <!-- Saving indicator -->
-                            <Grid Visibility="{Binding IsSavingScores, Converter={StaticResource BooleanToVisibilityConverter}}" Height="30" Margin="0,10,0,0">
-                                <ProgressBar IsIndeterminate="True" Height="20"/>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Report -->
-                    <Border Background="{DynamicResource MaterialDesign.Brush.Secondary}"
-                            TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}"
-                            Padding="15" CornerRadius="4">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                <materialDesign:PackIcon Kind="ChartBar" Width="20" Height="20" Margin="0,0,8,0"/>
-                                <TextBlock Text="របាយការណ៍" FontSize="18" FontWeight="Bold"/>
-                            </StackPanel>
-                            <TextBlock Text="បង្កើតរបាយការណ៍សង្ខេបពីពិន្ទុសិស្ស" FontSize="14" Margin="0,0,0,10"/>
-                            <Button Command="{Binding GenerateReportCommand}"
-                                    Padding="12,6" FontSize="14"
-                                    Background="#2196F3" Foreground="White"
-                                    HorizontalAlignment="Left">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="FileChart" Width="18" Height="18" Margin="0,0,6,0"/>
-                                    <TextBlock Text="បង្កើតរបាយការណ៍"/>
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </StackPanel>
-        </ScrollViewer>
+                    <!-- DataGrid -->
+                    <DataGrid x:Name="ScoreGrid"
+                              ItemsSource="{Binding ScoreEntries}"
+                              Visibility="{Binding HasScores, Converter={StaticResource BooleanToVisibilityConverter}}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="False"
+                              FontSize="15"
+                              FontFamily="{StaticResource NotoSansKhmer}"
+                              HeadersVisibility="Column"
+                              GridLinesVisibility="All"
+                              HorizontalGridLinesBrush="#E0E0E0"
+                              VerticalGridLinesBrush="#E0E0E0"
+                              RowHeight="50"
+                              BorderThickness="0"
+                              Background="White"
+                              AlternatingRowBackground="#F8F9FA"
+                              CanUserSortColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              SelectionUnit="Cell"
+                              SelectionMode="Single"
+                              PreviewKeyDown="ScoreGrid_PreviewKeyDown">
+                        <DataGrid.ColumnHeaderStyle>
+                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+                                <Setter Property="Background" Value="#F1F3F4"/>
+                                <Setter Property="Foreground" Value="#222"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Padding" Value="15,12"/>
+                                <Setter Property="BorderBrush" Value="#D0D0D0"/>
+                                <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                            </Style>
+                        </DataGrid.ColumnHeaderStyle>
+                        <DataGrid.CellStyle>
+                            <Style TargetType="DataGridCell" BasedOn="{StaticResource MaterialDesignDataGridCell}">
+                                <Setter Property="Padding" Value="10,0"/>
+                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#E3F2FD"/>
+                                        <Setter Property="Foreground" Value="#000"/>
+                                        <Setter Property="BorderBrush" Value="#2196F3"/>
+                                        <Setter Property="BorderThickness" Value="2"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.CellStyle>
+                    </DataGrid>
+                </Grid>
+            </Grid>
+        </Grid>
 
         <!-- Loading overlay -->
         <Grid Grid.Row="1" Background="#44000000"

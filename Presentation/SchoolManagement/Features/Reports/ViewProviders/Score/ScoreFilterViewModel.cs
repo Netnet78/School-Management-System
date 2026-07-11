@@ -1,3 +1,4 @@
+using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
 using SchoolManagement.Application.Features.Classes.Authorization;
 using SchoolManagement.Application.Features.Reports.Models;
@@ -14,11 +15,7 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Score
         private readonly IMessageService _messageService;
         private readonly IDispatcherService _dispatcherService;
 
-        [ObservableProperty]
-        private IEnumerable<Class> _classes = [];
-
-        [ObservableProperty]
-        private Class? _selectedClass;
+        public ObservableCollection<SelectableClass> SelectableClasses { get; } = [];
 
         [ObservableProperty]
         private IEnumerable<ClassSubject> _subjects = [];
@@ -51,13 +48,20 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Score
             _authorizationService = authorizationService;
             _messageService = messageService;
             _dispatcherService = dispatcherService;
+
+            SelectableClasses.CollectionChanged += OnSelectableClassesChanged;
         }
 
         public override ScoreReportFilter GetFilterData()
         {
+            var classIds = SelectableClasses
+                .Where(sc => sc.IsSelected)
+                .Select(sc => sc.Class.Id)
+                .ToList();
+
             return new ScoreReportFilter
             {
-                ClassId = SelectedClass?.Id,
+                ClassIds = classIds,
                 SubjectId = SelectedSubject?.SubjectId,
                 ExamId = SelectedExam?.Id,
                 SearchKeyword = string.IsNullOrWhiteSpace(SearchKeyword) ? null : SearchKeyword.Trim(),
@@ -71,27 +75,50 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Score
 
             Exams = (await _examService.GetAllAsync()).Value ?? [];
 
+            IEnumerable<Class> loadedClasses;
+
             if (user.IsValidRole(RoleType.Admin))
             {
-                Classes = (await _classService.GetAllAsync()).Value ?? [];
+                loadedClasses = (await _classService.GetAllAsync()).Value ?? [];
             }
             else if (user.IsValidRole(RoleType.HeadTeacher))
             {
-                Classes = (await _classService.GetAllAsync(
+                loadedClasses = (await _classService.GetAllAsync(
                     filters: [new(c => c.Generation.DepartmentId, FilterOperator.Equals, user.Employee?.DepartmentId)],
                     includes: ["Generation"])).Value ?? [];
             }
             else if (user.IsValidRole(RoleType.Teacher))
             {
-                Classes = (await _classService.GetAllAsync(
+                loadedClasses = (await _classService.GetAllAsync(
                     filters: [new(c => c.TeacherId, FilterOperator.Equals, user.EmployeeId)],
                     includes: ["Employee"])).Value ?? [];
             }
+            else
+            {
+                loadedClasses = [];
+            }
+
+            SelectableClasses.CollectionChanged -= OnSelectableClassesChanged;
+            SelectableClasses.Clear();
+            SelectableClasses.CollectionChanged += OnSelectableClassesChanged;
+            foreach (var cls in loadedClasses)
+                SelectableClasses.Add(new SelectableClass(cls));
         }
 
-        partial void OnSelectedClassChanged(Class? value)
+        private bool _isResetting;
+        private int _loadSubjectsCounter;
+
+        private void OnSelectableClassesChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            _ = LoadSubjectsAsync(value?.Id); 
+            if (e.NewItems != null)
+            {
+                foreach (SelectableClass item in e.NewItems)
+                    item.PropertyChanged += (_, _) => {
+                        if (_isResetting) return;
+                        _ = LoadSubjectsAsync();
+                        OnFilterChanged();
+                    };
+            }
         }
 
         partial void OnSearchKeywordChanged(string value)
@@ -99,12 +126,27 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Score
             ScheduleDebouncedFilter();
         }
 
-        private async Task LoadSubjectsAsync(int? classId)
+        partial void OnSelectedSubjectChanged(ClassSubject? value)
         {
-            if (classId.HasValue)
+            if (_isResetting) return;
+            OnFilterChanged();
+        }
+
+        private async Task LoadSubjectsAsync()
+        {
+            int currentCount = System.Threading.Interlocked.Increment(ref _loadSubjectsCounter);
+            await Task.Delay(100);
+            if (currentCount != _loadSubjectsCounter) return;
+
+            var classIds = SelectableClasses
+                .Where(sc => sc.IsSelected)
+                .Select(sc => sc.Class.Id)
+                .ToList();
+
+            if (classIds.Count > 0)
             {
                 var response = await _classSubjectService.GetAllAsync(
-                    filters: [new FilterCondition<ClassSubject>(cs => cs.ClassId, FilterOperator.Equals, classId.Value)],
+                    filters: [new FilterCondition<ClassSubject>(cs => cs.ClassId, FilterOperator.In, classIds.Cast<object>())],
                     includes: ["Subject"]);
 
                 if (response.Status != Status.Success)
@@ -115,7 +157,12 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Score
                     });
                 }
 
-                Subjects = response.Value ?? [];
+                var distinctSubjects = response.Value?
+                    .GroupBy(cs => cs.SubjectId)
+                    .Select(g => g.First())
+                    .ToList() ?? [];
+
+                Subjects = distinctSubjects;
             }
             else
             {
@@ -125,10 +172,35 @@ namespace SchoolManagement.Presentation.Features.Reports.ViewProviders.Score
 
         public override void ResetFilterData()
         {
-            SelectedClass = null;
-            SelectedSubject = null;
-            SelectedExam = null;
-            SearchKeyword = string.Empty;
+            _isResetting = true;
+            try
+            {
+                foreach (var sc in SelectableClasses)
+                    sc.IsSelected = false;
+                SelectedSubject = null;
+                SelectedExam = null;
+                SearchKeyword = string.Empty;
+            }
+            finally
+            {
+                _isResetting = false;
+                _ = LoadSubjectsAsync();
+                OnFilterChanged();
+            }
+        }
+    }
+
+    public partial class SelectableClass : ObservableObject
+    {
+        [ObservableProperty]
+        private bool _isSelected;
+
+        public Class Class { get; }
+
+        public SelectableClass(Class cls, bool isSelected = false)
+        {
+            Class = cls;
+            _isSelected = isSelected;
         }
     }
 }

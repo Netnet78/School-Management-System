@@ -5,7 +5,6 @@ using SchoolManagement.Core.Features.Departments.Models;
 using SchoolManagement.Core.Features.Generations.Models;
 using SchoolManagement.Presentation.Shared.Features.Students.Observables;
 using SchoolManagement.Presentation.Shared.Features.Students.Params;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 
 namespace SchoolManagement.Presentation.Features.Students.ViewModels
@@ -20,7 +19,7 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
         private readonly IDepartmentService _departmentService;
         private readonly IGenerationService _generationService;
 
-        private const int DefaultPageSize = 10;
+        private const int DefaultPageSize = 20;
 
         private CancellationTokenSource? _cts;
         private bool _isInitializing;

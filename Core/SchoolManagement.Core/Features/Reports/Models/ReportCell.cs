@@ -4,19 +4,19 @@ namespace SchoolManagement.Core.Features.Reports.Models
 {
     public class ReportCell
     {
-        public object? Value { get; init; }
+        public object? Value { get; set; }
 
         public override string ToString() => Value?.ToString() ?? "";
 
-        public double? FontSize { get; init; }
+        public double? FontSize { get; set; }
 
-        public bool? IsBold { get; init; }
+        public bool? IsBold { get; set; }
 
-        public CellAlignment? Alignment { get; init; }
+        public CellAlignment? Alignment { get; set; }
 
-        public string? ForegroundColor { get; init; }
+        public string? ForegroundColor { get; set; }
 
-        public string? BackgroundColor { get; init; }
+        public string? BackgroundColor { get; set; }
 
         public static implicit operator ReportCell(string? value) => new() { Value = value };
 

@@ -19,8 +19,8 @@ namespace SchoolManagement.Core.Features.Departments.Models
         public string Description { get; set; } = string.Empty;
         [Description("កំពុងដំណើរការ")]
         public bool IsActive { get; set; } = true;
-        public ICollection<Generation> Generations { get; set; } = [];
-        public ICollection<Employee> Employees { get; set; } = [];
+        public List<Generation> Generations { get; set; } = [];
+        public List<Employee> Employees { get; set; } = [];
         public Skill Skill { get; set; } = null!;
     }
 }

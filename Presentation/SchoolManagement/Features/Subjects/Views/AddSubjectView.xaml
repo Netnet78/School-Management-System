@@ -43,33 +43,71 @@
                 <StackPanel>
                     <TextBlock Text="ព័ត៌មានមុខវិជ្ជា" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
 
-                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto">
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" TextElement.FontSize="16">
+                        <!-- Name (Khmer) -->
+                        <TextBlock Grid.Row="0" Text="ឈ្មោះ (ខ្មែរ):" VerticalAlignment="Center" Margin="0,0,10,12"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" Margin="0,0,0,12"
+                                 Text="{Binding KhmerName}"
+                                 Padding="6"
+                                 FontFamily="{StaticResource NotoSansKhmer}"
+                                 materialDesign:HintAssist.Hint="បញ្ចូលឈ្មោះមុខវិជ្ជាជាភាសាខ្មែរ"/>
+                        
                         <!-- Name (English) -->
-                        <TextBlock Text="ឈ្មោះ (អង់គ្លេស):" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,12"/>
-                        <TextBox Grid.Column="1" Margin="0,0,0,12"
+                        <TextBlock Grid.Row="1" Text="ឈ្មោះ (អង់គ្លេស):" VerticalAlignment="Center" Margin="0,0,10,12"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Margin="0,0,0,12"
                                  Text="{Binding Name}"
-                                 Padding="6" FontSize="14"
+                                 Padding="6"
                                  materialDesign:HintAssist.Hint="Enter subject name in English"/>
 
-                        <!-- Name (Khmer) -->
-                        <TextBlock Grid.Row="1" Text="ឈ្មោះ (ខ្មែរ):" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,12"/>
-                        <TextBox Grid.Row="1" Grid.Column="1" Margin="0,0,0,12"
-                                 Text="{Binding KhmerName}"
-                                 Padding="6" FontSize="14"
-                                 materialDesign:HintAssist.Hint="បញ្ចូលឈ្មោះមុខវិជ្ជាជាភាសាខ្មែរ"/>
-
                         <!-- Max Score -->
-                        <TextBlock Grid.Row="2" Text="ពិន្ទុអតិបរមា:" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,12"/>
+                        <TextBlock Grid.Row="2" Text="ពិន្ទុអតិបរមា:" VerticalAlignment="Center" Margin="0,0,10,12"/>
                         <TextBox Grid.Row="2" Grid.Column="1" Margin="0,0,0,12"
                                  Text="{Binding MaxScore}"
-                                 Padding="6" FontSize="14" Width="120" HorizontalAlignment="Left"/>
+                                 Padding="6" Width="120" HorizontalAlignment="Left"/>
 
                         <!-- Is Active -->
                         <CheckBox Grid.Row="3" Grid.Column="1"
                                   IsChecked="{Binding IsActive}"
-                                  Content="សកម្ម"
-                                  FontSize="14" Margin="0,0,0,12"/>
+                                  Content="មុខវិជ្ជា​សកម្ម"
+                                  Margin="0,0,0,12"/>
                     </Grid>
+
+                    <!-- Components section -->
+                    <TextBlock Text="ផ្នែក/សមាសភាគ" FontSize="18" FontWeight="Bold" Margin="0,15,0,10"/>
+                    <StackPanel Margin="0,0,0,10">
+                        <ItemsControl ItemsSource="{Binding Components}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                        <TextBox Text="{Binding KhmerName, UpdateSourceTrigger=PropertyChanged}"
+                                                 Padding="6" FontSize="14" Width="250"
+                                                 materialDesign:HintAssist.Hint="ឈ្មោះសមាសភាគជាភាសាខ្មែរ"/>
+                                        <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                                 Padding="6" FontSize="14" Width="250"
+                                                 Margin="10 0 0 0"
+                                                 materialDesign:HintAssist.Hint="ឈ្មោះសមាសភាគជាអង់គ្លេស"/>
+                                        <Button Command="{Binding DataContext.RemoveComponentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Margin="5,0,0,0"
+                                                Background="#F44336" Foreground="White"
+                                                Padding="6,4" FontSize="12"
+                                                ToolTip="លុប">
+                                            <materialDesign:PackIcon Kind="Close" Width="14" Height="14"/>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Command="{Binding AddComponentCommand}"
+                                Padding="8,4" FontSize="13"
+                                Background="#2196F3" Foreground="White"
+                                HorizontalAlignment="Left" Margin="0,4,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Plus" Width="14" Height="14" Margin="0,0,4,0"/>
+                                <TextBlock Text="បន្ថែមសមាសភាគ"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
 
                     <!-- Buttons -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">

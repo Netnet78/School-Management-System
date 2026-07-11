@@ -3,37 +3,86 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:conv="clr-namespace:SchoolManagement.Presentation.Shared.XAMLConverters;assembly=SchoolManagement.Presentation.Shared"
              xmlns:local="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewProviders.Attendance"
              mc:Ignorable="d"
               d:DataContext="{d:DesignInstance Type=local:AttendanceFilterViewModel}"
-              d:DesignHeight="80" d:DesignWidth="900"
+              d:DesignHeight="80" d:DesignWidth="1100"
               TextElement.FontSize="16">
-     <StackPanel Orientation="Horizontal">
-         <StackPanel Orientation="Horizontal" Margin="0 0 25 0">
-             <TextBlock Text="ស្វែងរក" VerticalAlignment="Center" Margin="0 0 8 0"/>
-             <TextBox Width="180"
+     <UserControl.Resources>
+         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" Collapse="True" />
+         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverterReversed" IsReversed="True" Collapse="True" />
+     </UserControl.Resources>
+    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+        <StackPanel Orientation="Horizontal">
+            <!-- Search -->
+            <StackPanel Orientation="Horizontal" Margin="0 0 15 0">
+                <TextBlock Text="ស្វែងរក" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                <TextBox Width="140"
                       Padding="6"
                       Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged, Delay=400}"/>
-         </StackPanel>
-         <StackPanel Orientation="Horizontal" Margin="0 0 25 0">
-             <TextBlock Text="ថ្នាក់" VerticalAlignment="Center" Margin="0 0 8 0"/>
-             <ComboBox Width="180"
+            </StackPanel>
+
+            <!-- Class Multi-Select -->
+            <StackPanel Orientation="Horizontal" Margin="0 0 15 0">
+                <TextBlock Text="ថ្នាក់" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                <ListBox ItemsSource="{Binding SelectableClasses}"
+                         BorderThickness="1"
+                         MinWidth="160" MaxHeight="40">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="{x:Type local:SelectableClass}">
+                            <CheckBox IsChecked="{Binding IsSelected}"
+                                      Content="{Binding Class.KhmerName}"
+                                      FontSize="14"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </StackPanel>
+
+            <!-- Monthly Mode: Month/Year pickers -->
+            <StackPanel Orientation="Horizontal" Margin="0 0 15 0"
+                     Visibility="{Binding IsMonthlyMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Text="ខែ" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                <ComboBox Width="120"
                        Padding="6"
-                       ItemsSource="{Binding Classes}"
-                       SelectedItem="{Binding SelectedClass}"
+                       ItemsSource="{Binding Months}"
+                       SelectedValue="{Binding SelectedMonth}"
+                       SelectedValuePath="Value"
                        DisplayMemberPath="KhmerName"/>
-         </StackPanel>
-         <StackPanel Orientation="Horizontal" Margin="0 0 25 0">
-             <TextBlock Text="ចាប់ពីថ្ងៃ" VerticalAlignment="Center" Margin="0 0 8 0"/>
-             <DatePicker Width="150"
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0 0 15 0"
+                     Visibility="{Binding IsMonthlyMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Text="ឆ្នាំ" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                <ComboBox Width="100"
+                       Padding="6"
+                       ItemsSource="{Binding Years}"
+                       SelectedItem="{Binding SelectedYear}"/>
+            </StackPanel>
+
+            <!-- Custom Range Mode: Date range pickers -->
+            <StackPanel Orientation="Horizontal" Margin="0 0 15 0"
+                     Visibility="{Binding IsMonthlyMode, Converter={StaticResource BooleanToVisibilityConverterReversed}}">
+                <TextBlock Text="ចាប់ពីថ្ងៃ" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                <DatePicker Width="130"
                          Padding="6"
                          SelectedDate="{Binding DateFrom}"/>
-         </StackPanel>
-         <StackPanel Orientation="Horizontal">
-             <TextBlock Text="ដល់ថ្ងៃ" VerticalAlignment="Center" Margin="0 0 8 0"/>
-             <DatePicker Width="150"
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0 0 15 0"
+                     Visibility="{Binding IsMonthlyMode, Converter={StaticResource BooleanToVisibilityConverterReversed}}">
+                <TextBlock Text="ដល់ថ្ងៃ" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                <DatePicker Width="130"
                          Padding="6"
                          SelectedDate="{Binding DateTo}"/>
-         </StackPanel>
-     </StackPanel>
+            </StackPanel>
+
+            <!-- Mode Toggle -->
+            <ToggleButton IsChecked="{Binding IsMonthlyMode}"
+                       VerticalAlignment="Center"
+                       Padding="8,4"
+                       FontSize="14" />
+            <TextBlock Text="ស្រង់ជា​ខែ/ឆ្នាំ" VerticalAlignment="Center" Margin="15 0 0 0"/>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

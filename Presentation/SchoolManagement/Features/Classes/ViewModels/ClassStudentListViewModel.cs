@@ -4,7 +4,6 @@ using SchoolManagement.Presentation.Features.Scores.ViewModels;
 using SchoolManagement.Presentation.Features.Students.ViewModels;
 using SchoolManagement.Presentation.Shared.Features.Scores.Params;
 using SchoolManagement.Presentation.Shared.Features.Students.Params;
-using System.Collections.ObjectModel;
 
 namespace SchoolManagement.Presentation.Features.Classes.ViewModels
 {

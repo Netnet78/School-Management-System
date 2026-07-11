@@ -49,9 +49,9 @@ namespace SchoolManagement.Core.Features.Employees.Models
         public Department? Department { get; set; }
         public EmployeePhoto? Photo { get; set; }
 
-        public ICollection<Class> Classes { get; set; } = [];
-        public ICollection<ClassSubject> ClassSubjects { get; set; } = [];
-        public ICollection<Attendance> MarkedAttendances { get; set; } = [];
+        public List<Class> Classes { get; set; } = [];
+        public List<ClassSubject> ClassSubjects { get; set; } = [];
+        public List<Attendance> MarkedAttendances { get; set; } = [];
 
         // Salary section
         public DateOnly SalaryDate { get; set; }

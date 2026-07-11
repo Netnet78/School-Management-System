@@ -1,5 +1,4 @@
 using SchoolManagement.Core.Features.Reports.Enums;
-using SchoolManagement.Core.Features.Reports.Models;
 using SchoolManagement.Presentation.Features.Reports.Contracts;
 using SchoolManagement.Presentation.Features.Reports.Converters;
 using SchoolManagement.Presentation.Features.Reports.Models;
@@ -78,11 +77,14 @@ namespace SchoolManagement.Presentation.Features.Reports.Views
                 CanUserAddRows = false,
                 CanUserDeleteRows = false,
                 RowHeaderWidth = 0,
+                GridLinesVisibility = DataGridGridLinesVisibility.All,
+                HorizontalGridLinesBrush = new SolidColorBrush(Color.FromRgb(0, 0, 0)),
+                VerticalGridLinesBrush = new SolidColorBrush(Color.FromRgb(0, 0, 0)),
             };
 
             dataGrid.SetResourceReference(BackgroundProperty, "MaterialDesignPaper");
             dataGrid.SetResourceReference(BorderBrushProperty, "MaterialDesign.Brush.Foreground");
-            dataGrid.BorderThickness = new Thickness(1);
+            dataGrid.BorderThickness = new Thickness(3);
 
             if (TryFindResource("NotoSansKhmer") is FontFamily notoSansKhmer)
             {
@@ -121,7 +123,19 @@ namespace SchoolManagement.Presentation.Features.Reports.Views
             return grid;
         }
 
-        private static void GenerateColumns(DataGrid dataGrid, GroupTab tab, Style? cellTextBaseStyle)
+        private static string BuildSummaryText(Dictionary<string, object>? summary)
+        {
+            if (summary?.Count > 0 && summary != null)
+            {
+                return string.Join(" | ", summary
+                    .Where(kvp => !kvp.Key.StartsWith("__"))
+                    .Select(kvp => $"{kvp.Key}: {kvp.Value}"));
+            }
+
+            return string.Empty;
+        }
+
+        private void GenerateColumns(DataGrid dataGrid, GroupTab tab, Style? cellTextBaseStyle)
         {
             dataGrid.Columns.Clear();
 
@@ -156,9 +170,30 @@ namespace SchoolManagement.Presentation.Features.Reports.Views
                 {
                     var binding = new Binding($"Values[{col.Key}]");
 
+                    object headerContent;
+                    if (col.Key.StartsWith("day_") && col.DisplayName.Contains('\n'))
+                    {
+                        var parts = col.DisplayName.Split('\n');
+                        var stack = new StackPanel { Orientation = Orientation.Vertical };
+                        foreach (var part in parts)
+                        {
+                            stack.Children.Add(new TextBlock
+                            {
+                                Text = part,
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                FontSize = 11,
+                            });
+                        }
+                        headerContent = stack;
+                    }
+                    else
+                    {
+                        headerContent = col.DisplayName;
+                    }
+
                     var textCol = new DataGridTextColumn
                     {
-                        Header = col.DisplayName,
+                        Header = headerContent,
                         Binding = binding,
                         Width = col.Width > 0 ? new DataGridLength(col.Width) : DataGridLength.Auto,
                     };
@@ -185,16 +220,5 @@ namespace SchoolManagement.Presentation.Features.Reports.Views
             }
         }
 
-        private static string BuildSummaryText(Dictionary<string, object>? summary)
-        {
-            if (summary?.Count > 0 && summary != null)
-            {
-                return string.Join(" | ", summary
-                    .Where(kvp => !kvp.Key.StartsWith("__"))
-                    .Select(kvp => $"{kvp.Key}: {kvp.Value}"));
-            }
-
-            return string.Empty;
-        }
     }
 }

@@ -1,5 +1,3 @@
-using SchoolManagement.Application.Features.Shared.Services;
-
 namespace SchoolManagement.Application.Features.Candidates.Services
 {
     public class CandidateService : CrudServiceBase<Candidate>, ICandidateService
@@ -132,6 +130,27 @@ namespace SchoolManagement.Application.Features.Candidates.Services
                 {
                     Status = Status.Failed,
                     Message = $"There's something wrong when trying to get the candidates count\n{ex.Message}",
+                };
+            }
+        }
+
+        public async Task<ReturnResponse<CandidateDashboardMetrics>> GetDashboardMetricsAsync(int? daysFilter)
+        {
+            try
+            {
+                var result = await _candidateRepository.GetDashboardMetricsAsync(daysFilter, DateTime.UtcNow);
+                return new()
+                {
+                    Status = Status.Success,
+                    Value = result
+                };
+            }
+            catch (Exception ex)
+            {
+                return new()
+                {
+                    Status = Status.Failed,
+                    Message = $"ទិន្នន័យសង្ខេបមិនត្រូវបានទាញយកបានដោយជោគជ័យនោះទេ! មូលហេតុ៖\n{ex.Message}"
                 };
             }
         }

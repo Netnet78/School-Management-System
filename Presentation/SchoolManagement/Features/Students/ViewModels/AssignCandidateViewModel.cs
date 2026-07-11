@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Windows.Data;
@@ -16,7 +15,6 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
         private readonly INavigationService _navigationService;
         private readonly IDispatcherService _dispatcherService;
 
-        private CancellationTokenSource? _filterCts;
         private CancellationTokenSource? _photoDownloadCts;
         private Timer? _searchDebounceTimer;
         private const int SearchDebounceDelayMs = 500;

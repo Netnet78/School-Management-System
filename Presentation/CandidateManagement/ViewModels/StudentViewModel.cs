@@ -1,9 +1,10 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Windows.Data;
+using System.Windows.Media.Imaging;
 
 namespace CandidateManagement.ViewModels
 {
@@ -318,17 +319,6 @@ namespace CandidateManagement.ViewModels
 
             if (result != MessageResult.Yes) return;
 
-            ReturnResponse deleteResponse = await _candidateService.DeleteCandidateAsync(student.Id);
-
-            if (deleteResponse.Status == Status.Failed || deleteResponse.Status == Status.Rejected)
-            {
-                await _dispatcherService.InvokeAsync(() =>
-                {
-                    _messageService.Show($"{deleteResponse.Message}", "ហាក... ស្អីគេ?", icon: MessageIcon.Error);
-                });
-                return;
-            }
-
             if (!string.IsNullOrWhiteSpace(student.PhotoKey))
             {
                 ReturnResponse deletePhotoResponse = await _photoDeleteService.DeleteStudentPhoto(student);
@@ -341,6 +331,17 @@ namespace CandidateManagement.ViewModels
                     });
                     return;
                 }
+            }
+
+            ReturnResponse deleteResponse = await _candidateService.DeleteCandidateAsync(student.Id);
+
+            if (deleteResponse.Status == Status.Failed || deleteResponse.Status == Status.Rejected)
+            {
+                await _dispatcherService.InvokeAsync(() =>
+                {
+                    _messageService.Show($"{deleteResponse.Message}", "ហាក... ស្អីគេ?", icon: MessageIcon.Error);
+                });
+                return;
             }
 
             await LoadStudentsAsync();

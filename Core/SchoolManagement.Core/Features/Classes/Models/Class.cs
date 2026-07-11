@@ -20,8 +20,8 @@ namespace SchoolManagement.Core.Features.Classes.Models
         public int? TeacherId { get; set; }
         public Employee? Teacher { get; set; } = null;
 
-        public ICollection<StudentClass> Students { get; set; } = [];
-        public ICollection<ClassSubject> Subjects { get; set; } = [];
+        public List<StudentClass> Students { get; set; } = [];
+        public List<ClassSubject> Subjects { get; set; } = [];
 
         public string KhmerName => GetKhmerName();
         public string Name => GetName();

@@ -265,8 +265,10 @@ namespace SchoolManagement.Presentation.Features.Roles.ViewModels
                     int index = Roles.IndexOf(SelectedRole);
                     if (index >= 0)
                     {
+                        var roleToUpdate = SelectedRole;
                         Roles.RemoveAt(index);
-                        Roles.Insert(index, SelectedRole);
+                        Roles.Insert(index, roleToUpdate);
+                        SelectedRole = roleToUpdate;
                     }
                     _messageService.Show("Role updated successfully.", "Success", MessageButton.OK, MessageIcon.Success);
                 }

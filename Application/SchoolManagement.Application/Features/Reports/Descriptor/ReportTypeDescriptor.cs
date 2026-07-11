@@ -1,5 +1,4 @@
 using SchoolManagement.Application.Features.Reports.Models;
-using SchoolManagement.Core.Features.Reports.Models;
 
 namespace SchoolManagement.Application.Features.Reports.Descriptor
 {

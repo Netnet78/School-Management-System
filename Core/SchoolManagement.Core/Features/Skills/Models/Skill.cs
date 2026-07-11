@@ -13,6 +13,6 @@ namespace SchoolManagement.Core.Features.Skills.Models
         public string KhmerName { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
         public Department Department { get; set; } = null!;
-        public ICollection<Candidate> Candidates { get; set; } = [];
+        public List<Candidate> Candidates { get; set; } = [];
     }
 }

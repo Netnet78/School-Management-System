@@ -90,8 +90,8 @@ namespace SchoolManagement.Core.Features.Students.Models
         public string IsActiveReadable => IsActive ? "នៅរៀន" : "ឈប់រៀន";
         public int CandidateId { get; set; }
         public Candidate Candidate { get; set; } = null!;
-        public ICollection<Notification> Notifications { get; set; } = [];
-        public ICollection<StudentClass> Classes { get; set; } = [];
+        public List<Notification> Notifications { get; set; } = [];
+        public List<StudentClass> Classes { get; set; } = [];
         public StudentQR? StudentQR { get; set; } = null;
 
         public string CustomAuditDescription()

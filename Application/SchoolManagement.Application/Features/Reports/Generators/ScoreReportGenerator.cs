@@ -49,13 +49,13 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 "ClassSubject.Subject",
                 "ClassSubject.Class",
                 "Exam",
-                "Scores.Component").ConfigureAwait(false);
+                "Scores.Mapper").ConfigureAwait(false);
 
             // Filter by class/subject after retrieval
             var filtered = assessments.AsEnumerable();
 
-            if (scoreFilter.ClassId.HasValue)
-                filtered = filtered.Where(a => a.ClassSubject?.ClassId == scoreFilter.ClassId.Value);
+            if (scoreFilter.ClassIds != null && scoreFilter.ClassIds.Count > 0)
+                filtered = filtered.Where(a => scoreFilter.ClassIds.Contains(a.ClassSubject?.ClassId ?? 0));
 
             if (scoreFilter.SubjectId.HasValue)
                 filtered = filtered.Where(a => a.ClassSubject?.SubjectId == scoreFilter.SubjectId.Value);
@@ -73,12 +73,11 @@ namespace SchoolManagement.Application.Features.Reports.Generators
 
             // Collect all unique component names across all assessments
             var allComponentKeys = assessmentList
-            // TODO: Fix the current implementation to support the actualy component id rather than its mapper
                 .SelectMany(a => a.Scores)
-                .Where(s => s.Mapper != null)
+                .Where(s => s.Mapper?.Component != null)
                 .Select(s => s.Mapper.Component)
                 .Distinct()
-                .Order()
+                .OrderBy(c => c.Id)
                 .ToList();
 
             var rows = new List<Dictionary<string, ReportCell>>();
@@ -100,13 +99,12 @@ namespace SchoolManagement.Application.Features.Reports.Generators
                 };
 
                 // Add component scores as dynamic columns
-                foreach (SubjectComponent? component in allComponentKeys)
+                foreach (var component in allComponentKeys)
                 {
                     var score = assessment.Scores
-                        // TODO: Fix the current implementation to support the actualy component id rather than its mapper
-                        .FirstOrDefault(s => s.Mapper?.Id == component.Id);
+                        .FirstOrDefault(s => s.Mapper?.Component?.Id == component.Id);
 
-                    row[$"component_{component}"] = score?.Amount ?? 0;
+                    row[$"component_{component.Name}"] = score?.Amount ?? 0;
                 }
 
                 rows.Add(row);

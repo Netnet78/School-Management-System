@@ -18,8 +18,8 @@ namespace SchoolManagement.Core.Features.Students.Models
         public Class Class { get; set; } = null!;
         public bool IsActive { get; set; } = false;
 
-        public ICollection<Assessment> Scores { get; set; } = [];
-        public ICollection<Attendance> Attendances { get; set; } = [];
+        public List<Assessment> Scores { get; set; } = [];
+        public List<Attendance> Attendances { get; set; } = [];
 
         public string CustomAuditDescription()
         {

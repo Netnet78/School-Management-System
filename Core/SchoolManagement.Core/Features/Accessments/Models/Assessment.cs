@@ -18,6 +18,6 @@ namespace SchoolManagement.Core.Features.Assessments.Models
         public int ClassSubjectId { get; set; }
         public ClassSubject ClassSubject { get; set; } = null!;
         public string OtherInfo { get; set; } = string.Empty;
-        public ICollection<Score> Scores { get; set; } = [];
+        public List<Score> Scores { get; set; } = [];
     }
 }

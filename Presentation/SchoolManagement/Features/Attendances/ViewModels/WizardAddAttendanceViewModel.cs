@@ -1,7 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SchoolManagement.Core.Features.Attendances.Enums;
-using SchoolManagement.Core.Shared.Extensions;
 
 namespace SchoolManagement.Presentation.Features.Attendances.ViewModels
 {

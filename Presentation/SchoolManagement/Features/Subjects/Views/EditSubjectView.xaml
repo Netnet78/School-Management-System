@@ -54,6 +54,7 @@
                         <TextBlock Grid.Row="1" Text="ឈ្មោះ (ខ្មែរ):" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,12"/>
                         <TextBox Grid.Row="1" Grid.Column="1" Margin="0,0,0,12"
                                  Text="{Binding KhmerName}"
+                                 FontFamily="{StaticResource NotoSansKhmer}"
                                  Padding="6" FontSize="14"/>
 
                         <!-- Max Score -->
@@ -68,6 +69,46 @@
                                   Content="កំពុងសកម្ម"
                                   FontSize="14" Margin="0,0,0,12"/>
                     </Grid>
+
+                    <!-- Components section -->
+                    <TextBlock Text="ផ្នែក/សមាសភាគ" FontSize="18" FontWeight="Bold" Margin="0,15,0,10"/>
+                    <StackPanel Margin="0,0,0,10">
+                        <ItemsControl ItemsSource="{Binding Components}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal"
+                                                Margin="0,0,0,8">
+                                        <TextBox Text="{Binding KhmerName, UpdateSourceTrigger=PropertyChanged}"
+                                                 Padding="6" FontSize="14" Width="250"
+                                                 Margin="0 0 10 0"
+                                                 FontFamily="{StaticResource NotoSansKhmer}"
+                                                 materialDesign:HintAssist.Hint="ឈ្មោះសមាសភាគជាភាសាខ្មែរ"/>
+                                        <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                                 Padding="6" FontSize="14" Width="250"
+                                                 FontFamily="{StaticResource NotoSansKhmer}"
+                                                 materialDesign:HintAssist.Hint="ឈ្មោះសមាសភាគជាភាសាអង់គ្លេស"/>
+                                        <Button Command="{Binding DataContext.RemoveComponentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Margin="5,0,0,0"
+                                                Background="#F44336" Foreground="White"
+                                                Padding="6,4" FontSize="12"
+                                                ToolTip="លុប">
+                                            <materialDesign:PackIcon Kind="Close" Width="14" Height="14"/>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Command="{Binding AddComponentCommand}"
+                                Padding="8,4" FontSize="13"
+                                Background="#2196F3" Foreground="White"
+                                HorizontalAlignment="Left" Margin="0,4,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Plus" Width="14" Height="14" Margin="0,0,4,0"/>
+                                <TextBlock Text="បន្ថែមសមាសភាគ"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
 
                     <!-- Buttons -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
@@ -87,10 +128,6 @@
                         </Button>
                     </StackPanel>
 
-                    <!-- Saving indicator -->
-                    <Grid Visibility="{Binding IsSaving, Converter={StaticResource BooleanToVisibilityConverter}}" Height="30" Margin="0,10,0,0">
-                        <ProgressBar IsIndeterminate="True" Height="20"/>
-                    </Grid>
                 </StackPanel>
             </Border>
         </ScrollViewer>

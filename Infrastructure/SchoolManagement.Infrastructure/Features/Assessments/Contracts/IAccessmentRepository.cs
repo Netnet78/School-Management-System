@@ -5,6 +5,6 @@ namespace SchoolManagement.Infrastructure.Features.Assessments.Contracts
 {
     public interface IAssessmentRepository : IBaseRepository<Assessment>
     {
-        Task UpsertRangeAsync(int examId, int classSubjectId, IEnumerable<(int StudentClassId, decimal TotalScore)> entries);
+        Task UpsertRangeAsync(int examId, int classSubjectId, IEnumerable<(int StudentClassId, int MapperId, int ComponentId, decimal ScoreAmount)> entries);
     }
 }
