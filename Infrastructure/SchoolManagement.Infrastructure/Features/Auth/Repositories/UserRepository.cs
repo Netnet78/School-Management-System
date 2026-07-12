@@ -2,13 +2,16 @@ using Microsoft.EntityFrameworkCore;
 using SchoolManagement.Core.Features.Auth.Models;
 using SchoolManagement.Infrastructure.Data;
 using SchoolManagement.Infrastructure.Shared.Repositories;
+using SchoolManagement.Core.Shared.Contracts;
 
 namespace SchoolManagement.Infrastructure.Features.Auth.Repositories;
 
 public class UserRepository : BaseRepository<User>, IUserRepository
 {
-    public UserRepository(SchoolDbContext context) : base(context)
+    private readonly IPasswordHasher _passwordHasher;
+    public UserRepository(SchoolDbContext context, IPasswordHasher passwordHasher) : base(context)
     {
+        _passwordHasher = passwordHasher;
     }
 
     protected override IQueryable<User> CreateQuery()
@@ -26,7 +29,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
 
     public async Task CreateUserAsync(string username, string plainPassword, string role = "user")
     {
-        string hashedPassword = plainPassword.ToHashedPassword();
+        string hashedPassword = _passwordHasher.ToHashedPassword(plainPassword);
 
         User user = new()
         {
@@ -51,7 +54,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
 
     public async Task<User> CreateUserForEmployeeAsync(int employeeId, string username, string plainPassword, int roleId)
     {
-        string hashedPassword = plainPassword.ToHashedPassword();
+        string hashedPassword = _passwordHasher.ToHashedPassword(plainPassword);
 
         User user = new()
         {

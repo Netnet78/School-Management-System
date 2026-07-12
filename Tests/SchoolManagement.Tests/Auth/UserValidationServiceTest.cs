@@ -4,11 +4,13 @@ namespace SchoolManagement.Tests.Auth
     public class UserValidationServiceTest
     {
         private readonly Mock<IUserRepository> _userRepositoryMock;
+        private readonly Mock<SchoolManagement.Core.Shared.Contracts.IPasswordHasher> _passwordHasherMock;
         private readonly UserValidationService _userValidationService;
         public UserValidationServiceTest()
         {
             _userRepositoryMock = new Mock<IUserRepository>();
-            _userValidationService = new UserValidationService(_userRepositoryMock.Object);
+            _passwordHasherMock = new Mock<SchoolManagement.Core.Shared.Contracts.IPasswordHasher>();
+            _userValidationService = new UserValidationService(_userRepositoryMock.Object, _passwordHasherMock.Object);
         }
 
         [Fact]
@@ -19,7 +21,7 @@ namespace SchoolManagement.Tests.Auth
             User user = new()
             {
                 Username = username,
-                PasswordHash = password.ToHashedPassword(),
+                PasswordHash = "hashed_admin",
                 RoleId = 1
             };
 
@@ -27,6 +29,9 @@ namespace SchoolManagement.Tests.Auth
             _userRepositoryMock
                 .Setup(r => r.GetUserAsync("admin"))
                 .ReturnsAsync(user);
+            _passwordHasherMock
+                .Setup(p => p.ComparePassword(password, "hashed_admin"))
+                .Returns(true);
 
             ReturnResponse<User> result = await _userValidationService.ValidateUserAsync(username, password);
 
@@ -43,12 +48,15 @@ namespace SchoolManagement.Tests.Auth
             User user = new()
             {
                 Username = username,
-                PasswordHash = password.ToHashedPassword(),
+                PasswordHash = "hashed_admin",
                 RoleId = 1
             };
             _userRepositoryMock
                 .Setup(r => r.GetUserAsync("admin"))
                 .ReturnsAsync(user);
+            _passwordHasherMock
+                .Setup(p => p.ComparePassword(wrongPassword, "hashed_admin"))
+                .Returns(false);
             ReturnResponse<User> result = await _userValidationService.ValidateUserAsync(username, wrongPassword);
             Assert.Equal(Status.Failed, result.Status);
         }
@@ -61,12 +69,15 @@ namespace SchoolManagement.Tests.Auth
             User user = new()
             {
                 Username = username,
-                PasswordHash = password.ToHashedPassword(),
+                PasswordHash = "hashed_admin",
                 RoleId = 1,
             };
             _userRepositoryMock
                 .Setup(r => r.GetUserAsync("admin"))
                 .ReturnsAsync(user);
+            _passwordHasherMock
+                .Setup(p => p.ComparePassword("123", "hashed_admin"))
+                .Returns(false);
 
             bool isRejected = false;
 

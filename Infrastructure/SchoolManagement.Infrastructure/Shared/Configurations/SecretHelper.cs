@@ -1,4 +1,4 @@
-﻿namespace SchoolManagement.Core.Shared.Configurations
+namespace SchoolManagement.Infrastructure.Shared.Configurations
 {
     public static class SecretHelper
     {

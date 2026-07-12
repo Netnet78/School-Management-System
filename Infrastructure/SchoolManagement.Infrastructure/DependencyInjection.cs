@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using SchoolManagement.Core.Shared.Configurations;
+using SchoolManagement.Infrastructure.Shared.Configurations;
 using SchoolManagement.Infrastructure.Data;
 using SchoolManagement.Infrastructure.Features.Assessments.Repositories;
 using SchoolManagement.Infrastructure.Features.Attendances.Repositories;
@@ -74,6 +74,7 @@ namespace SchoolManagement.Infrastructure
 
             // Register Infrastructure Services
             services.AddSingleton<ISettingsService, SettingsService>();
+            services.AddSingleton<SchoolManagement.Core.Shared.Contracts.IPasswordHasher, Services.PasswordHasher>();
 
             // Report exporters
             services.AddTransient<IReportExporter, ExcelExporter>();

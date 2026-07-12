@@ -1,6 +1,6 @@
 using Amazon.S3;
 using Amazon.S3.Model;
-using SchoolManagement.Core.Shared.Configurations;
+using SchoolManagement.Infrastructure.Shared.Configurations;
 
 namespace SchoolManagement.Infrastructure.Features.Files.Services
 {

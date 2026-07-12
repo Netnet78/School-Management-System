@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SchoolManagement.Core.Shared.Attributes;
 using SchoolManagement.Core.Features.AuditLogs.Enums;
 using System.ComponentModel;
+using SchoolManagement.Infrastructure.Shared.Data;
 
 namespace SchoolManagement.Infrastructure.Interceptors
 {
@@ -45,6 +46,17 @@ namespace SchoolManagement.Infrastructure.Interceptors
                     .FirstOrDefault();
 
                 string? entityTypeName = entityType.GetCustomAttribute<DescriptionAttribute>()?.Description;
+                if (string.IsNullOrWhiteSpace(entityTypeName))
+                {
+                    if (entityType.IsGenericType && entityType.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+                    {
+                        entityTypeName = entry.Metadata.GetTableName() ?? entry.Metadata.Name;
+                    }
+                    else
+                    {
+                        entityTypeName = entityType.Name;
+                    }
+                }
 
                 if (ignoreAttr?.Operation.HasFlag(AuditOperation.All) == true)
                     continue;
@@ -74,7 +86,7 @@ namespace SchoolManagement.Infrastructure.Interceptors
                         EntityState.Deleted => "Deleted",
                         _ => entry.State.ToString(),
                     },
-                    EntityType = entityTypeName ?? entityType.Name,
+                    EntityType = entityTypeName,
                     EntityName = string.IsNullOrWhiteSpace(displayName) ? string.Empty : displayName,
                     Timestamp = DateTime.UtcNow,
                     UserId = currentUserId,

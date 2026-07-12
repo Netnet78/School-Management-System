@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using SchoolManagement.Core.Shared.Configurations;
+using SchoolManagement.Infrastructure.Shared.Configurations;
 
 namespace SchoolManagement.Infrastructure.Data
 {

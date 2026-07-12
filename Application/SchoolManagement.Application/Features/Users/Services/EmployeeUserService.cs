@@ -1,14 +1,18 @@
+using SchoolManagement.Core.Shared.Contracts;
+
 namespace SchoolManagement.Application.Features.Users.Services
 {
     public class EmployeeUserService : IEmployeeUserService
     {
         private readonly IUserRepository _userRepository;
         private readonly IRoleRepository _roleRepository;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public EmployeeUserService(IUserRepository userRepository, IRoleRepository roleRepository)
+        public EmployeeUserService(IUserRepository userRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher)
         {
             _userRepository = userRepository;
             _roleRepository = roleRepository;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<ReturnResponse<User?>> GetUserByEmployeeAsync(int employeeId)
@@ -88,7 +92,7 @@ namespace SchoolManagement.Application.Features.Users.Services
                 if (user == null)
                     return new() { Status = Status.Failed, Message = "User not found." };
 
-                user.PasswordHash = newPassword.ToHashedPassword();
+                user.PasswordHash = _passwordHasher.ToHashedPassword(newPassword);
                 await _userRepository.UpdateAsync(user);
                 return new() { Status = Status.Success };
             }

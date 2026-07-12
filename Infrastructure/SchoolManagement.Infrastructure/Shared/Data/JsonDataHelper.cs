@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
 using SchoolManagement.Core.Shared.Attributes;
 using System.Reflection;
@@ -6,7 +6,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace SchoolManagement.Core.Shared.Extensions
+namespace SchoolManagement.Infrastructure.Shared.Data
 {
     public static class JsonDataHelper
     {

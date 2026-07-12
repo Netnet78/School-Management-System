@@ -120,14 +120,6 @@ namespace SchoolManagement.Presentation.Features.Classes.ViewModels
         }
 
         [RelayCommand]
-        private async Task ShowScoresAsync()
-        {
-            if (_class == null) return;
-
-            await _navigationService.NavigateAsync<ScoreViewModel>(new ScoreNavigationParams { Class = _class });
-        }
-
-        [RelayCommand]
         private async Task ShowAddStudentsToClass()
         {
             await _navigationService.NavigateAsync<AddStudentsToClassViewModel>(new AddStudentsToClassParams { Class = _class });

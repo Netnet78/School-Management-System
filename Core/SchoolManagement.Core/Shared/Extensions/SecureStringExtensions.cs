@@ -3,7 +3,7 @@ using System.Security;
 
 namespace SchoolManagement.Core.Shared.Extensions
 {
-    public static class PasswordHelper
+    public static class SecureStringExtensions
     {
         public static string ToUnsecureString(this SecureString secureString)
         {
@@ -16,16 +16,6 @@ namespace SchoolManagement.Core.Shared.Extensions
             {
                 Marshal.ZeroFreeBSTR(pointer);
             }
-        }
-
-        public static string ToHashedPassword(this string originalPassword)
-        {
-            return BCrypt.Net.BCrypt.HashPassword(originalPassword);
-        }
-
-        public static bool ComparePassword(this string originalPassword, string hashedPassword)
-        {
-            return BCrypt.Net.BCrypt.Verify(originalPassword, hashedPassword);
         }
     }
 }

@@ -1,16 +1,19 @@
 
 using System.Security;
 using SchoolManagement.Core.Shared.Time;
+using SchoolManagement.Core.Shared.Contracts;
 
 namespace SchoolManagement.Application.Features.Users.Services
 {
     public class UserValidationService : IUserValidationService
     {
         private readonly IUserRepository _repo;
+        private readonly IPasswordHasher _passwordHasher;
         private readonly int maximumAttempts = 5;
-        public UserValidationService(IUserRepository repo)
+        public UserValidationService(IUserRepository repo, IPasswordHasher passwordHasher)
         {
             _repo = repo;
+            _passwordHasher = passwordHasher;
         }
         public async Task<ReturnResponse<User>> ValidateUserAsync(string username, SecureString password)
         {
@@ -33,7 +36,7 @@ namespace SchoolManagement.Application.Features.Users.Services
                 };
             }
 
-            bool isValidPassword = user != null && password.ComparePassword(user.PasswordHash) == true;
+            bool isValidPassword = user != null && _passwordHasher.ComparePassword(password, user.PasswordHash) == true;
 
             if (user != null && isValidPassword)
             {

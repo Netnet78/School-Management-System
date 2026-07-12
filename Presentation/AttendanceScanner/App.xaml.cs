@@ -1,11 +1,11 @@
-﻿using AttendanceScanner.Services;
+using AttendanceScanner.Services;
 using AttendanceScanner.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SchoolManagement.Application;
 using SchoolManagement.Application.Features.Files.Workers;
-using SchoolManagement.Core.Shared.Configurations;
+using SchoolManagement.Infrastructure.Shared.Configurations;
 using SchoolManagement.Infrastructure;
 using SchoolManagement.Infrastructure.Data;
 using SchoolManagement.Presentation.Shared.Services;
