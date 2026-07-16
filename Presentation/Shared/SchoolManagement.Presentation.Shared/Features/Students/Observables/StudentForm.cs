@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using SchoolManagement.Core.Features.Candidates.Models;
 using SchoolManagement.Presentation.Shared.Features.Candidates.Observables;
 
@@ -56,6 +56,44 @@ namespace SchoolManagement.Presentation.Shared.Features.Students.Observables
             OtherInfo = student.OtherInfo;
             Photo = student.Photo;
             EnrollDate = student.EnrollDate?.ToDateTime(TimeOnly.MinValue);
+            StudentQr = student.StudentQR;
+        }
+
+        public void ApplyToStudentModel(Student student)
+        {
+            if (student.Candidate == null)
+            {
+                student.Candidate = new Candidate();
+            }
+
+            student.Candidate.FirstName = FirstName;
+            student.Candidate.LastName = LastName;
+            student.Candidate.LatinFirstName = LatinFirstName;
+            student.Candidate.LatinLastName = LatinLastName;
+            student.Candidate.Gender = Gender;
+            student.Candidate.DateOfBirth = DateOfBirth;
+            student.Candidate.SkillId = SkillId;
+            student.Candidate.BirthVillage = BirthVillage;
+            student.Candidate.BirthCommune = BirthCommune;
+            student.Candidate.BirthDistrict = BirthDistrict;
+            student.Candidate.BirthProvince = BirthProvince;
+            student.Candidate.FatherName = FatherName;
+            student.Candidate.MotherName = MotherName;
+            student.Candidate.FatherOccupation = FatherOccupation;
+            student.Candidate.MotherOccupation = MotherOccupation;
+            student.Candidate.SiblingsCount = SiblingsCount;
+            student.Candidate.Religion = Religion;
+            student.Candidate.PhoneNumber = PhoneNumber;
+            student.Candidate.FromSchool = FromSchool;
+            student.Candidate.ExamCenter = ExamCenter;
+            student.Candidate.ExamDate = ExamDate;
+            student.Candidate.ExamTable = ExamTable;
+            student.Candidate.ExamRoom = ExamRoom;
+            student.Candidate.StayType = StayType;
+            student.Candidate.OtherInfo = OtherInfo;
+
+            student.IsActive = IsActive;
+            student.EnrollDate = EnrollDate is DateTime dt ? DateOnly.FromDateTime(dt) : DateOnly.FromDateTime(DateTime.Now);
         }
 
         public Student ToStudentModel()
@@ -70,7 +108,7 @@ namespace SchoolManagement.Presentation.Shared.Features.Students.Observables
                 Gender = Gender,
                 DateOfBirth = DateOfBirth,
                 SkillId = SkillId,
-                Skill = Skill!,
+                Skill = null!,
                 BirthVillage = BirthVillage,
                 BirthCommune = BirthCommune,
                 BirthDistrict = BirthDistrict,
@@ -98,7 +136,7 @@ namespace SchoolManagement.Presentation.Shared.Features.Students.Observables
                 CandidateId = CandidateId,
                 Candidate = candidate,
                 IsActive = IsActive,
-                StudentQR = StudentQr,
+                StudentQR = null,
                 EnrollDate = EnrollDate is DateTime dt ? DateOnly.FromDateTime(dt) : DateOnly.FromDateTime(DateTime.Now),
                 CreatedAt = CreatedAt,
             };

@@ -18,6 +18,7 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
             IStudentClassService studentClassService,
             IFileDialogService fileDialogService,
             IPhotoDeleteService photoDeleteService,
+            IStudentQRService studentQRService,
             IPhotoFetchService photoFetchService)
             : base(
                 authorizationService,
@@ -30,7 +31,8 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
                 classService,
                 studentClassService,
                 studentService,
-                fileDialogService)
+                fileDialogService,
+                studentQRService)
         {
         }
 

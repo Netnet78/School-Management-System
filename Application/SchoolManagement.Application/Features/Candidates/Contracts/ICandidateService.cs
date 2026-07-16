@@ -1,3 +1,5 @@
+using SchoolManagement.Core.Features.Candidates.DTOs;
+
 namespace SchoolManagement.Application.Features.Candidates.Contracts
 {
     public interface ICandidateService : ICrudService<Candidate>

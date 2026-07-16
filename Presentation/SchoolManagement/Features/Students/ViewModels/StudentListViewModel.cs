@@ -114,7 +114,7 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
                 List<FilterCondition<Student>> filters = Filters.BuildFilters();
                 IEnumerable<SortCriteria<Student>> order = Filters.BuildOrder();
 
-                var response = await _studentService.GetAllAsync(CurrentPage, DefaultPageSize, filters, order, "Candidate", "Candidate.Skill", "Candidate.Photo");
+                var response = await _studentService.GetAllAsync(CurrentPage, DefaultPageSize, filters, order, "Candidate", "Candidate.Skill", "Candidate.Photo", "StudentQR");
 
                 if (response.Status == Status.Success && response.Value != null)
                 {

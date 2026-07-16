@@ -6,7 +6,6 @@ global using SchoolManagement.Core.Features.Employees.Models;
 global using SchoolManagement.Core.Features.Files.Enums;
 global using SchoolManagement.Core.Features.Students.Models;
 global using SchoolManagement.Core.Shared.Enums;
-global using SchoolManagement.Core.Shared.Extensions;
 global using SchoolManagement.Core.Shared.Models;
 global using SchoolManagement.Infrastructure.Features.Employees.Contracts;
 global using SchoolManagement.Infrastructure.Features.Files.Contracts;

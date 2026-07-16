@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Windows.Data;
-using System.Windows.Media.Imaging;
 
 namespace CandidateManagement.ViewModels
 {

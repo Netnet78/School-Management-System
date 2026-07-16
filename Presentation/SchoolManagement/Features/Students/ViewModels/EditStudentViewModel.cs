@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SchoolManagement.Application.Features.Classes.Authorization;
 using SchoolManagement.Presentation.Shared.Features.Classes.Observables;
@@ -16,6 +16,9 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
         [ObservableProperty]
         private string _studentName = string.Empty;
 
+        [ObservableProperty]
+        private byte[]? _currentQrCodeImage;
+
         public EditStudentViewModel(
             ICandidateService candidateService,
             IStudentService studentService,
@@ -28,6 +31,7 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
             IClassService classService,
             IStudentClassService studentClassService,
             IFileDialogService fileDialogService,
+            IStudentQRService studentQRService,
             IPhotoFetchService photoFetchService)
             : base(
                 authorizationService,
@@ -40,7 +44,8 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
                 classService,
                 studentClassService,
                 studentService,
-                fileDialogService)
+                fileDialogService,
+                studentQRService)
         {
             _candidateService = candidateService;
         }
@@ -75,8 +80,28 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
                 }
 
                 await LoadSkillsAsync();
+
+                if (_student.StudentQR == null)
+                {
+                    var qrResponse = await _studentQRService.GetByIdAsync(_student.Id);
+                    if (qrResponse.Status == Status.Success)
+                    {
+                        _student.StudentQR = qrResponse.Value;
+                    }
+                }
+
                 LoadStudentToForm(_student);
                 StudentName = $"{StudentForm.LastName} {StudentForm.FirstName}";
+
+                if (StudentForm.StudentQr != null && !string.IsNullOrWhiteSpace(StudentForm.StudentQr.QRCodeValue))
+                {
+                    CurrentQrCodeImage = SchoolManagement.Infrastructure.Features.Reports.Export.QRCodeExporter.GenerateQrPng(
+                        StudentForm.StudentQr.QRCodeValue, 200, 200);
+                }
+                else
+                {
+                    CurrentQrCodeImage = null;
+                }
 
                 IsPhotoLoading = true;
                 CurrentPhoto = null;
@@ -161,26 +186,56 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
 
             try
             {
-                Student updatedStudent = StudentForm.ToStudentModel();
+                StudentForm.ApplyToStudentModel(_student);
 
-                if (updatedStudent.Candidate == null)
+                if (_student.Candidate == null)
                 {
                     _messageService.Show("មិនអាចរក្សាទុកបាន ព្រោះព័ត៌មានសិស្សខ្វះ Candidate ទេ!", "មានកំហុសបច្ចេកទេស!", MessageButton.OK, MessageIcon.Hand);
                     return;
                 }
 
-                ReturnResponse candidateResponse = await _candidateService.UpdateCandidateAsync(updatedStudent.Candidate);
+                ReturnResponse candidateResponse = await _candidateService.UpdateCandidateAsync(_student.Candidate);
 
                 if (candidateResponse.Status != Status.Success)
                 {
                     _messageService.Show(candidateResponse.Message, "ឈប់សិន!", MessageButton.OK, MessageIcon.Hand);
                     return;
                 }
-                await DeleteStudentPhotoAsync(updatedStudent.Candidate);
+                await DeleteStudentPhotoAsync(_student.Candidate);
 
-                await UploadStudentPhotoAsync(updatedStudent);
+                await UploadStudentPhotoAsync(_student);
 
-                await _studentService.UpdateAsync(updatedStudent);
+                // Handle QR persistence separately to avoid EF Core conflicts
+                StudentQR? pendingQR = StudentForm.StudentQr;
+                _student.StudentQR = null;
+                ReturnResponse studentUpdateResponse = await _studentService.UpdateAsync(_student);
+
+                if (studentUpdateResponse.Status != Status.Success)
+                {
+                    _messageService.Show(
+                        studentUpdateResponse.Message ?? "មិនអាចកែប្រែទិន្នន័យសិស្សបានទេ!",
+                        "មានកំហុសបច្ចេកទេស!",
+                        MessageButton.OK,
+                        MessageIcon.Error);
+                    return;
+                }
+
+                if (pendingQR != null)
+                {
+                    pendingQR.Id = _student.Id;
+                    var existingQR = await _studentQRService.GetByIdAsync(_student.Id);
+                    if (existingQR.Status == Status.Success && existingQR.Value != null)
+                    {
+                        existingQR.Value.QRCodeValue = pendingQR.QRCodeValue;
+                        existingQR.Value.GeneratedAt = DateTime.UtcNow;
+                        await _studentQRService.UpdateAsync(existingQR.Value);
+                    }
+                    else
+                    {
+                        await _studentQRService.InsertAsync(pendingQR);
+                    }
+                    _student.StudentQR = pendingQR;
+                }
 
                 User? user = _authorizationService.CurrentUser;
                 if (user == null)
@@ -230,6 +285,35 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
             {
                 IsLoading = false;
             }
+        }
+
+        [RelayCommand]
+        private void UpdateStudentQR()
+        {
+            string newValue = Guid.NewGuid().ToString();
+
+            if (StudentForm.StudentQr == null)
+            {
+                // We need the student Id so we can correctly save it later.
+                // _student may not be set if OnNavigatedTo hasn't fired yet, guard just in case.
+                StudentForm.StudentQr = new StudentQR()
+                {
+                    Id = _student?.Id ?? 0,
+                    QRCodeValue = newValue,
+                    IsActive = true,
+                    GeneratedAt = DateTime.UtcNow
+                };
+            }
+            else
+            {
+                StudentForm.StudentQr.QRCodeValue = newValue;
+                StudentForm.StudentQr.GeneratedAt = DateTime.UtcNow;
+            }
+
+            CurrentQrCodeImage = Infrastructure.Features.Reports.Export.QRCodeExporter.GenerateQrPng(
+                newValue, 200, 200);
+
+            OnPropertyChanged(nameof(StudentForm));
         }
 
         private async Task<IEnumerable<StudentClass>> GetExistingEnrollmentsAsync(int studentId)

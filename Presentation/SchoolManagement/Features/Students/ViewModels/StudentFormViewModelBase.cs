@@ -18,6 +18,7 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
         protected readonly IClassService _classService;
         protected readonly IStudentClassService _studentClassService;
         protected readonly IStudentService _studentService;
+        protected readonly IStudentQRService _studentQRService;
         protected readonly IFileDialogService _fileDialogService;
 
         private bool _photoChanged;
@@ -64,7 +65,8 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
             IClassService classService,
             IStudentClassService studentClassService,
             IStudentService studentService,
-            IFileDialogService fileDialogService)
+            IFileDialogService fileDialogService,
+            IStudentQRService studentQRService)
         {
             _authorizationService = authorizationService;
             _messageService = messageService;
@@ -77,7 +79,7 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
             _studentClassService = studentClassService;
             _studentService = studentService;
             _fileDialogService = fileDialogService;
-
+            _studentQRService = studentQRService;
         }
 
         partial void OnCurrentPhotoChanged(string? value)
@@ -132,11 +134,7 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
 
             if (skillsResponse.Status == Status.Success && skillsResponse.Value != null)
             {
-                Skills.Clear();
-                foreach (Skill skill in skillsResponse.Value)
-                {
-                    Skills.Add(skill);
-                }
+                Skills = new ObservableCollection<Skill>(skillsResponse.Value);
             }
         }
 
@@ -156,11 +154,9 @@ namespace SchoolManagement.Presentation.Features.Students.ViewModels
 
             if (classResponse.Status == Status.Success && classResponse.Value != null)
             {
-                AvailableClasses.Clear();
-                foreach (Class cls in classResponse.Value)
-                {
-                    AvailableClasses.Add(new ClassCheckItem { Class = cls, IsChecked = false });
-                }
+                AvailableClasses = new ObservableCollection<ClassCheckItem>(
+                    classResponse.Value.Select(cls => new ClassCheckItem { Class = cls, IsChecked = false })
+                );
             }
         }
 

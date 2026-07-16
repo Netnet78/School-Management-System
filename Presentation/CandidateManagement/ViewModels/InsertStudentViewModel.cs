@@ -184,7 +184,7 @@ namespace CandidateManagement.ViewModels
         [RelayCommand]
         private void Next()
         {
-            if (CurrentStep < 3) CurrentStep++;
+            if (CurrentStep < 4) CurrentStep++;
         }
 
         [RelayCommand]

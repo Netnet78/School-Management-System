@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SchoolManagement.Core.Features.Candidates.DTOs;
 using SchoolManagement.Infrastructure.Data;
 using SchoolManagement.Infrastructure.Shared.Querying;
 using SchoolManagement.Infrastructure.Shared.Repositories;

@@ -1,4 +1,4 @@
-﻿
+
 using SchoolManagement.Core.Features.Skills.Models;
 using SchoolManagement.Core.Features.Students.Enums;
 using SchoolManagement.Core.Features.Students.Models;
@@ -145,6 +145,59 @@ namespace SchoolManagement.Core.Features.Candidates.Models
 
         // One candidate can be a student (one to unique)
         public Student? Student { get; set; } = null;
+
+        public Candidate Clone()
+        {
+            var clone = new Candidate
+            {
+                Id = Id,
+                FirstName = FirstName,
+                LatinFirstName = LatinFirstName,
+                LastName = LastName,
+                LatinLastName = LatinLastName,
+                FullName = FullName,
+                LatinFullName = LatinFullName,
+                Gender = Gender,
+                DateOfBirth = DateOfBirth,
+                SkillId = SkillId,
+                Skill = Skill,
+                CreatedAt = CreatedAt,
+                BirthVillage = BirthVillage,
+                BirthCommune = BirthCommune,
+                BirthDistrict = BirthDistrict,
+                BirthProvince = BirthProvince,
+                FatherName = FatherName,
+                MotherName = MotherName,
+                FatherOccupation = FatherOccupation,
+                MotherOccupation = MotherOccupation,
+                SiblingsCount = SiblingsCount,
+                Religion = Religion,
+                PhoneNumber = PhoneNumber,
+                ExamCenter = ExamCenter,
+                ExamDate = ExamDate,
+                ExamTable = ExamTable,
+                ExamRoom = ExamRoom,
+                FromSchool = FromSchool,
+                StayType = StayType,
+                OtherInfo = OtherInfo,
+                Student = Student
+            };
+
+            if (Photo != null)
+            {
+                clone.Photo = new StudentPhoto
+                {
+                    Id = Photo.Id,
+                    Key = Photo.Key,
+                    LocalPath = Photo.LocalPath,
+                    FileStatus = Photo.FileStatus,
+                    LastAttempt = Photo.LastAttempt,
+                    Student = clone
+                };
+            }
+
+            return clone;
+        }
 
         public string CustomAuditDescription()
         {

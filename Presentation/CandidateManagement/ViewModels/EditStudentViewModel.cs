@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SchoolManagement.Infrastructure.Shared.Helpers;
 
 namespace CandidateManagement.ViewModels
 {
@@ -120,7 +119,17 @@ namespace CandidateManagement.ViewModels
                     }
                 }
 
-                await _candidateService.UpdateCandidateAsync(EditedStudent);
+                ReturnResponse updateResponse = await _candidateService.UpdateCandidateAsync(EditedStudent);
+
+                if (updateResponse.Status != Status.Success)
+                {
+                    _messageService.Show(
+                        updateResponse.Message ?? "មិនអាចកែប្រែទិន្នន័យបេក្ខជនបានទេ!",
+                        "មានកំហុសបច្ចេកទេស!",
+                        MessageButton.OK,
+                        MessageIcon.Error);
+                    return;
+                }
 
                 _studentPhotoBackup = null;
 

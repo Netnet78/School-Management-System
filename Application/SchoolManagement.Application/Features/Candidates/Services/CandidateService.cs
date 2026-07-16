@@ -1,3 +1,5 @@
+using SchoolManagement.Core.Features.Candidates.DTOs;
+
 namespace SchoolManagement.Application.Features.Candidates.Services
 {
     public class CandidateService : CrudServiceBase<Candidate>, ICandidateService

@@ -1,3 +1,4 @@
+using SchoolManagement.Core.Features.Candidates.DTOs;
 using SchoolManagement.Infrastructure.Shared.Contracts;
 
 namespace SchoolManagement.Infrastructure.Features.Candidates.Contracts

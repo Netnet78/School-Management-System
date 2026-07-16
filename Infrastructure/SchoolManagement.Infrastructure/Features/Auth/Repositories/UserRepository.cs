@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using SchoolManagement.Core.Features.Auth.Models;
 using SchoolManagement.Infrastructure.Data;
 using SchoolManagement.Infrastructure.Shared.Repositories;
-using SchoolManagement.Core.Shared.Contracts;
 
 namespace SchoolManagement.Infrastructure.Features.Auth.Repositories;
 
@@ -44,12 +43,16 @@ public class UserRepository : BaseRepository<User>, IUserRepository
 
     public async Task<User?> GetUserAsync(string name)
     {
-        return await CreateQuery().FirstOrDefaultAsync(u => u.Username == name);
+        return await CreateQuery()
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Username == name);
     }
 
     public async Task<User?> GetUserByEmployeeIdAsync(int employeeId)
     {
-        return await CreateQuery().FirstOrDefaultAsync(u => u.EmployeeId == employeeId);
+        return await CreateQuery()
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.EmployeeId == employeeId);
     }
 
     public async Task<User> CreateUserForEmployeeAsync(int employeeId, string username, string plainPassword, int roleId)

@@ -14,9 +14,7 @@ namespace SchoolManagement.Presentation.Shared.Components
 
         public void SetState(LoadingState state, string message)
         {
-            Dialog.State = state;
             Dialog.LoadingText = message;
-            Dialog.ProgressValue = 0;
 
             StopAutoCloseTimer();
 
@@ -28,8 +26,6 @@ namespace SchoolManagement.Presentation.Shared.Components
 
         public void SetProgress(double value, string? message = null)
         {
-            Dialog.State = LoadingState.Progress;
-            Dialog.ProgressValue = value;
             if (message != null)
                 Dialog.LoadingText = message;
 

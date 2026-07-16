@@ -7,7 +7,6 @@ using SchoolManagement.Application.Features.Reports.Models;
 using SchoolManagement.Infrastructure.Features.Reports.Contracts;
 using SchoolManagement.Presentation.Features.Reports.Contracts;
 using SchoolManagement.Presentation.Features.Reports.Models;
-using SchoolManagement.Presentation.Features.Reports.Providers;
 
 namespace SchoolManagement.Presentation.Features.Reports.ViewModels
 {

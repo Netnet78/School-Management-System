@@ -1,8 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SchoolManagement.Presentation.Features.Scores.ViewModels;
 using SchoolManagement.Presentation.Features.Students.ViewModels;
-using SchoolManagement.Presentation.Shared.Features.Scores.Params;
 using SchoolManagement.Presentation.Shared.Features.Students.Params;
 
 namespace SchoolManagement.Presentation.Features.Classes.ViewModels

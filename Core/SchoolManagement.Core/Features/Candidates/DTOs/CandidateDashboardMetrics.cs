@@ -1,4 +1,6 @@
-namespace SchoolManagement.Core.Features.Candidates.Models
+using SchoolManagement.Core.Features.Candidates.Models;
+
+namespace SchoolManagement.Core.Features.Candidates.DTOs
 {
     public class CandidateDashboardMetrics
     {

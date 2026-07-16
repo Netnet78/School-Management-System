@@ -61,7 +61,7 @@
                                 <TextBox Text="{Binding Data.FirstName, Mode=TwoWay}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="នាម" Margin="0,8"/>
                                 <TextBox Text="{Binding Data.LatinFirstName, Mode=TwoWay}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="នាមជាអក្សរឡាតាំង" Margin="0,8"/>
                                 
-                                <ComboBox SelectedValue="{Binding Data.Gender}" Style="{StaticResource MaterialDesignFloatingHintComboBox}" materialDesign:HintAssist.Hint="ភេទ" IsEditable="False" DisplayMemberPath="KhmerName" SelectedValuePath="Value" ItemsSource="{Binding GenderOptions}" Margin="0,8"/>
+                                <ComboBox SelectedValue="{Binding Data.Gender}" Style="{StaticResource MaterialDesignFloatingHintComboBox}" materialDesign:HintAssist.Hint="ភេទ" IsEditable="False" DisplayMemberPath="Description" SelectedValuePath="Value" ItemsSource="{Binding GenderOptions}" Margin="0,8"/>
                                 
                                 <DatePicker SelectedDate="{Binding Data.DateOfBirth, Converter={StaticResource DateOnlyToDateTimeConverter}}" Style="{StaticResource MaterialDesignFloatingHintDatePicker}" materialDesign:HintAssist.Hint="កាលបរិច្ឆេទកំណើត" Margin="0,8"/>
                             </StackPanel>

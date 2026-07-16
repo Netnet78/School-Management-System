@@ -50,20 +50,31 @@ public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity>
     {
         ArgumentNullException.ThrowIfNull(data);
 
-        int id = GetEntityId(data);
-
+        // Check if there's already a tracked instance for this entity.
         EntityEntry<TEntity>? tracked = Context.ChangeTracker.Entries<TEntity>()
             .FirstOrDefault(e => e.Entity.Id == data.Id);
 
         if (tracked != null)
         {
-            Context.Entry(tracked.Entity).CurrentValues.SetValues(data);
+            // A tracked instance already exists — copy scalar values onto it.
+            tracked.CurrentValues.SetValues(data);
             await SaveAsync(tracked.Entity);
         }
         else
         {
-            Context.Update(data);
-            await SaveAsync(data);
+            // No tracked instance. Fetch a fresh tracked copy from the DB by primary key,
+            // then copy scalars onto it. This avoids calling Context.Update() on an entity
+            // that was loaded with AsNoTracking() and has detached navigation properties,
+            // which causes "Unexpected entry.EntityState: Detached".
+            TEntity? existing = await Set.FindAsync(data.Id);
+            if (existing == null)
+            {
+                throw new InvalidOperationException(
+                    $"{typeof(TEntity).Name} with Id {data.Id} was not found in the database.");
+            }
+
+            Context.Entry(existing).CurrentValues.SetValues(data);
+            await SaveAsync(existing);
         }
     }
 

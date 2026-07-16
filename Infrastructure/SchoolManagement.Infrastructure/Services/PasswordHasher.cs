@@ -1,5 +1,3 @@
-using SchoolManagement.Core.Shared.Contracts;
-
 namespace SchoolManagement.Infrastructure.Services
 {
     public class PasswordHasher : IPasswordHasher
