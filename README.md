@@ -314,10 +314,10 @@ dotnet run --project Presentation/CandidateManagement/CandidateManagement.csproj
 |----------|-------|-------------|---------|
 | Students | Full | Department scope | Class scope |
 | Attendance | Full | Department scope | Class scope |
-| Classes | Full | Department scope | View only |
-| Employees | Full | View department | Denied |
-| Candidates | Full | Denied | Denied |
-| Grades/Exams | Full | View | View |
+| Classes | Full | Department scope | Class scope |
+| Employees | Full | Department scope | Denied |
+| Candidates | Full | Full | Full |
+| Grades/Exams | Full | Department scope | Class scope|
 | Scores | Full | Department scope | Class scope |
 
 ---
@@ -399,9 +399,3 @@ Console application for migrating legacy MS Access database data to PostgreSQL.
 
 ### script.ps1
 PowerShell script for installing NuGet packages to the Presentation project.
-
----
-
-## License
-
-Specify your license here.
