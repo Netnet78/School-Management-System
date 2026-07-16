@@ -1,0 +1,237 @@
+﻿<UserControl x:Class="SchoolManagement.Presentation.Features.Classes.Views.AddStudentsToClassView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:conv="clr-namespace:SchoolManagement.Presentation.Shared.XAMLConverters;assembly=SchoolManagement.Presentation.Shared"
+             xmlns:enum="clr-namespace:SchoolManagement.Core.Shared.Enums;assembly=SchoolManagement.Core"
+             xmlns:viewmodels="clr-namespace:SchoolManagement.Presentation.Features.Classes.ViewModels"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             d:DataContext="{d:DesignInstance Type=viewmodels:AddStudentsToClassViewModel}"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="1100">
+
+    <UserControl.Resources>
+        <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" Collapse="True" />
+        <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverterReversed" IsReversed="True" Collapse="True" />
+        <conv:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter" />
+        <conv:BooleanInverseConverter x:Key="BooleanInverseConverter" />
+    </UserControl.Resources>
+
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="20" VerticalAlignment="Center">
+            <Button Command="{Binding CancelCommand}" Background="Transparent" BorderThickness="0" Padding="0" Margin="0,0,10,0" Cursor="Hand">
+                <materialDesign:PackIcon Kind="ArrowLeft" Width="28" Height="28" Foreground="{DynamicResource MaterialDesign.Brush.Primary}"/>
+            </Button>
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="AccountPlus" Width="26" Height="26" Foreground="{DynamicResource MaterialDesign.Brush.Secondary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding ClassName, StringFormat='បន្ថែមសិស្សទៅថ្នាក់: {0}'}" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock Text="ជ្រើសរើសសិស្សដើម្បីបន្ថែមទៅក្នុងថ្នាក់រៀននេះ" FontSize="14" Foreground="#666" Margin="36,4,0,0"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Filter Expandable -->
+        <Expander Grid.Row="1" Margin="20,10" Background="#F5F5F5" Padding="16">
+            <Expander.Header>
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="Filter" VerticalAlignment="Center" Margin="0 0 5 0"/>
+                    <TextBlock FontSize="18" FontWeight="Bold">ច្រោះទិន្នន័យ</TextBlock>
+                </StackPanel>
+            </Expander.Header>
+
+            <StackPanel>
+                <Grid ColumnDefinitions="*,*,*,*" TextElement.FontSize="16" TextElement.FontFamily="{StaticResource NotoSansKhmer}">
+                    <StackPanel Margin="8">
+                        <TextBlock Text="ស្វែងរកតាមឈ្មោះ" FontWeight="Regular" FontSize="16" Margin="0,0,0,6"/>
+                        <TextBox Text="{Binding Filters.Search, UpdateSourceTrigger=PropertyChanged}" Padding="10" FontSize="16"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="8">
+                        <TextBlock Text="ភេទ" FontWeight="Regular" FontSize="16" Margin="0,0,0,6"/>
+                        <ComboBox Padding="10" FontSize="16" SelectedValue="{Binding Filters.Gender}" SelectedValuePath="Tag">
+                            <ComboBoxItem Content="ទាំងអស់" Tag="{x:Null}"/>
+                            <ComboBoxItem Content="ប្រុស" Tag="{x:Static enum:Gender.Male}"/>
+                            <ComboBoxItem Content="ស្រី" Tag="{x:Static enum:Gender.Female}"/>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Margin="8">
+                        <TextBlock Text="តម្រៀបទិន្នន័យតាម" FontWeight="Regular" FontSize="16" Margin="0,0,0,6"/>
+                        <ComboBox Padding="10" FontSize="16" SelectedValue="{Binding Filters.SortBy}" SelectedValuePath="Tag">
+                            <ComboBoxItem Content="ID" Tag="Id"/>
+                            <ComboBoxItem Content="ឈ្មោះ" Tag="FullName"/>
+                            <ComboBoxItem Content="កាលបរិច្ឆេទបញ្ចូល" Tag="CreatedAt"/>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Grid.Column="3" Margin="8">
+                        <TextBlock Text="រៀបលំដាប់លំដោយតាម" FontWeight="Regular" FontSize="16" Margin="0,0,0,6"/>
+                        <ComboBox Padding="10" FontSize="16"
+                              SelectedValue="{Binding Filters.OrderBy}" SelectedValuePath="Tag">
+                            <ComboBoxItem Content="ពីទាបទៅខ្ពស់ (ក-អ)"
+                                      Tag="{x:Static enum:OrderDirection.Ascending}"/>
+                            <ComboBoxItem Content="ពីខ្ពស់ទៅទាប (អ-ក)"
+                                      Tag="{x:Static enum:OrderDirection.Descending}"/>
+                        </ComboBox>
+                    </StackPanel>
+                </Grid>
+
+                <Grid ColumnDefinitions="*,*">
+                    <StackPanel Grid.Column="0" Margin="8">
+                        <TextBlock Text="ច្រោះចាប់ពីថ្ងៃទី" FontWeight="Regular" FontSize="16" Margin="0,0,0,6"/>
+                        <DatePicker FontSize="16" Padding="6" SelectedDate="{Binding Filters.FromDate, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="8">
+                        <TextBlock Text="រហូតដល់ថ្ងៃទី" FontWeight="Regular" FontSize="16" Margin="0,0,0,6"/>
+                        <DatePicker FontSize="16" Padding="6" SelectedDate="{Binding Filters.ToDate, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel Margin="0 10 0 0" TextElement.FontSize="16">
+                    <Grid ColumnDefinitions="*, *">
+                        <StackPanel Grid.Column="0" Margin="8">
+                            <TextBlock Text="ជំនាញ/ផ្នែក" FontSize="16" Margin="0,0,0,6"/>
+                            <ComboBox ItemsSource="{Binding Departments}"
+                                      DisplayMemberPath="KhmerName"
+                                      SelectedItem="{Binding SelectedDepartment}"
+                                      Padding="10" FontSize="16"
+                                      IsEnabled="{Binding CanSelectDepartment}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="8"
+                                    Visibility="{Binding HasSelectedDepartment, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <TextBlock Text="ជំនាន់" FontSize="16" Margin="0,0,0,6"/>
+                            <ComboBox ItemsSource="{Binding Generations}"
+                                      SelectedItem="{Binding SelectedGeneration}"
+                                      DisplayMemberPath="KhmerName"
+                                      Padding="10" FontSize="16">
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+
+                <Button Margin="0 12 0 0" Command="{Binding RefreshOnFilterCommand}" FontSize="16">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="ចាប់ផ្ដើមច្រោះ" FontSize="16"/>
+                        <materialDesign:PackIcon Kind="FilterPlus" VerticalAlignment="Center" Margin="5 0 0 0"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Expander>
+
+        <!-- Loading -->
+        <Grid Grid.Row="2" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="220" Height="20" Margin="0,0,0,10"/>
+                <TextBlock Text="កំពុងច្រោះ​ទិន្នន័យសិស្ស..." HorizontalAlignment="Center" FontSize="16"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Student List -->
+        <Grid Grid.Row="2" Margin="20,0,20,20"
+              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverterReversed}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"
+                       Text="{Binding TotalCount, StringFormat='សិស្សដែលអាចបន្ថែមបាន: {0} នាក់'}"/>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding AvailableStudents}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="8,6">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}"
+                                              VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{Binding Student.Candidate.FullName}" FontSize="15" FontWeight="SemiBold"/>
+                                        <StackPanel Orientation="Horizontal" TextElement.FontSize="13" TextElement.Foreground="#666">
+                                            <TextBlock Text="{Binding Student.Candidate.Gender, Converter={StaticResource EnumToDescriptionConverter}}" Margin="0,0,15,0"/>
+                                            <TextBlock Text="{Binding Student.Candidate.DateOfBirth}" Margin="0,0,15,0"/>
+                                            <TextBlock Text="{Binding Student.Candidate.Skill.KhmerName}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="2" Text="{Binding Student.Id, StringFormat='ID: {0}'}"
+                                               FontSize="13" Foreground="#999" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+        
+        <!-- Action buttons -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Left"
+                    Margin="20" Height="40">
+            <Button Command="{Binding ClearSelectionCommand}" FontSize="13"
+        Background="#FF9800" Foreground="White" Margin="8,0,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="Delete" Width="16" Height="16" Margin="0,0,4,0"/>
+                    <TextBlock Text="សម្អាតការជ្រើសរើស"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <!-- Pagination -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="20" Height="40"
+                    Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverterReversed}}">
+            <Button Content="← ថយក្រោយ"
+                    Command="{Binding PreviousPageCommand}"
+                    Padding="10,5" FontSize="14"/>
+            <StackPanel VerticalAlignment="Center" Margin="10 0" Orientation="Horizontal">
+                <TextBlock Text="ទំព័រទី" FontSize="16" FontWeight="Normal"
+                           Margin="0 0 5 0"
+                           VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding CurrentPage, FallbackValue=1}" FontSize="16" FontWeight="Bold"
+                           VerticalAlignment="Center"/>
+                <TextBlock Text=" នៃ " VerticalAlignment="Center" FontSize="16" Margin="5 0"/>
+                <TextBlock Text="{Binding MaxPage, FallbackValue=1}" FontSize="16" FontWeight="Bold"
+                           VerticalAlignment="Center"/>
+                <TextBlock Text="ទំព័រ" FontSize="16" FontWeight="Normal"
+                           Margin="5 0 0 0"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+            <Button Content="ទំព័របន្ទាប់ →"
+                    Command="{Binding NextPageCommand}"
+                    Padding="10,5" FontSize="14"/>
+        </StackPanel>
+
+        <!-- Loading overlay for save -->
+        <Grid Grid.Row="2" Background="#44000000"
+              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Border VerticalAlignment="Center" HorizontalAlignment="Center" Background="White" Padding="12" CornerRadius="8">
+                <StackPanel>
+                    <ProgressBar IsIndeterminate="True" Width="200" Height="20"/>
+                    <TextBlock Text="កំពុងដំណើរការ..." HorizontalAlignment="Center" FontSize="16" Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Footer buttons -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20"
+                    Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverterReversed}}">
+            <Button Command="{Binding CancelCommand}" Padding="15,8" Margin="5" FontSize="14" Background="Red" Foreground="White">
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="Close" Width="18" Height="18" Margin="0,0,5,0"/>
+                    <TextBlock Text="បោះបង់"/>
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding SaveCommand}" Padding="15,8" Margin="5" FontSize="14" Background="#4CAF50" Foreground="White">
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="ContentSave" Width="18" Height="18" Margin="0,0,5,0"/>
+                    <TextBlock Text="រក្សាទុក"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

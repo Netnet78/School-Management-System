@@ -1,0 +1,156 @@
+<Application x:Class="SchoolManagement.Presentation.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:SchoolManagement.Presentation"
+             xmlns:components="clr-namespace:SchoolManagement.Presentation.Shared.Components;assembly=SchoolManagement.Presentation.Shared"
+             xmlns:dashboardVm="clr-namespace:SchoolManagement.Presentation.Features.Dashboard.ViewModels"
+             xmlns:studentVm="clr-namespace:SchoolManagement.Presentation.Features.Students.ViewModels"
+             xmlns:classVm="clr-namespace:SchoolManagement.Presentation.Features.Classes.ViewModels"
+             xmlns:attendanceVm="clr-namespace:SchoolManagement.Presentation.Features.Attendances.ViewModels"
+             xmlns:reportVm="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewModels"
+             xmlns:employeeVm="clr-namespace:SchoolManagement.Presentation.Features.Employees.ViewModels"
+             xmlns:departmentVm="clr-namespace:SchoolManagement.Presentation.Features.Departments.ViewModels"
+             xmlns:scoreVm="clr-namespace:SchoolManagement.Presentation.Features.Scores.ViewModels"
+             xmlns:subjectVm="clr-namespace:SchoolManagement.Presentation.Features.Subjects.ViewModels"
+             xmlns:dashboardViews="clr-namespace:SchoolManagement.Presentation.Features.Dashboard.Views"
+             xmlns:studentViews="clr-namespace:SchoolManagement.Presentation.Features.Students.Views"
+             xmlns:classViews="clr-namespace:SchoolManagement.Presentation.Features.Classes.Views"
+             xmlns:attendanceViews="clr-namespace:SchoolManagement.Presentation.Features.Attendances.Views"
+             xmlns:reportViews="clr-namespace:SchoolManagement.Presentation.Features.Reports.Views"
+             xmlns:employeeViews="clr-namespace:SchoolManagement.Presentation.Features.Employees.Views"
+             xmlns:departmentViews="clr-namespace:SchoolManagement.Presentation.Features.Departments.Views"
+             xmlns:scoreViews="clr-namespace:SchoolManagement.Presentation.Features.Scores.Views"
+              xmlns:auditLogVm="clr-namespace:SchoolManagement.Presentation.Features.AuditLogs.ViewModels"
+              xmlns:auditLogViews="clr-namespace:SchoolManagement.Presentation.Features.AuditLogs.Views"
+              xmlns:subjectViews="clr-namespace:SchoolManagement.Presentation.Features.Subjects.Views"
+             xmlns:roleVm="clr-namespace:SchoolManagement.Presentation.Features.Roles.ViewModels"
+             xmlns:roleViews="clr-namespace:SchoolManagement.Presentation.Features.Roles.Views"
+             xmlns:rosterFilterVm="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewProviders.StudentRoster"
+             xmlns:attendanceFilterVm="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewProviders.Attendance"
+              xmlns:scoreFilterVm="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewProviders.Score"
+              xmlns:studentCardFilterVm="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewProviders.StudentCard"
+              xmlns:rosterFilterViews="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewProviders.StudentRoster"
+              xmlns:attendanceFilterViews="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewProviders.Attendance"
+              xmlns:scoreFilterViews="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewProviders.Score"
+              xmlns:studentCardFilterViews="clr-namespace:SchoolManagement.Presentation.Features.Reports.ViewProviders.StudentCard">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+
+                <ResourceDictionary Source="/SchoolManagement.Presentation.Shared;component/Themes.xaml" />
+
+            </ResourceDictionary.MergedDictionaries>
+
+            <DataTemplate DataType="{x:Type dashboardVm:DashboardViewModel}">
+                <dashboardViews:DashboardView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type studentVm:StudentListViewModel}">
+                <studentViews:StudentListView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type studentVm:AddStudentViewModel}">
+                <studentViews:AddStudentView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type studentVm:AddStudentOptionViewModel}">
+                <studentViews:AddStudentOptionView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type studentVm:AssignCandidateViewModel}">
+                <studentViews:AssignCandidateView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type studentVm:EditStudentViewModel}">
+                <studentViews:EditStudentView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type studentVm:AssignStudentClassViewModel}">
+                <studentViews:AssignStudentClassView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type classVm:ClassViewModel}">
+                <classViews:ClassView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type classVm:AddClassViewModel}">
+                <classViews:AddClassView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type classVm:EditClassViewModel}">
+                <classViews:EditClassView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type classVm:ClassStudentListViewModel}">
+                <classViews:ClassStudentListView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type classVm:AddStudentsToClassViewModel}">
+                <classViews:AddStudentsToClassView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type attendanceVm:AttendanceViewModel}">
+                <attendanceViews:AttendanceView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type attendanceVm:AddAttendanceViewModel}">
+                <attendanceViews:AddAttendanceView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type attendanceVm:EditAttendanceViewModel}">
+                <attendanceViews:EditAttendanceView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type attendanceVm:SelectClassViewModel}">
+                <attendanceViews:SelectClassView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type attendanceVm:SelectStudentViewModel}">
+                <attendanceViews:SelectStudentView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type attendanceVm:WizardAddAttendanceViewModel}">
+                <attendanceViews:WizardAddAttendanceView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type reportVm:ReportViewModel}">
+                <reportViews:ReportView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type employeeVm:EmployeeViewModel}">
+                <employeeViews:EmployeeView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type employeeVm:AddEmployeeViewModel}">
+                <employeeViews:AddEmployeeView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type employeeVm:EditEmployeeViewModel}">
+                <employeeViews:EditEmployeeView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type departmentVm:DepartmentViewModel}">
+                <departmentViews:DepartmentView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type scoreVm:ScoreViewModel}">
+                <scoreViews:ScoreView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type subjectVm:SubjectAssignmentViewModel}">
+                <subjectViews:SubjectAssignmentView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type subjectVm:SubjectListViewModel}">
+                <subjectViews:SubjectListView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type subjectVm:AddSubjectViewModel}">
+                <subjectViews:AddSubjectView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type subjectVm:EditSubjectViewModel}">
+                <subjectViews:EditSubjectView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type auditLogVm:AuditLogViewModel}">
+                <auditLogViews:AuditLogView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type employeeVm:EmployeeUserViewModel}">
+                <employeeViews:EmployeeUserView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type roleVm:RoleManagementViewModel}">
+                <roleViews:RoleManagementView />
+            </DataTemplate>
+
+            <!-- Report Filter ViewModels -->
+            <DataTemplate DataType="{x:Type rosterFilterVm:StudentRosterFilterViewModel}">
+                <rosterFilterViews:StudentRosterFilterView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type attendanceFilterVm:AttendanceFilterViewModel}">
+                <attendanceFilterViews:AttendanceFilterView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type scoreFilterVm:ScoreFilterViewModel}">
+                <scoreFilterViews:ScoreFilterView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type studentCardFilterVm:StudentCardFilterViewModel}">
+                <studentCardFilterViews:StudentCardFilterView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type studentCardFilterVm:StudentCardOptionsViewModel}">
+                <studentCardFilterViews:StudentCardOptionsView />
+            </DataTemplate>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

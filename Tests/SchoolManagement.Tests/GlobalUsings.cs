@@ -1,0 +1,13 @@
+global using SchoolManagement.Application.Features.Files.Services;
+global using SchoolManagement.Application.Features.Users.Services;
+global using SchoolManagement.Core.Features.Auth.Models;
+global using SchoolManagement.Core.Features.Candidates.Models;
+global using SchoolManagement.Core.Features.Employees.Models;
+global using SchoolManagement.Core.Features.Files.Enums;
+global using SchoolManagement.Core.Features.Students.Models;
+global using SchoolManagement.Core.Shared.Enums;
+global using SchoolManagement.Core.Shared.Models;
+global using SchoolManagement.Infrastructure.Features.Employees.Contracts;
+global using SchoolManagement.Infrastructure.Features.Files.Contracts;
+global using SchoolManagement.Infrastructure.Features.Students.Contracts;
+global using SchoolManagement.Infrastructure.Features.Auth.Contracts;

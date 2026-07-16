@@ -1,0 +1,251 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using SchoolManagement.Presentation.Features.Attendances.ViewModels;
+using SchoolManagement.Presentation.Features.AuditLogs.ViewModels;
+using SchoolManagement.Presentation.Features.Classes.ViewModels;
+using SchoolManagement.Presentation.Features.Dashboard.ViewModels;
+using SchoolManagement.Presentation.Features.Employees.ViewModels;
+using SchoolManagement.Presentation.Features.Reports.ViewModels;
+using SchoolManagement.Presentation.Features.Scores.ViewModels;
+using SchoolManagement.Presentation.Features.Roles.ViewModels;
+using SchoolManagement.Presentation.Features.Subjects.ViewModels;
+using SchoolManagement.Presentation.Features.Students.ViewModels;
+
+namespace SchoolManagement.Presentation.Shell.ViewModels
+{
+    public partial class MainViewModel : ObservableObject, IViewModel
+    {
+        private readonly INavigationService _navigationService;
+        private readonly IUserSessionService _userSessionService;
+        private readonly IMessageService _messageService;
+        private readonly IDispatcherService _dispatcherService;
+        private readonly IAuthorizationService _authorizationService;
+        private readonly ILoginService _loginService;
+
+        public event Action? OnExit;
+
+        [ObservableProperty]
+        private string _currentUsername = string.Empty;
+
+        [ObservableProperty]
+        private IViewModel? _currentViewModel = null;
+
+        [ObservableProperty]
+        private string _welcomeMessage = string.Empty;
+
+        [ObservableProperty]
+        private bool _isLoading = false;
+
+        // Permission for each roles
+        [ObservableProperty]
+        private bool _canAccessDashboard;
+        [ObservableProperty]
+        private bool _canAccessStudentListView;
+        [ObservableProperty]
+        private bool _canAccessClassView;
+        [ObservableProperty]
+        private bool _canAccessAttendanceView;
+        [ObservableProperty]
+        private bool _canAccessAnalyticsView;
+        [ObservableProperty]
+        private bool _canAccessEmployeeView;
+
+        [ObservableProperty]
+        private bool _canAccessAuditLogView;
+
+        [ObservableProperty]
+        private bool _canAccessScoreEntry;
+
+        [ObservableProperty]
+        private bool _canAccessSubjectList;
+
+        [ObservableProperty]
+        private bool _canAccessRoleManagement;
+
+        public MainViewModel(
+            INavigationService navigationService,
+            IUserSessionService userSessionService,
+            IMessageService messageService,
+            IDispatcherService dispatcherService,
+            IAuthorizationService authorizationService,
+            ILoginService loginService)
+        {
+            _navigationService = navigationService;
+            _userSessionService = userSessionService;
+            _messageService = messageService;
+            _dispatcherService = dispatcherService;
+
+            _userSessionService.OnUserSessionChanged += OnUserSessionChanged;
+            _navigationService.OnViewModelChanged += OnViewModelChanged;
+
+            _authorizationService = authorizationService;
+            _loginService = loginService;
+        }
+
+        [RelayCommand]
+        private async Task ShowDashboardAsync()
+        {
+            await NavigateTo<DashboardViewModel>().ConfigureAwait(false);
+        }
+        [RelayCommand]
+        private async Task ShowAttendanceAsync()
+        {
+            await NavigateTo<AttendanceViewModel>().ConfigureAwait(false);
+        }
+        [RelayCommand]
+        private async Task ShowStudentListAsync()
+        {
+            await NavigateTo<StudentListViewModel>().ConfigureAwait(false);
+        }
+        [RelayCommand]
+        private async Task ShowAddStudentAsync()
+        {
+            await NavigateTo<AddStudentViewModel>().ConfigureAwait(false);
+        }
+        [RelayCommand]
+        private async Task ShowClassAsync()
+        {
+            await NavigateTo<ClassViewModel>().ConfigureAwait(false);
+        }
+        [RelayCommand]
+        private async Task ShowReportAsync()
+        {
+            await NavigateTo<ReportViewModel>().ConfigureAwait(false);
+        }
+        [RelayCommand]
+        private async Task ShowEmployeeAsync()
+        {
+            await NavigateTo<EmployeeViewModel>().ConfigureAwait(false);
+        }
+        [RelayCommand]
+        private async Task ShowAuditLogAsync()
+        {
+            await NavigateTo<AuditLogViewModel>().ConfigureAwait(false);
+        }
+
+        [RelayCommand]
+        private async Task ShowScoreEntryAsync()
+        {
+            await NavigateTo<ScoreViewModel>().ConfigureAwait(false);
+        }
+
+        [RelayCommand]
+        private async Task ShowSubjectListAsync()
+        {
+            await NavigateTo<SubjectListViewModel>().ConfigureAwait(false);
+        }
+
+        [RelayCommand]
+        private async Task ShowRoleManagementAsync()
+        {
+            await NavigateTo<RoleManagementViewModel>().ConfigureAwait(false);
+        }
+
+        private async Task NavigateTo<T>() where T : IViewModel
+        {
+            if (CurrentViewModel is T) return;
+
+            IsLoading = true;
+            try
+            {
+                await _navigationService.NavigateAsync<T>().ConfigureAwait(false);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        private async void OnViewModelChanged(IViewModel? old, IViewModel current)
+        {
+            try
+            {
+                await _dispatcherService.InvokeAsync(() =>
+                {
+                    CurrentViewModel = current;
+                }).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                await _dispatcherService.InvokeAsync(() =>
+                {
+                    _messageService.Show("Couldn't navigate to the page! Please try again!", "Navigation Error",
+                        MessageButton.OK, MessageIcon.Error);
+                }).ConfigureAwait(false);
+            }
+        }
+
+        private async void OnUserSessionChanged(User? obj)
+        {
+            TimeSpan now = DateTime.Now.TimeOfDay;
+            TimeSpan noon = new(12, 0, 0);
+            TimeSpan evening = new(17, 0, 0);
+            string message;
+            if (now < noon)
+            {
+                message = $"Good morning";
+            }
+            else if (now > noon && now < evening)
+            {
+                message = $"Good afternoon";
+            }
+            else
+            {
+                message = $"Good evening";
+            }
+
+            if (obj != null)
+            {
+                CurrentUsername = obj.Username;
+                WelcomeMessage = $"{message}, {obj.Username}!";
+            }
+
+            CanAccessDashboard = await HasPermission(PermissionType.ViewStudents);
+            CanAccessStudentListView = await HasPermission(PermissionType.ViewStudents, PermissionType.EditStudents);
+            CanAccessClassView = await HasPermission(
+                PermissionType.ViewClasses);
+            CanAccessAttendanceView = await HasPermission(PermissionType.ManageAttendances);
+            CanAccessAnalyticsView = true;
+            CanAccessEmployeeView = await HasPermission(PermissionType.ManageEmployees);
+            CanAccessAuditLogView = _authorizationService.UserIsAdmin;
+            CanAccessScoreEntry = await HasPermission(PermissionType.ManageAssessments);
+            CanAccessSubjectList = await HasPermission(PermissionType.ManageSubjects);
+            CanAccessRoleManagement = await HasPermission(PermissionType.ManageRoles);
+        }
+
+        private async Task<bool> HasPermission(params PermissionType[] permissions)
+        {
+            ReturnResponse response = await _authorizationService.AuthorizeAsync(null, OperatorMode.OR, permissions);
+            return response.Status == Status.Success;
+        }
+
+        [RelayCommand]
+        private async Task ExitApplicationAsync()
+        {
+            MessageResult result = _messageService.Show("តើអ្នកចង់បន្តធ្វើការចាកចេញពីកម្មវិធីដែរឬទេ?", "ឈប់សិន!", MessageButton.YesNo, MessageIcon.Question);
+
+            if (result == MessageResult.Yes)
+            {
+                OnExit?.Invoke();
+            }
+        }
+
+        [RelayCommand]
+        private async Task LogoutAsync()
+        {
+            MessageResult result = _messageService.Show("តើអ្នកចង់បន្តធ្វើការចាកចេញពីការប្រើប្រាស់គណនីមួយនេះ​ដែរឬទេ?", "ឈប់សិន!", MessageButton.YesNo, MessageIcon.Question);
+
+            if (result == MessageResult.Yes)
+            {
+                await _loginService.ShowLoginWindow<DashboardViewModel>();
+            }
+        }
+
+        public async Task LoadAsync()
+        {
+            CurrentViewModel = null;
+            await ShowDashboardAsync();
+        }
+    }
+}
+

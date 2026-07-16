@@ -1,0 +1,131 @@
+<UserControl x:Class="CandidateManagement.Views.MainFormView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:CandidateManagement.ViewModels"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             d:DataContext="{d:DesignInstance Type=viewModels:MainFormViewModel}"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
+    <Grid Background="{DynamicResource MaterialDesign.Brush.Background}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="24">
+                <Border Padding="24"
+                        CornerRadius="8"
+                        BorderThickness="1"
+                        BorderBrush="{DynamicResource MaterialDesign.Brush.Primary}"
+                        Background="{DynamicResource MaterialDesign.Brush.Surface}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Margin="0 0 10 0"
+                                             Width="48"
+                                             Height="48"
+                                             Kind="HomeCircle"
+                                             HorizontalAlignment="Left"
+                                             Foreground="{DynamicResource MaterialDesign.Brush.Secondary}"
+                                             VerticalAlignment="Center"/>
+                            <TextBlock FontSize="28"
+                               FontWeight="SemiBold"
+                               Text="{Binding TimeMessage}" 
+                               VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock FontSize="18"
+                               TextWrapping="Wrap"
+                               Margin="0 10 0 0"
+                               Text="{Binding WelcomeMessage}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Analytics Section -->
+                <Grid Margin="0 24 0 0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Line Chart: Joined Rate -->
+                    <Border Grid.Row="0" Padding="16" CornerRadius="8" Background="{DynamicResource MaterialDesign.Brush.Surface}" 
+                            Margin="0 0 0 16">
+                        <StackPanel>
+                            <DockPanel LastChildFill="False" Margin="0 0 0 10">
+                                <TextBlock Text="អត្រាសិស្សចុះឈ្មោះចូលរៀន" FontSize="18" FontWeight="Bold" DockPanel.Dock="Left" VerticalAlignment="Center" />
+                                <ComboBox Width="150" DockPanel.Dock="Right" SelectedValue="{Binding DaysFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Tag">
+                                    <ComboBoxItem Content="៧ ថ្ងៃចុងក្រោយ" Tag="7" />
+                                    <ComboBoxItem Content="៣០ ថ្ងៃចុងក្រោយ" Tag="30" />
+                                    <ComboBoxItem Content="៩០ ថ្ងៃចុងក្រោយ" Tag="90" />
+                                </ComboBox>
+                            </DockPanel>
+                            <Grid Height="300">
+                                <lvc:CartesianChart Series="{Binding JoinedRateSeries}" 
+                                                  XAxes="{Binding JoinedRateXAxes}" 
+                                                  Visibility="{Binding HasJoinedRateData, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <TextBlock Text="មិនមានទិន្នន័យ" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" Foreground="Gray" Opacity="0.5"
+                                           Visibility="{Binding IsJoinedRateDataEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Pie Charts: Gender & Skills -->
+                    <Grid Grid.Row="1" Margin="0 0 0 16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Padding="16" CornerRadius="8" Background="{DynamicResource MaterialDesign.Brush.Surface}">
+                            <StackPanel>
+                                <TextBlock Text="ចំនួនសិស្សប្រុស/ស្រី" FontSize="18" FontWeight="Bold" Margin="0 0 0 10"/>
+                                <Grid Height="250">
+                                    <lvc:PieChart Series="{Binding GenderSeries}" Visibility="{Binding HasGenderData, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    <TextBlock Text="មិនមានទិន្នន័យ" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" Foreground="Gray" Opacity="0.5" Visibility="{Binding IsGenderDataEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="2" Padding="16" CornerRadius="8" Background="{DynamicResource MaterialDesign.Brush.Surface}">
+                            <StackPanel>
+                                <TextBlock Text="ចំនួនសិស្សតាមជំនាញ" FontSize="18" FontWeight="Bold" Margin="0 0 0 10"/>
+                                <Grid Height="250">
+                                    <lvc:PieChart Series="{Binding SkillSeries}" Visibility="{Binding HasSkillData, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    <TextBlock Text="មិនមានទិន្នន័យ" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" Foreground="Gray" Opacity="0.5" Visibility="{Binding IsSkillDataEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Inserted Today List -->
+                    <Border Grid.Row="2" Padding="16" CornerRadius="8" Background="{DynamicResource MaterialDesign.Brush.Surface}">
+                        <StackPanel>
+                            <TextBlock Text="សិស្សដែលបានបញ្ចូលថ្ងៃនេះ" FontSize="18" FontWeight="Bold" Margin="0 0 0 10"/>
+                            <Grid MinHeight="100">
+                                <DataGrid ItemsSource="{Binding InsertedToday}" 
+                                          AutoGenerateColumns="False" 
+                                          IsReadOnly="True" 
+                                          MaxHeight="400"
+                                          Visibility="{Binding HasInsertedTodayData, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="លេខសម្គាល់" Binding="{Binding Id}" />
+                                        <DataGridTextColumn Header="ឈ្មោះពេញ" Binding="{Binding FullName}" />
+                                        <DataGridTextColumn Header="ភេទ" Binding="{Binding Gender}" />
+                                        <DataGridTextColumn Header="ជំនាញ" Binding="{Binding Skill.KhmerName}" />
+                                        <DataGridTextColumn Header="កាលបរិច្ឆេទបញ្ជូល" Binding="{Binding CreatedAt, StringFormat=\{0:dd/MM/yyyy hh:mm tt\}}" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <TextBlock Text="មិនមានសិស្សបញ្ចូលថ្មីទេថ្ងៃនេះ" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" Foreground="Gray" Opacity="0.5"
+                                           Visibility="{Binding IsInsertedTodayDataEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

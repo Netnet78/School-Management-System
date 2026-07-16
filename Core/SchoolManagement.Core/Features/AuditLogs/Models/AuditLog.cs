@@ -1,0 +1,29 @@
+
+using SchoolManagement.Core.Shared.Attributes;
+using SchoolManagement.Core.Shared.Contracts;
+using SchoolManagement.Core.Features.AuditLogs.Enums;
+using SchoolManagement.Core.Features.Auth.Models;
+using System.ComponentModel;
+
+namespace SchoolManagement.Core.Features.AuditLogs.Models
+{
+    [Description("ប្រវត្តិប្រតិបត្តិការ")]
+    [AuditIgnoreType(AuditOperation.All)]
+    public class AuditLog : IEntity
+    {
+        public int Id { get; set; }
+        public string Action { get; set; } = string.Empty;
+        public string EntityType { get; set; } = ""; 
+        public string? EntityName { get; set; }
+        public string Description => string.IsNullOrWhiteSpace(CustomDescription) ? (User != null ?
+            $"{EntityType} {EntityName} was {Action.ToLower()} by user {User.Username}"
+            : $"{EntityType} {EntityName} was {Action.ToLower()} by unknown user")
+            : CustomDescription;
+        public string? CustomDescription { get; set; }
+        public string? OldValues { get; set; }
+        public string? NewValues { get; set; }
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public int? UserId { get; set; }
+        public User? User { get; set; }
+    }
+}
